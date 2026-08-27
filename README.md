@@ -1,7 +1,3 @@
-Berikut adalah draf deskripsi `README.md` yang disesuaikan dengan struktur file proyek Anda (berbasis file HTML dan aset lokal seperti yang terlihat pada gambar):
-
----
-
 # 🚀 Chrome On-Device AI Playground
 
 Repositori ini berisi kumpulan eksperimen dan implementasi **On-Device AI** menggunakan kemampuan bawaan Google Chrome (seperti **Gemini Nano** dan **Prompt API**). Semua berjalan secara lokal di perangkat tanpa memerlukan server pihak ketiga!
