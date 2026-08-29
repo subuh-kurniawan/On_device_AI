@@ -1,6 +1,9 @@
 # 🚀 Chrome On-Device AI Playground (V1.5.0)
 
 <div align="center">
+  <p>
+    <b>🇮🇩 Bahasa Indonesia | <a href="README_EN.md">🇬🇧 English</a></b>
+  </p>
   <img width="100%" alt="Screenshot 2026-08-27 at 18 05 38" src="https://github.com/user-attachments/assets/a2c87635-7af2-45d2-83a3-39fbf10527a9" />
   <p><em>Kumpulan eksperimen dan purwarupa (prototype) aplikasi AI Client-Side yang berjalan 100% secara lokal di dalam browser Anda, tanpa server backend, tanpa biaya API, dan dengan privasi data yang terjamin.</em></p>
 </div>
@@ -108,10 +111,14 @@ Karena aplikasi ini berinteraksi dengan API eksperimental (seperti membaca file 
 ### Langkah 1: Persyaratan Hardware & Aktivasi Chrome On-Device AI (Gemini Nano)
 
 **Persyaratan Sistem (Hardware Requirements):**
-* **RAM:** Minimal 8GB (Disarankan 16GB atau lebih untuk performa yang lancar dan stabil).
-* **Penyimpanan:** Minimal 3GB ruang kosong di media penyimpanan Anda untuk mengunduh bobot (weights) model bahasa.
-* **GPU:** Kartu grafis yang mendukung standar **WebGPU** (Contoh: Apple Silicon M1/M2/M3, Intel Iris Xe, AMD Radeon modern, atau NVIDIA seri GTX 10 ke atas).
-* **Browser:** Google Chrome versi 127 atau lebih baru (Disarankan menggunakan **Chrome Dev** atau **Canary** build).
+* **Spesifikasi Khusus Apple Silicon (MacBook/Mac):**
+  * Mendukung penuh perangkat dengan chip Apple M1, M2, M3, atau M4 (termasuk varian Pro/Max/Ultra).
+  * Arsitektur *Unified Memory* pada cip Apple membuat inferensi LLM dan WebGPU berjalan sangat mulus secara *native*. Perangkat dengan memori terpadu dasar 8GB sudah sangat sanggup dan lancar menjalankan model bawaan ini.
+  * Disarankan minimal menggunakan sistem operasi macOS Monterey (12.0) atau yang lebih baru agar standar WebGPU berjalan optimal.
+* **RAM (Umum/Windows):** Minimal 8GB (Disarankan 16GB atau lebih untuk performa dan kestabilan maksimal).
+* **Penyimpanan:** Minimal 3GB ruang kosong di media penyimpanan Anda (SSD sangat disarankan) untuk mengunduh bobot (weights) model bahasa.
+* **GPU (Windows/Linux):** Kartu grafis yang mendukung standar **WebGPU** secara native (Contoh: Intel Iris Xe, AMD Radeon generasi modern, atau NVIDIA seri GTX 10 ke atas).
+* **Browser:** Google Chrome versi 127 atau lebih baru (Disarankan menggunakan **Chrome Dev** atau **Canary** build terbaru).
 
 **Cara Aktivasi On-Device AI (Prompt API):**
 Agar fitur AI bawaan Chrome dapat berjalan secara lokal, Anda perlu mengaktifkan *flags* eksperimental dan memastikan model telah terunduh:
