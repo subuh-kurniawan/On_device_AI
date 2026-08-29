@@ -105,14 +105,26 @@ Semua modul aplikasi di atas (`liter.html`, `claude.html`, `vision_code.html`) k
 
 Karena aplikasi ini berinteraksi dengan API eksperimental (seperti membaca file lokal, WebGPU, dan akses memori tinggi), aplikasi ini **tidak bisa dijalankan langsung dengan klik ganda** (`file:///` protocol). Anda harus melayaninya melalui HTTP Server lokal.
 
-### Langkah 1: Konfigurasi Chrome Flags
-Agar fitur AI Bawaan Chrome aktif, gunakan versi Google Chrome terbaru (Developer Edition direkomendasikan):
-1. Buka URL: `chrome://flags`
-2. Cari dan aktifkan opsi berikut:
-   * **Optimization Guide On Device Model:** Set ke `Enabled BypassPerfRequirement`
-   * **Prompt API for Gemini Nano:** Set ke `Enabled`
-   * **Enables WebGPU:** Set ke `Enabled` (Biasanya sudah aktif secara default, namun pastikan untuk berjaga-jaga)
-3. *Relaunch* browser Anda.
+### Langkah 1: Persyaratan Hardware & Aktivasi Chrome On-Device AI (Gemini Nano)
+
+**Persyaratan Sistem (Hardware Requirements):**
+* **RAM:** Minimal 8GB (Disarankan 16GB atau lebih untuk performa yang lancar dan stabil).
+* **Penyimpanan:** Minimal 3GB ruang kosong di media penyimpanan Anda untuk mengunduh bobot (weights) model bahasa.
+* **GPU:** Kartu grafis yang mendukung standar **WebGPU** (Contoh: Apple Silicon M1/M2/M3, Intel Iris Xe, AMD Radeon modern, atau NVIDIA seri GTX 10 ke atas).
+* **Browser:** Google Chrome versi 127 atau lebih baru (Disarankan menggunakan **Chrome Dev** atau **Canary** build).
+
+**Cara Aktivasi On-Device AI (Prompt API):**
+Agar fitur AI bawaan Chrome dapat berjalan secara lokal, Anda perlu mengaktifkan *flags* eksperimental dan memastikan model telah terunduh:
+
+1. Buka tab baru dan akses URL: `chrome://flags`
+2. Cari dan aktifkan ketiga opsi berikut:
+   * **Optimization Guide On Device Model:** Ubah nilainya ke `Enabled BypassPerfRequirement`
+   * **Prompt API for Gemini Nano:** Ubah nilainya ke `Enabled`
+   * **Enables WebGPU:** Ubah nilainya ke `Enabled` (Biasanya sudah aktif secara default, namun pastikan untuk berjaga-jaga)
+3. Klik tombol **Relaunch** di pojok kanan bawah untuk memuat ulang browser Anda.
+4. Setelah browser terbuka kembali, buka tab baru dan akses URL: `chrome://components`
+5. Gulir dan cari komponen bernama **Optimization Guide On Device Model**.
+6. Klik tombol **Check for update**. Tunggu proses pengunduhan selesai. Ini akan mengunduh model AI sebesar ~1.5GB hingga 2GB di latar belakang. Pastikan versi komponen tidak lagi menunjukkan `0.0.0.0`.
 
 <img width="100%" alt="Chrome Flags Config" src="https://github.com/user-attachments/assets/b4b0d194-f1e4-41d8-869f-55ee50c4d67f" />
 
