@@ -190,6 +190,21 @@ Gunakan mode ini untuk terhubung ke layanan Cloud API premium (seperti OpenAI GP
 * **Gemini Nano tidak merespons (`claude.html`):** Terkadang model lokal Chrome memerlukan waktu untuk terunduh di latar belakang. Coba buka `chrome://components/`, cari *Optimization Guide On Device Model*, dan klik tombol *Check for update*.
 
 ---
+## 🐛 Screenshoot
+<img width="2874" height="1382" alt="Screenshot 2026-08-29 at 16 08 57" src="https://github.com/user-attachments/assets/30deb737-093f-4778-ac83-4f48e293a686" />
+<img width="2856" height="1382" alt="Screenshot 2026-08-29 at 16 10 24" src="https://github.com/user-attachments/assets/18e57c5d-ee08-4eac-a12b-3b57c1a619cd" />
+<img width="2872" height="1368" alt="Screenshot 2026-08-29 at 16 10 37" src="https://github.com/user-attachments/assets/543708a8-44d7-4bb5-aef2-3a90e85eea6f" />
+<img width="562" height="1376" alt="Screenshot 2026-08-29 at 16 10 54" src="https://github.com/user-attachments/assets/40cac3e7-2da3-47fe-b196-1e7a5afa4a91" /><img width="2878" height="1390" alt="Screenshot 2026-08-29 at 16 13 01" src="https://github.com/user-attachments/assets/c4f7602d-247b-46bd-8348-e8128432cc30" />
+<img width="2878" height="1378" alt="Screenshot 2026-08-29 at 16 14 24" src="https://github.com/user-attachments/assets/1e8966f5-08d9-44a8-a45e-35c5971be182" />
+<img width="2868" height="1398" alt="Screenshot 2026-08-29 at 16 14 36" src="https://github.com/user-attachments/assets/0e77cb22-12cf-4ce6-be9c-e7caf7119cf8" />
+<img width="2874" height="1388" alt="Screenshot 2026-08-29 at 16 14 54" src="https://github.com/user-attachments/assets/6da8e180-c417-4664-a258-1ccd6cdbe43a" />
+<img width="2868" height="1384" alt="Screenshot 2026-08-29 at 16 15 04" src="https://github.com/user-attachments/assets/14d31b5f-efc4-4def-9835-12edd07bd69f" />
+<img width="2868" height="1386" alt="Screenshot 2026-08-29 at 16 16 21" src="https://github.com/user-attachments/assets/8905ffe5-f8bc-47d1-97bf-d331824b7d83" />
+<img width="2876" height="1386" alt="Screenshot 2026-08-29 at 16 16 29" src="https://github.com/user-attachments/assets/81179be2-cc0e-4fd3-81f9-023da877ee50" />
+<img width="2880" height="1392" alt="Screenshot 2026-08-29 at 16 16 40" src="https://github.com/user-attachments/assets/a53e1f35-3bb2-421b-8564-90fc2bdccf44" />
+<img width="2876" height="1378" alt="Screenshot 2026-08-29 at 16 18 02" src="https://github.com/user-attachments/assets/02af3734-0464-44c2-9382-d7de8b5f7368" />
+
+
 
 ## 🤝 Kontribusi
 
