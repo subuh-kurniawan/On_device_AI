@@ -1722,7 +1722,10 @@ function handleTextareaInput(textarea) {
         request.onsuccess = e => {
             db = e.target.result;
             initTheme();
-            loadAISettings().then(() => initChat());
+            loadAISettings().then(() => {
+                initChat();
+                if (typeof renderKBList === 'function') renderKBList();
+            });
         };
 
         async function loadAISettings() {
@@ -2747,33 +2750,53 @@ div.innerHTML = `
 
             let mediaMarkup = '';
             if (fileMetadata) {
-                if (fileMetadata.type === 'image') {
-                    mediaMarkup = `<img src="${fileMetadata.data}" alt="Pratinjau" class="max-w-full max-h-64 rounded-2xl mb-3 object-cover border border-white/10 shadow-md" />`;
-                } else if (fileMetadata.type === 'document') {
-                    mediaMarkup = `
-                        <div class="flex items-center gap-3 p-3 bg-gemini-blue/10 border border-gemini-blue/20 rounded-2xl mb-3 w-full">
-                            <div class="p-2.5 bg-gemini-blue/20 text-gemini-blue rounded-xl flex-shrink-0">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                </svg>
-                            </div>
-                            <div class="truncate min-w-0">
-                                <span class="block text-xs font-semibold text-slate-200 truncate">${escapeHtml(fileMetadata.name)}</span>
-                                <span class="block text-[10px] text-slate-400 mt-0.5">${escapeHtml(fileMetadata.size)}</span>
-                            </div>
-                        </div>`;
-                } else if (fileMetadata.type === 'rag_citation') {
-                    mediaMarkup = `
-                        <div class="flex items-center gap-3 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl mb-3 w-full">
-                            <div class="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-xl flex-shrink-0">
-                                <i class='bx bx-book-open text-xl'></i>
-                            </div>
-                            <div class="truncate min-w-0">
-                                <span class="block text-xs font-semibold text-emerald-200 truncate">${fileMetadata.citations.length} Referensi dari Knowledge Base</span>
-                                <span class="block text-[10px] text-emerald-400/70 mt-0.5">Berhasil ditarik untuk konteks AI</span>
-                            </div>
-                        </div>`;
-                }
+                const metadatas = Array.isArray(fileMetadata) ? fileMetadata : [fileMetadata];
+                if(metadatas.length > 0) mediaMarkup += '<div class="flex flex-col gap-2 mb-3 w-full">';
+                metadatas.forEach(meta => {
+                    if (meta && meta.type === 'image') {
+                        mediaMarkup += `<img src="${meta.data}" alt="Pratinjau" class="max-w-full max-h-64 rounded-2xl object-cover border border-white/10 shadow-md" />`;
+                    } else if (meta && meta.type === 'document') {
+                        mediaMarkup += `
+                            <div class="flex items-center gap-3 p-3 bg-gemini-blue/10 border border-gemini-blue/20 rounded-2xl w-full">
+                                <div class="p-2.5 bg-gemini-blue/20 text-gemini-blue rounded-xl flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                </div>
+                                <div class="truncate min-w-0">
+                                    <span class="block text-xs font-semibold text-slate-200 truncate">${escapeHtml(meta.name)}</span>
+                                    <span class="block text-[10px] text-slate-400 mt-0.5">${escapeHtml(meta.size)}</span>
+                                </div>
+                            </div>`;
+                    } else if (meta && meta.type === 'rag_citation') {
+                        let citationHtml = `
+                        <details class="w-full bg-white/5 border border-white/5 rounded-xl overflow-hidden mt-1 mb-2">
+                            <summary class="cursor-pointer flex items-center justify-between p-3 text-xs font-semibold text-slate-300 hover:bg-white/5 transition-colors select-none">
+                                <div class="flex items-center gap-2">
+                                    <i class='bx bx-library text-base text-emerald-400'></i>
+                                    <span>${meta.citations.length} Referensi dari Knowledge Base</span>
+                                </div>
+                                <i class='bx bx-chevron-down text-lg text-slate-500'></i>
+                            </summary>
+                            <div class="p-3 border-t border-white/5 bg-black/20 flex flex-col gap-3 max-h-64 overflow-y-auto custom-scrollbar">
+                        `;
+                        meta.citations.forEach((cit, idx) => {
+                            citationHtml += `
+                                <div class="bg-white/5 border border-white/5 rounded-lg p-2.5">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <i class='bx bx-file-blank text-slate-400'></i>
+                                        <span class="text-[10px] font-bold text-slate-300">${cit.fileName}</span>
+                                        <span class="text-[9px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded ml-auto">Sim: ${(cit.score*100).toFixed(0)}%</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 leading-relaxed italic border-l-2 border-emerald-600 pl-2">${cit.text}</p>
+                                </div>
+                            `;
+                        });
+                        citationHtml += `</div></details>`;
+                        mediaMarkup += citationHtml;
+                    }
+                });
+                if(metadatas.length > 0) mediaMarkup += '</div>';
             }
 
             msgDiv.className = isUser
@@ -2844,25 +2867,42 @@ div.innerHTML = `
             // ===== KNOWLEDGE BASE INTERCEPT =====
             try {
                 if (typeof searchKnowledgeBase === 'function' && !isRegenerating) {
+                    console.log("[KB] Mencari context untuk:", text.substring(0, 60));
                     const kbResults = await searchKnowledgeBase(text, 3);
+                    console.log("[KB] Hasil search:", kbResults ? kbResults.length : 0, "chunk(s)");
                     if (kbResults && kbResults.length > 0) {
                         const kbContext = kbResults.map(res => `[Dokumen: ${res.fileName}]\n${res.text}`).join('\n\n---\n\n');
                         augmentedText = `[INFO DARI KNOWLEDGE BASE LOKAL]\nBerikut adalah potongan dokumen relevan yang ditemukan di Knowledge Base (prioritaskan info ini jika relevan):\n\n${kbContext}\n\n[AKHIR INFO]\n\nPertanyaan Pengguna: ${text}`;
-                        console.log("RAG Injected:", kbResults.length, "chunks");
+                        console.log("[KB] RAG Injected:", kbResults.length, "chunks");
                         ragCitations = kbResults;
                     }
                 }
             } catch (e) {
-                console.warn("RAG Error:", e);
+                console.warn("[KB] RAG Error:", e);
+            }
+
+            // Membangun metadata lampiran untuk disimpan di database & UI
+            let fileMetadatas = [];
+            if (fileObj) {
+                fileMetadatas.push({
+                    type: fileObj.type,
+                    name: fileObj.name,
+                    size: fileObj.sizeText || 'Unknown size',
+                    data: fileObj.type === 'image' ? fileObj.raw : null
+                });
+            }
+            if (ragCitations && ragCitations.length > 0) {
+                fileMetadatas.push({ type: 'rag_citation', name: 'Knowledge Base', citations: ragCitations });
+                if (typeof showKBToast === 'function') showKBToast(`🗂️ KB Aktif: ${ragCitations.length} referensi ditemukan`);
             }
 
             // Routing berdasarkan mode AI yang dipilih
             if (aiSettings.mode === 'ollama') {
-                await sendMessageViaOllama(augmentedText, fileObj, isRegenerating);
+                await sendMessageViaOllama(augmentedText, fileObj, isRegenerating, text, fileMetadatas);
                 return;
             }
             if (aiSettings.mode === 'openai') {
-                await sendMessageViaOpenAI(augmentedText, fileObj, isRegenerating);
+                await sendMessageViaOpenAI(augmentedText, fileObj, isRegenerating, text, fileMetadatas);
                 return;
             }
 
@@ -2872,21 +2912,8 @@ div.innerHTML = `
                 return;
             }
 
-            // Membangun metadata lampiran untuk disimpan di database & UI
-            let uiMetadata = null;
-            if (ragCitations && ragCitations.length > 0) {
-                uiMetadata = { type: 'rag_citation', name: 'Knowledge Base', citations: ragCitations };
-            } else if (fileObj) {
-                uiMetadata = {
-                    type: fileObj.type,
-                    name: fileObj.name,
-                    size: fileObj.sizeText || 'Unknown size',
-                    data: fileObj.type === 'image' ? fileObj.raw : null
-                };
-            }
-
             if (!isRegenerating) {
-                renderMessage('user', text, uiMetadata, false);
+                renderMessage('user', text, fileMetadatas, false);
             }
 
             const resId = "ai_" + Date.now();
@@ -2897,10 +2924,10 @@ div.innerHTML = `
             const chromeHistory = await getChatHistoryFromDB(MAX_CONTEXT_TURNS, false);
 
             // Simpan pesan user secara eksplisit SETELAH memuat history
-            saveMessageToHistory('user', text, uiMetadata);
+            saveMessageToHistory('user', text, fileMetadatas);
 
             // WEB SEARCH UNTUK CHROME AI
-            let finalPromptChrome = applyKaTeXPrompt(text);
+            let finalPromptChrome = applyKaTeXPrompt(augmentedText);
             if (text.trim().toLowerCase().startsWith('/search ')) {
                 const query = text.trim().substring(8).trim();
                 try {
@@ -3169,12 +3196,12 @@ try {
 }
         }
 
-        async function sendMessageViaOllama(text, fileObj = null, isRegenerating = false) {
+        async function sendMessageViaOllama(text, fileObj = null, isRegenerating = false, originalText = null, fileMetadatas = null) {
             // Render pesan user dulu SEBELUM ambil history,
             // agar pesan user yang baru TIDAK masuk ke history yang dikirim ke AI
-            let uiMetadata = null;
-            if (fileObj) uiMetadata = { type: fileObj.type, name: fileObj.name, size: fileObj.sizeText || '', data: fileObj.type === 'image' ? fileObj.raw : null };
-            if (!isRegenerating) renderMessage('user', text, uiMetadata, false);
+            let uiMetadata = fileMetadatas;
+            if (!uiMetadata && fileObj) uiMetadata = { type: fileObj.type, name: fileObj.name, size: fileObj.sizeText || '', data: fileObj.type === 'image' ? fileObj.raw : null };
+            if (!isRegenerating) renderMessage('user', originalText || text, uiMetadata, false);
 
             // Ambil riwayat SETELAH render (tapi sebelum save assistant)
             // excludeLast=false karena renderMessage belum menyimpan ke DB (save=false)
@@ -3185,7 +3212,7 @@ try {
 
             // Simpan pesan user ke DB secara eksplisit
             // (renderMessage tidak melakukan save, karena di atas kita sudah render manual)
-            saveMessageToHistory('user', text, uiMetadata);
+            saveMessageToHistory('user', originalText || text, uiMetadata);
 
             let finalPrompt = applyKaTeXPrompt(text);
 
@@ -3244,18 +3271,18 @@ try {
         }
 
         // ===== OPENAI MESSAGE HANDLER =====
-        async function sendMessageViaOpenAI(text, fileObj = null, isRegenerating = false) {
+        async function sendMessageViaOpenAI(text, fileObj = null, isRegenerating = false, originalText = null, fileMetadatas = null) {
             // Render pesan user lebih dulu SEBELUM ambil history
-            let uiMetadata = null;
-            if (fileObj) uiMetadata = { type: fileObj.type, name: fileObj.name, size: fileObj.sizeText || '', data: fileObj.type === 'image' ? fileObj.raw : null };
-            if (!isRegenerating) renderMessage('user', text, uiMetadata, false);
+            let uiMetadata = fileMetadatas;
+            if (!uiMetadata && fileObj) uiMetadata = { type: fileObj.type, name: fileObj.name, size: fileObj.sizeText || '', data: fileObj.type === 'image' ? fileObj.raw : null };
+            if (!isRegenerating) renderMessage('user', originalText || text, uiMetadata, false);
 
             // Ambil riwayat percakapan (pesan user terbaru belum ada di DB karena
             // renderMessage di atas dipanggil dengan save=false-nya sudah kita atur manual)
             const history = await getChatHistoryFromDB(MAX_CONTEXT_TURNS * 2, false);
 
             // Simpan pesan user ke DB
-            saveMessageToHistory('user', text, uiMetadata);
+            saveMessageToHistory('user', originalText || text, uiMetadata);
 
             let finalPrompt = applyKaTeXPrompt(text);
 
@@ -6157,14 +6184,61 @@ div.innerHTML = `
         });
 
         // ===== KNOWLEDGE BASE (RAG) =====
+        function showKBToast(message) {
+            let toast = document.getElementById('kb-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'kb-toast';
+                toast.style.cssText = `
+                    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+                    background: linear-gradient(135deg, #059669, #047857);
+                    color: white; padding: 8px 16px; border-radius: 20px;
+                    font-size: 12px; font-weight: 600; z-index: 9999;
+                    box-shadow: 0 4px 20px rgba(5,150,105,0.4);
+                    opacity: 0; transition: all 0.3s ease; pointer-events: none;
+                    white-space: nowrap;
+                `;
+                document.body.appendChild(toast);
+            }
+            toast.textContent = message;
+            // Animasi masuk
+            requestAnimationFrame(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(-50%) translateY(0)';
+            });
+            // Animasi keluar setelah 3 detik
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(20px)';
+            }, 3000);
+        }
+
         let featureExtractor = null;
 
         async function initFeatureExtractor() {
             if (featureExtractor) return featureExtractor;
+
+            // Tunggu hingga window.transformersPipeline tersedia (ES module bersifat async)
+            // Maksimal 8 detik retry
             if (!window.transformersPipeline) {
-                console.warn("Transformers.js belum dimuat.");
+                let waited = 0;
+                await new Promise(resolve => {
+                    const interval = setInterval(() => {
+                        waited += 200;
+                        if (window.transformersPipeline || waited >= 8000) {
+                            clearInterval(interval);
+                            resolve();
+                        }
+                    }, 200);
+                });
+            }
+
+            if (!window.transformersPipeline) {
+                console.warn("[KB] Transformers.js gagal dimuat setelah 8 detik.");
                 return null;
             }
+
             try {
                 document.getElementById('kb-progress-text').innerText = "Memuat model AI (Xenova/all-MiniLM-L6-v2)...";
                 document.getElementById('kb-progress-container').classList.remove('hidden');
@@ -6178,10 +6252,11 @@ div.innerHTML = `
                         }
                     }
                 });
+                console.log("[KB] Model embedding berhasil dimuat.");
                 document.getElementById('kb-progress-container').classList.add('hidden');
                 return featureExtractor;
             } catch (err) {
-                console.error("Gagal memuat model embedding:", err);
+                console.error("[KB] Gagal memuat model embedding:", err);
                 document.getElementById('kb-progress-container').classList.add('hidden');
                 return null;
             }
@@ -6237,7 +6312,7 @@ div.innerHTML = `
                         });
                         
                         scoredChunks.sort((a, b) => b.score - a.score);
-                        scoredChunks = scoredChunks.filter(c => c.score > 0.25); // Threshold RAG
+                        scoredChunks = scoredChunks.filter(c => c.score > 0.35); // threshold 0.35 = lebih relevan
                         
                         resolve(scoredChunks.slice(0, topK));
                     };
@@ -6285,7 +6360,9 @@ div.innerHTML = `
                     for (let i = 1; i <= pdf.numPages; i++) {
                         const page = await pdf.getPage(i);
                         const content = await page.getTextContent();
-                        text += content.items.map(item => item.str).join(' ') + '\n';
+                        // Gabungkan item teks per baris, lalu pisahkan antar halaman dengan \n\n
+                        // agar semantic chunking per paragraf bisa bekerja
+                        text += content.items.map(item => item.str).join(' ') + '\n\n';
                         document.getElementById('kb-progress-percentage').innerText = Math.round((i/pdf.numPages)*30) + "%";
                         document.getElementById('kb-progress-bar').style.width = Math.round((i/pdf.numPages)*30) + "%";
                     }
@@ -6301,7 +6378,9 @@ div.innerHTML = `
                     });
                 }
 
-                text = text.replace(/\s+/g, ' ').trim();
+                // Normalisasi: hanya collapse spasi/tab berulang, BUKAN newline
+                // agar struktur paragraf tetap utuh untuk semantic chunking
+                text = text.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
                 if (!text) throw new Error("Teks kosong atau gagal diekstrak");
 
                 document.getElementById('kb-progress-text').innerText = "Membuat vector embeddings...";

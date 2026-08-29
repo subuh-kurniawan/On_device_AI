@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Lokal Saya (LiteRT-LM Engine)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="nano_asset/assets/js/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'nano_asset/assets/js/pdf.worker.min.js';
+    </script>
+    <script src="nano_asset/assets/js/mammoth.browser.min.js"></script>
+    
+    <!-- Transformers.js untuk Local Embedding RAG -->
+    <script type="module">
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+        env.allowLocalModels = false;
+        window.transformersPipeline = pipeline;
+        console.log("Transformers.js loaded untuk Knowledge Base");
+    </script>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --border-color: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #6366f1;
+            --accent-hover: #4f46e5;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        header {
+            background-color: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        main {
+            flex: 1;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        }
+
+        #chatbox {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 16px;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .input-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        textarea {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+        }
+        textarea:focus { border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
+        textarea:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        button {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        button:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-secondary {
+            background: #334155;
+            color: #cbd5e1;
+            border: 1px solid #475569;
+        }
+        .btn-secondary:hover:not(:disabled) { background: #475569; color: white; }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            max-width: 500px;
+            width: 100%;
+            padding: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .badge.warning { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; }
+        .badge.success { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; }
+        .badge.error { background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.3); color: #fb7185; }
+
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+        .badge.warning .dot { background: #fbbf24; animation: pulse 1.5s infinite; }
+        .badge.success .dot { background: #34d399; }
+        .badge.error .dot { background: #fb7185; }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 85%;
+        }
+        .message.user { margin-left: auto; flex-direction: row-reverse; }
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .message.ai .message-bubble { background: #1e293b; border: 1px solid var(--border-color); color: #e2e8f0; }
+        .message.user .message-bubble { background: var(--accent-color); color: white; }
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        .message.ai .avatar { background: var(--accent-color); color: white; }
+        .message.user .avatar { background: #475569; color: white; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="background: var(--accent-color); padding: 10px; border-radius: 12px; display: flex;">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <div>
+                <h1 style="font-size: 16px; font-weight: 700; color: white;">AI Lokal Saya</h1>
+                <p style="font-size: 12px; color: var(--text-secondary);">Berjalan 100% Offline via WebGPU (LiteRT-LM Runtime)</p>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <button id="openModalBtn" class="btn-secondary" style="font-size: 12px; padding: 8px 14px;">Pengaturan Model</button>
+            <div id="statusBadge" class="badge warning">
+                <span class="dot"></span>
+                <span id="statusText">Belum Dimuat</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div id="welcomeCard" class="card">
+            <h2 style="font-size: 15px; font-weight: 600; color: #818cf8; margin-bottom: 8px;">Selamat Datang di LiteRT-LM Web Engine!</h2>
+            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+                Hubungkan file model bahasa lokal Anda (`.litertlm`) untuk melakukan inferensi langsung secara real-time via WebGPU browser tanpa simulasi.
+            </p>
+            <div style="margin-top: 14px;">
+                <button id="quickLoadBtn" style="font-size: 12px; padding: 8px 16px;">Pilih & Muat Model .litertlm</button>
+            </div>
+        </div>
+
+        <!-- ===== KNOWLEDGE BASE ACCORDION ===== -->
+        <details id="kb-accordion" class="card" style="padding: 14px 20px; margin-bottom: 0;">
+            <summary style="display: flex; align-items: center; justify-content: space-between; list-style: none; font-size: 13px; font-weight: 600; color: #818cf8; cursor: pointer; user-select: none;" onclick="document.getElementById('kb-arrow').style.transform = this.parentElement.open ? 'rotate(0deg)' : 'rotate(-90deg)'">
+                <span style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                    🗂️ Knowledge Base (RAG)
+                </span>
+                <span id="kb-arrow" style="transition: transform 0.2s; font-size: 10px; color: #64748b;">▼</span>
+            </summary>
+
+            <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 10px;" onclick="event.stopPropagation()">
+                <!-- Upload Button -->
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button id="kbUploadBtn" style="font-size: 12px; padding: 8px 14px; flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                        Unggah Dokumen
+                    </button>
+                    <button id="kbClearBtn" class="btn-secondary" style="font-size: 12px; padding: 8px 14px;">
+                        🗑️ Hapus Semua
+                    </button>
+                    <input type="file" id="kbFileInput" accept=".txt,.md,.pdf,.docx,.doc" style="display: none;">
+                </div>
+
+                <!-- Progress -->
+                <div id="kbProgressWrap" style="display: none; background: rgba(15,23,42,0.7); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; flex-direction: column; gap: 6px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: #cbd5e1;">
+                        <span id="kbProgressText">Memproses...</span>
+                        <span id="kbProgressPct">0%</span>
+                    </div>
+                    <div style="width: 100%; background: #0f172a; border-radius: 9999px; height: 4px; overflow: hidden;">
+                        <div id="kbProgressBar" style="background: var(--accent-color); height: 100%; width: 0%; transition: width 0.1s;"></div>
+                    </div>
+                </div>
+
+                <!-- File List -->
+                <div id="kbFilesList" style="display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto;">
+                    <div id="kbEmptyMsg" style="font-size: 12px; color: var(--text-secondary); text-align: center; font-style: italic; padding: 10px 0;">KB Kosong – unggah dokumen untuk mengaktifkan RAG</div>
+                </div>
+            </div>
+        </details>
+        <!-- ===== END KNOWLEDGE BASE ===== -->
+
+        <div id="chatbox">
+            <div class="message ai">
+                <div class="avatar">AI</div>
+                <div class="message-bubble">
+                    Halo! Silakan pilih file model `.litertlm` Anda melalui menu <b>Pengaturan Model</b> di pojok kanan atas untuk mulai mengobrol langsung dengan model LLM Anda.
+                </div>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div style="display: flex; align-items: flex-end; gap: 10px;">
+                <textarea id="prompt" rows="2" placeholder="Ketik pesan atau tanyakan sesuatu di sini... (Model belum dimuat)" disabled></textarea>
+                <button id="sendBtn" style="padding: 12px 18px;" disabled>
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="transform: rotate(90deg);"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                </button>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 11px; color: var(--text-secondary);">
+                <span>Didukung oleh WebGPU & LiteRT-LM Core API</span>
+                <span>Enter untuk Kirim • Shift + Enter untuk Baris Baru</span>
+            </div>
+        </div>
+    </main>
+
+    <div id="modelModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 560px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 14px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="background: rgba(99, 102, 241, 0.15); padding: 8px; border-radius: 10px; color: #818cf8;">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8-4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 15px; font-weight: 700; color: white;">Muat Model LiteRT-LM</h3>
+                        <p style="font-size: 11px; color: var(--text-secondary);">File lokal .litertlm atau URL HuggingFace</p>
+                    </div>
+                </div>
+                <button id="closeModalBtn" class="btn-secondary" style="padding: 6px 10px; font-size: 12px;">✕</button>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+
+                <!-- Tab: Sumber Model -->
+                <div style="display: flex; gap: 6px; background: rgba(15,23,42,0.5); border-radius: 10px; padding: 4px;">
+                    <button id="tabFileBtn" onclick="switchTab('file')" style="flex:1; font-size:12px; padding:6px 10px; border-radius:8px; background:var(--accent-color);">📁 File Lokal</button>
+                    <button id="tabUrlBtn" onclick="switchTab('url')" style="flex:1; font-size:12px; padding:6px 10px; border-radius:8px; background:transparent; color:#94a3b8;">🌐 URL / HuggingFace</button>
+                </div>
+
+                <!-- Panel File Lokal -->
+                <div id="panelFile">
+                    <label style="display:block; font-size:11px; font-weight:600; text-transform:uppercase; color:var(--text-secondary); margin-bottom:6px;">File Model Terpilih</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="modelPathInput" placeholder="Belum ada file dipilih..." readonly style="flex:1; background:#0f172a; border:1px solid var(--border-color); border-radius:10px; padding:10px 14px; color:#cbd5e1; font-size:13px; font-family:monospace;">
+                        <button id="selectFileBtn" style="font-size:12px; padding:10px 14px;">Pilih File</button>
+                    </div>
+                    <input type="file" id="hiddenFileInput" accept=".litertlm,.*" style="display:none;">
+                    <p style="font-size:11px; color:var(--text-secondary); margin-top:6px;">Pilih file <code style="color:#818cf8;">.litertlm</code> dari perangkat Anda. Model diproses langsung oleh WebGPU tanpa upload ke server.</p>
+                </div>
+
+                <!-- Panel URL -->
+                <div id="panelUrl" style="display:none; flex-direction:column; gap:10px;">
+                    <div>
+                        <label style="display:block; font-size:11px; font-weight:600; text-transform:uppercase; color:var(--text-secondary); margin-bottom:6px;">URL Model .litertlm</label>
+                        <input type="url" id="modelUrlInput" placeholder="https://huggingface.co/.../model.litertlm" style="width:100%; background:#0f172a; border:1px solid var(--border-color); border-radius:10px; padding:10px 14px; color:#cbd5e1; font-size:13px; outline:none;">
+                    </div>
+                    
+                    <!-- Preset Model -->
+                    <div>
+                        <label style="display:block; font-size:11px; font-weight:600; text-transform:uppercase; color:var(--text-secondary); margin-bottom:6px;">Model Preset (Web-Compatible)</label>
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            <button class="preset-btn btn-secondary" data-url="https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it-web.litertlm" style="font-size:12px; padding:10px 14px; text-align:left; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <div style="font-weight:600; color:#c7d2fe;">Gemma 4 E2B Instruct (Direkomendasikan)</div>
+                                    <div style="font-size:10px; color:var(--text-secondary); margin-top:2px;">2B parameter · Web-optimized · ~1.4 GB · litert-community</div>
+                                </div>
+                                <span style="color:#818cf8; font-size:11px;">Pilih →</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Download Progress -->
+                    <div id="downloadProgressWrap" style="display:none; background:rgba(15,23,42,0.7); border:1px solid var(--border-color); border-radius:12px; padding:12px; flex-direction:column; gap:8px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#cbd5e1;">
+                            <span id="downloadStatusText">Mengunduh model...</span>
+                            <span id="downloadPctText" style="font-family:monospace; font-weight:700; color:#818cf8;">0%</span>
+                        </div>
+                        <div style="width:100%; background:#0f172a; border-radius:9999px; height:6px; overflow:hidden;">
+                            <div id="downloadProgressBar" style="background:linear-gradient(90deg, #6366f1, #818cf8); height:100%; width:0%; transition:width 0.2s;"></div>
+                        </div>
+                        <div style="font-size:10px; color:var(--text-secondary);" id="downloadSizeText"></div>
+                    </div>
+                </div>
+
+                <!-- Status WebGPU -->
+                <div style="background:rgba(15,23,42,0.7); border:1px solid var(--border-color); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:6px;">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; color:#cbd5e1; font-weight:500;">
+                        <span>Status WebGPU:</span>
+                        <span id="gpuStatusText" style="color:#fbbf24;">Memeriksa...</span>
+                    </div>
+                    <div id="modalStatusMsg" style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                        Menyiapkan mesin runtime LLM lokal...
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; padding-top:4px;">
+                <button id="cancelModalBtn" class="btn-secondary" style="font-size:13px; padding:10px 16px;">Tutup</button>
+                <button id="loadModelBtn" style="font-size:13px; padding:10px 20px;">🚀 Muat ke WebGPU</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // ============ MULTI-SOURCE ENGINE LOADER ============
+        let LiteRtEngine = null;
+        let MediaPipeLlm = null;
+        let engineSource = 'none';
+
+        // Strategi 1: Coba @litert-lm/core dari beberapa CDN
+        const litertCdnUrls = [
+            'https://cdn.jsdelivr.net/npm/@litert-lm/core/+esm',
+            'https://esm.sh/@litert-lm/core',
+            'https://unpkg.com/@litert-lm/core?module',
+        ];
+
+        for (const url of litertCdnUrls) {
+            try {
+                console.log(`[Engine] Mencoba import LiteRT-LM dari: ${url}`);
+                const mod = await import(url);
+                if (mod && (mod.Engine || mod.default?.Engine)) {
+                    LiteRtEngine = mod.Engine || mod.default.Engine;
+                    engineSource = 'litert-lm';
+                    console.log(`[Engine] ✅ LiteRT-LM Engine berhasil dimuat dari: ${url}`);
+                    break;
+                } else {
+                    console.warn(`[Engine] Modul ditemukan tapi Engine class tidak ada dari: ${url}`, Object.keys(mod));
+                }
+            } catch (err) {
+                console.warn(`[Engine] Gagal import dari ${url}:`, err.message);
+            }
+        }
+
+        // Strategi 2: Coba @mediapipe/tasks-genai sebagai fallback
+        if (!LiteRtEngine) {
+            const mediapipeCdnUrls = [
+                'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-genai/+esm',
+                'https://esm.sh/@mediapipe/tasks-genai',
+            ];
+            for (const url of mediapipeCdnUrls) {
+                try {
+                    console.log(`[Engine] Mencoba import MediaPipe GenAI dari: ${url}`);
+                    const mod = await import(url);
+                    if (mod && (mod.LlmInference || mod.default?.LlmInference)) {
+                        MediaPipeLlm = mod.LlmInference || mod.default.LlmInference;
+                        engineSource = 'mediapipe';
+                        console.log(`[Engine] ✅ MediaPipe LlmInference berhasil dimuat dari: ${url}`);
+                        break;
+                    } else {
+                        console.warn(`[Engine] Modul MediaPipe ditemukan tapi LlmInference tidak ada dari: ${url}`, Object.keys(mod));
+                    }
+                } catch (err) {
+                    console.warn(`[Engine] Gagal import MediaPipe dari ${url}:`, err.message);
+                }
+            }
+        }
+
+        if (!LiteRtEngine && !MediaPipeLlm) {
+            console.error("[Engine] ❌ Semua CDN gagal. Mode simulasi aktif. Pastikan koneksi internet aktif dan browser mendukung ES Modules + WebGPU.");
+        } else {
+            console.log(`[Engine] Engine aktif: ${engineSource}`);
+        }
+
+        const statusBadge = document.getElementById('statusBadge');
+        const statusText = document.getElementById('statusText');
+        const chatbox = document.getElementById('chatbox');
+        const promptInput = document.getElementById('prompt');
+        const sendBtn = document.getElementById('sendBtn');
+        const welcomeCard = document.getElementById('welcomeCard');
+        
+        const modelModal = document.getElementById('modelModal');
+        const openModalBtn = document.getElementById('openModalBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelModalBtn = document.getElementById('cancelModalBtn');
+        const quickLoadBtn = document.getElementById('quickLoadBtn');
+        const loadModelBtn = document.getElementById('loadModelBtn');
+        const modelPathInput = document.getElementById('modelPathInput');
+        const selectFileBtn = document.getElementById('selectFileBtn');
+        const hiddenFileInput = document.getElementById('hiddenFileInput');
+        const gpuStatusText = document.getElementById('gpuStatusText');
+        const modalStatusMsg = document.getElementById('modalStatusMsg');
+
+        let aiEngine = null;
+        let aiConversation = null;
+        let selectedFileObject = null;
+        let loadedModelName = "";
+
+        // ============ INDEXEDDB UNTUK KNOWLEDGE BASE ============
+        let db = null;
+        const dbRequest = indexedDB.open("LiterChatDB", 1);
+        dbRequest.onupgradeneeded = e => {
+            const database = e.target.result;
+            if (!database.objectStoreNames.contains("kb_files")) {
+                database.createObjectStore("kb_files", { keyPath: "id" });
+            }
+            if (!database.objectStoreNames.contains("kb_chunks")) {
+                const chunkStore = database.createObjectStore("kb_chunks", { keyPath: "id" });
+                chunkStore.createIndex("fileId", "fileId", { unique: false });
+            }
+        };
+        dbRequest.onsuccess = e => {
+            db = e.target.result;
+            console.log("[KB] IndexedDB LiterChatDB siap.");
+            renderKBList();
+        };
+        dbRequest.onerror = e => console.error("[KB] IndexedDB error:", e);
+
+        // ============ TOAST KB ============
+        function showKBToast(message) {
+            let toast = document.getElementById('kb-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'kb-toast';
+                toast.style.cssText = `
+                    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+                    background: linear-gradient(135deg, #059669, #047857); color: white;
+                    padding: 8px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;
+                    z-index: 9999; box-shadow: 0 4px 20px rgba(5,150,105,0.4);
+                    opacity: 0; transition: all 0.3s ease; pointer-events: none; white-space: nowrap;
+                    font-family: 'Inter', sans-serif;
+                `;
+                document.body.appendChild(toast);
+            }
+            toast.textContent = message;
+            requestAnimationFrame(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(-50%) translateY(0)';
+            });
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(20px)';
+            }, 3000);
+        }
+
+        // ============ EMBEDDING ENGINE ============
+        let featureExtractor = null;
+
+        async function initFeatureExtractor() {
+            if (featureExtractor) return featureExtractor;
+            // Tunggu sampai window.transformersPipeline tersedia (ES module bersifat async)
+            if (!window.transformersPipeline) {
+                let waited = 0;
+                await new Promise(resolve => {
+                    const interval = setInterval(() => {
+                        waited += 200;
+                        if (window.transformersPipeline || waited >= 8000) {
+                            clearInterval(interval);
+                            resolve();
+                        }
+                    }, 200);
+                });
+            }
+            if (!window.transformersPipeline) {
+                console.warn("[KB] Transformers.js gagal dimuat setelah 8 detik.");
+                return null;
+            }
+            try {
+                document.getElementById('kbProgressText').innerText = "Memuat model embedding AI...";
+                document.getElementById('kbProgressPct').innerText = "0%";
+                document.getElementById('kbProgressWrap').style.display = 'flex';
+                featureExtractor = await window.transformersPipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
+                    progress_callback: (x) => {
+                        if (x.status === 'progress') {
+                            const pct = Math.round(x.progress);
+                            document.getElementById('kbProgressPct').innerText = pct + "%";
+                            document.getElementById('kbProgressBar').style.width = pct + "%";
+                        }
+                    }
+                });
+                console.log("[KB] Model embedding berhasil dimuat.");
+                document.getElementById('kbProgressWrap').style.display = 'none';
+                return featureExtractor;
+            } catch (err) {
+                console.error("[KB] Gagal memuat model embedding:", err);
+                document.getElementById('kbProgressWrap').style.display = 'none';
+                return null;
+            }
+        }
+
+        async function extractEmbedding(text) {
+            const extractor = await initFeatureExtractor();
+            if (!extractor) return null;
+            const output = await extractor(text, { pooling: 'mean', normalize: true });
+            return Array.from(output.data);
+        }
+
+        function cosineSimilarity(vecA, vecB) {
+            let dot = 0, normA = 0, normB = 0;
+            for (let i = 0; i < vecA.length; i++) {
+                dot += vecA[i] * vecB[i];
+                normA += vecA[i] * vecA[i];
+                normB += vecB[i] * vecB[i];
+            }
+            return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+        }
+
+        async function searchKnowledgeBase(query, topK = 3) {
+            if (!db) return [];
+            const fileCount = await new Promise(res => {
+                db.transaction('kb_files').objectStore('kb_files').count().onsuccess = e => res(e.target.result);
+            });
+            if (fileCount === 0) return [];
+            const queryEmbedding = await extractEmbedding(query);
+            if (!queryEmbedding) return [];
+            return new Promise(resolve => {
+                const tx = db.transaction(['kb_chunks', 'kb_files'], 'readonly');
+                let fileMap = {};
+                tx.objectStore('kb_files').getAll().onsuccess = ev => {
+                    ev.target.result.forEach(f => fileMap[f.id] = f.name);
+                    tx.objectStore('kb_chunks').getAll().onsuccess = e => {
+                        let scored = e.target.result.map(chunk => ({
+                            text: chunk.text,
+                            fileName: fileMap[chunk.fileId] || "Dokumen KB",
+                            score: cosineSimilarity(queryEmbedding, chunk.embedding)
+                        }));
+                        scored.sort((a, b) => b.score - a.score);
+                        scored = scored.filter(c => c.score > 0.35);
+                        resolve(scored.slice(0, topK));
+                    };
+                };
+            });
+        }
+
+        function chunkText(text, chunkSize = 1000, overlap = 200) {
+            const paragraphs = text.split(/\n\s*\n/);
+            const chunks = [];
+            let currentChunk = "";
+            for (const para of paragraphs) {
+                if (currentChunk.length + para.length > chunkSize && currentChunk.length > 0) {
+                    chunks.push(currentChunk.trim());
+                    const words = currentChunk.split(' ');
+                    const overlapWords = words.slice(-Math.floor(overlap / 5)).join(' ');
+                    currentChunk = overlapWords + "\n\n" + para;
+                } else {
+                    currentChunk += (currentChunk ? "\n\n" : "") + para;
+                }
+            }
+            if (currentChunk.trim()) chunks.push(currentChunk.trim());
+            return chunks;
+        }
+
+        async function handleKBFileUpload(file) {
+            if (!file || !db) return;
+            const fileId = 'kb_' + Date.now();
+            const fileName = file.name;
+            document.getElementById('kbProgressText').innerText = "Membaca & mengekstrak teks...";
+            document.getElementById('kbProgressPct').innerText = "0%";
+            document.getElementById('kbProgressBar').style.width = "0%";
+            document.getElementById('kbProgressWrap').style.display = 'flex';
+            try {
+                let text = '';
+                if (file.name.endsWith('.pdf') && typeof pdfjsLib !== 'undefined') {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        text += content.items.map(item => item.str).join(' ') + '\n\n';
+                        const pct = Math.round((i / pdf.numPages) * 30);
+                        document.getElementById('kbProgressPct').innerText = pct + "%";
+                        document.getElementById('kbProgressBar').style.width = pct + "%";
+                    }
+                } else if (file.name.endsWith('.docx') && typeof mammoth !== 'undefined') {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const result = await mammoth.extractRawText({ arrayBuffer });
+                    text = result.value;
+                } else {
+                    text = await new Promise(resolve => {
+                        const reader = new FileReader();
+                        reader.onload = e => resolve(e.target.result);
+                        reader.readAsText(file);
+                    });
+                }
+
+                // Normalisasi: pertahankan struktur paragraf
+                text = text.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+                if (!text) throw new Error("Teks kosong atau gagal diekstrak");
+
+                document.getElementById('kbProgressText').innerText = "Membuat vector embeddings...";
+
+                const chunks = chunkText(text, 1000, 200);
+                db.transaction('kb_files', 'readwrite').objectStore('kb_files').add({
+                    id: fileId, name: fileName, size: file.size, timestamp: Date.now()
+                });
+
+                for (let i = 0; i < chunks.length; i++) {
+                    await new Promise(r => setTimeout(r, 10));
+                    const embedding = await extractEmbedding(chunks[i]);
+                    if (embedding) {
+                        db.transaction('kb_chunks', 'readwrite').objectStore('kb_chunks').add({
+                            id: fileId + '_' + i, fileId, text: chunks[i], embedding
+                        });
+                    }
+                    const pct = 30 + Math.round((i + 1) / chunks.length * 70);
+                    document.getElementById('kbProgressPct').innerText = pct + "%";
+                    document.getElementById('kbProgressBar').style.width = pct + "%";
+                }
+
+                document.getElementById('kbProgressWrap').style.display = 'none';
+                showKBToast(`✅ "${fileName}" berhasil diindeks (${chunks.length} chunk)`);
+                renderKBList();
+            } catch (err) {
+                document.getElementById('kbProgressWrap').style.display = 'none';
+                console.error("[KB] Upload error:", err);
+                alert("Gagal mengindeks file: " + err.message);
+            }
+        }
+
+        function renderKBList() {
+            if (!db) return;
+            const tx = db.transaction('kb_files', 'readonly');
+            tx.objectStore('kb_files').getAll().onsuccess = e => {
+                const files = e.target.result;
+                const container = document.getElementById('kbFilesList');
+                const emptyMsg = document.getElementById('kbEmptyMsg');
+                // Hapus item lama (kecuali emptyMsg)
+                Array.from(container.children).forEach(child => {
+                    if (child.id !== 'kbEmptyMsg') child.remove();
+                });
+                if (files.length === 0) {
+                    if (emptyMsg) emptyMsg.style.display = 'block';
+                    return;
+                }
+                if (emptyMsg) emptyMsg.style.display = 'none';
+                files.forEach(file => {
+                    const item = document.createElement('div');
+                    item.style.cssText = `
+                        display: flex; align-items: center; justify-content: space-between;
+                        background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2);
+                        border-radius: 10px; padding: 8px 12px;
+                    `;
+                    item.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
+                            <span style="font-size:14px;">📄</span>
+                            <div style="overflow:hidden;">
+                                <div style="font-size:12px; font-weight:600; color:#c7d2fe; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${file.name}</div>
+                                <div style="font-size:10px; color:var(--text-secondary);">${(file.size/1024).toFixed(1)} KB</div>
+                            </div>
+                        </div>
+                        <button data-id="${file.id}" class="kb-del-btn btn-secondary" style="font-size:10px; padding:4px 8px; color:#f87171; border-color:rgba(248,113,113,0.3); flex-shrink:0;">✕</button>
+                    `;
+                    container.appendChild(item);
+                });
+                // Bind delete buttons
+                container.querySelectorAll('.kb-del-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const fileId = btn.dataset.id;
+                        if (!confirm("Hapus file ini dari Knowledge Base?")) return;
+                        // Hapus file entry
+                        db.transaction('kb_files', 'readwrite').objectStore('kb_files').delete(fileId);
+                        // Hapus semua chunks milik file ini
+                        const txC = db.transaction('kb_chunks', 'readwrite');
+                        const idx = txC.objectStore('kb_chunks').index('fileId');
+                        const cursorReq = idx.openCursor(IDBKeyRange.only(fileId));
+                        cursorReq.onsuccess = ev => {
+                            const cursor = ev.target.result;
+                            if (cursor) { cursor.delete(); cursor.continue(); }
+                            else renderKBList();
+                        };
+                    });
+                });
+            };
+        }
+
+        // ============ KB UI EVENT LISTENERS ============
+        document.getElementById('kbUploadBtn').addEventListener('click', () => {
+            document.getElementById('kbFileInput').value = '';
+            document.getElementById('kbFileInput').click();
+        });
+        document.getElementById('kbFileInput').addEventListener('change', e => {
+            const file = e.target.files && e.target.files[0];
+            if (file) handleKBFileUpload(file);
+        });
+        document.getElementById('kbClearBtn').addEventListener('click', async () => {
+            if (!db) return;
+            if (!confirm("Hapus semua file dari Knowledge Base?")) return;
+            db.transaction('kb_files', 'readwrite').objectStore('kb_files').clear();
+            db.transaction('kb_chunks', 'readwrite').objectStore('kb_chunks').clear();
+            setTimeout(renderKBList, 300);
+        });
+
+
+
+        function updateStatus(message, type = 'warning') {
+            statusText.innerText = message;
+            statusBadge.className = "badge " + type;
+        }
+
+        function openModal() { modelModal.classList.add('active'); }
+        function closeModal() { modelModal.classList.remove('active'); }
+
+        // Tab switching: file vs URL
+        let activeTab = 'file';
+        window.switchTab = function(tab) {
+            activeTab = tab;
+            document.getElementById('panelFile').style.display = tab === 'file' ? 'block' : 'none';
+            document.getElementById('panelUrl').style.display = tab === 'url' ? 'flex' : 'none';
+            document.getElementById('tabFileBtn').style.background = tab === 'file' ? 'var(--accent-color)' : 'transparent';
+            document.getElementById('tabFileBtn').style.color = tab === 'file' ? 'white' : '#94a3b8';
+            document.getElementById('tabUrlBtn').style.background = tab === 'url' ? 'var(--accent-color)' : 'transparent';
+            document.getElementById('tabUrlBtn').style.color = tab === 'url' ? 'white' : '#94a3b8';
+        };
+
+        openModalBtn.addEventListener('click', openModal);
+        quickLoadBtn.addEventListener('click', openModal);
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelModalBtn.addEventListener('click', closeModal);
+
+        selectFileBtn.addEventListener('click', () => {
+            hiddenFileInput.value = '';
+            hiddenFileInput.click();
+        });
+
+        hiddenFileInput.addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (file) {
+                selectedFileObject = file;
+                selectedModelUrl = null;
+                modelPathInput.value = file.name;
+                modalStatusMsg.innerText = `File terpilih: ${file.name} (${(file.size / (1024*1024)).toFixed(2)} MB). Klik '🚀 Muat ke WebGPU' untuk menginisialisasi.`;
+            }
+        });
+
+        // Preset model buttons
+        let selectedModelUrl = null;
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                selectedModelUrl = btn.dataset.url;
+                document.getElementById('modelUrlInput').value = selectedModelUrl;
+                document.querySelectorAll('.preset-btn').forEach(b => b.style.borderColor = '');
+                btn.style.borderColor = '#818cf8';
+                modalStatusMsg.innerText = `Model terpilih: ${btn.querySelector('div > div').innerText}. Klik '🚀 Muat ke WebGPU' untuk memulai unduhan.`;
+            });
+        });
+
+        document.getElementById('modelUrlInput').addEventListener('input', e => {
+            selectedModelUrl = e.target.value.trim() || null;
+        });
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (!navigator.gpu) {
+                gpuStatusText.innerText = "Tidak Didukung";
+                gpuStatusText.style.color = "#fb7185";
+                modalStatusMsg.innerText = "WebGPU tidak aktif atau tidak didukung. Gunakan Google Chrome/Edge terbaru dan aktifkan WebGPU di chrome://flags.";
+            } else {
+                try {
+                    const adapter = await navigator.gpu.requestAdapter();
+                    if (!adapter) throw new Error("Adapter WebGPU tidak ditemukan.");
+                    const info = await adapter.requestAdapterInfo?.() || {};
+                    gpuStatusText.innerText = "Aktif & Siap";
+                    gpuStatusText.style.color = "#34d399";
+                    modalStatusMsg.innerText = `WebGPU device terdeteksi${info.description ? ': ' + info.description : ''}. Siap memuat model .litertlm.`;
+                } catch (err) {
+                    gpuStatusText.innerText = "Error Adapter";
+                    gpuStatusText.style.color = "#fb7185";
+                    modalStatusMsg.innerText = "Gagal inisialisasi WebGPU: " + err.message;
+                }
+            }
+        });
+
+        async function downloadModelFromUrl(url) {
+            const progressWrap = document.getElementById('downloadProgressWrap');
+            const progressBar = document.getElementById('downloadProgressBar');
+            const pctText = document.getElementById('downloadPctText');
+            const statusText = document.getElementById('downloadStatusText');
+            const sizeText = document.getElementById('downloadSizeText');
+
+            progressWrap.style.display = 'flex';
+            statusText.innerText = 'Menghubungkan ke server...';
+            pctText.innerText = '0%';
+            progressBar.style.width = '0%';
+
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+
+            const contentLength = response.headers.get('content-length');
+            const totalBytes = contentLength ? parseInt(contentLength) : null;
+
+            const reader = response.body.getReader();
+            const chunks = [];
+            let receivedBytes = 0;
+
+            statusText.innerText = 'Mengunduh model...';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                receivedBytes += value.length;
+                if (totalBytes) {
+                    const pct = Math.round((receivedBytes / totalBytes) * 100);
+                    progressBar.style.width = pct + '%';
+                    pctText.innerText = pct + '%';
+                    sizeText.innerText = `${(receivedBytes / (1024*1024)).toFixed(1)} MB / ${(totalBytes / (1024*1024)).toFixed(1)} MB`;
+                } else {
+                    sizeText.innerText = `${(receivedBytes / (1024*1024)).toFixed(1)} MB diterima...`;
+                }
+            }
+
+            progressWrap.style.display = 'none';
+            const blob = new Blob(chunks);
+            const filename = url.split('/').pop() || 'model.litertlm';
+            return new File([blob], filename, { type: 'application/octet-stream' });
+        }
+
+        async function loadModelAction() {
+            if (!navigator.gpu) {
+                modalStatusMsg.innerText = "Error: Browser Anda tidak mendukung WebGPU.";
+                return;
+            }
+
+            // Tentukan sumber model
+            let modelSource = null;
+            let modelName = '';
+            if (activeTab === 'file') {
+                if (!selectedFileObject) {
+                    modalStatusMsg.innerText = "Silakan pilih file .litertlm terlebih dahulu.";
+                    return;
+                }
+                modelSource = selectedFileObject;
+                modelName = selectedFileObject.name;
+            } else {
+                const url = (selectedModelUrl || document.getElementById('modelUrlInput').value).trim();
+                if (!url) {
+                    modalStatusMsg.innerText = "Masukkan URL model atau pilih preset di atas.";
+                    return;
+                }
+                try {
+                    loadModelBtn.disabled = true;
+                    loadModelBtn.innerHTML = `<span>⬇️ Mengunduh...</span>`;
+                    modalStatusMsg.innerText = "Memulai unduhan model dari URL...";
+                    modelSource = await downloadModelFromUrl(url);
+                    modelName = modelSource.name;
+                    modalStatusMsg.innerText = `Unduhan selesai (${(modelSource.size/(1024*1024)).toFixed(1)} MB). Menginisialisasi engine...`;
+                } catch (err) {
+                    modalStatusMsg.innerText = `Gagal mengunduh: ${err.message}`;
+                    loadModelBtn.disabled = false;
+                    loadModelBtn.innerHTML = `<span>🚀 Muat ke WebGPU</span>`;
+                    return;
+                }
+            }
+
+            try {
+                loadModelBtn.disabled = true;
+                loadModelBtn.innerHTML = `<span>⚙️ Inisialisasi WebGPU...</span>`;
+                modalStatusMsg.innerText = `Menginisialisasi engine LiteRT-LM dengan model ${modelName}...`;
+                updateStatus("Memuat model...", "warning");
+
+                if (aiEngine) {
+                    if (typeof aiEngine.delete === 'function') await aiEngine.delete();
+                    aiEngine = null;
+                }
+
+                if (LiteRtEngine) {
+                    // ===== PATH A: LiteRT-LM Engine (Primary) =====
+                    console.log("[Engine] Menggunakan LiteRT-LM Engine...");
+                    modalStatusMsg.innerText = `Inisialisasi LiteRT-LM Engine...`;
+                    aiEngine = await LiteRtEngine.create({
+                        model: modelSource,
+                        mainExecutorSettings: { maxNumTokens: 8192 }
+                    });
+                    aiConversation = await aiEngine.createConversation({
+                        preface: {
+                            messages: [
+                                { role: 'system', content: 'Anda adalah asisten AI lokal yang cerdas, ramah, dan membantu. Jawab dalam bahasa yang sama dengan pertanyaan pengguna.' }
+                            ]
+                        }
+                    });
+                    engineSource = 'litert-lm';
+
+                } else if (MediaPipeLlm) {
+                    // ===== PATH B: MediaPipe LlmInference (Fallback) =====
+                    console.log("[Engine] Menggunakan MediaPipe LlmInference...");
+                    modalStatusMsg.innerText = `Inisialisasi MediaPipe LLM Inference via WebGPU...`;
+
+                    // MediaPipe membutuhkan URL model atau File object
+                    let modelPath;
+                    if (typeof modelSource === 'string') {
+                        modelPath = modelSource;
+                    } else if (modelSource instanceof File) {
+                        modelPath = URL.createObjectURL(modelSource);
+                    }
+
+                    aiEngine = await MediaPipeLlm.createFromOptions({
+                        baseOptions: {
+                            modelAssetPath: modelPath
+                        },
+                        maxTokens: 8192,
+                        topK: 40,
+                        temperature: 0.8,
+                        randomSeed: Date.now() % 1000000
+                    });
+
+                    // Bungkus API MediaPipe ke interface yang sama dengan LiteRT-LM
+                    aiConversation = {
+                        _history: [],
+                        sendMessageStreaming(promptText) {
+                            const self = this;
+                            const engine = aiEngine;
+                            return {
+                                [Symbol.asyncIterator]() {
+                                    let finished = false;
+                                    let pendingChunks = [];
+                                    let resolveWait = null;
+
+                                    // MediaPipe menggunakan callback partial results
+                                    engine.generateResponse(promptText, (partialResult, done) => {
+                                        pendingChunks.push({ text: partialResult, done: done });
+                                        if (resolveWait) {
+                                            resolveWait();
+                                            resolveWait = null;
+                                        }
+                                        if (done) finished = true;
+                                    });
+
+                                    return {
+                                        async next() {
+                                            while (pendingChunks.length === 0 && !finished) {
+                                                await new Promise(r => { resolveWait = r; });
+                                            }
+                                            if (pendingChunks.length > 0) {
+                                                const chunk = pendingChunks.shift();
+                                                return {
+                                                    done: false,
+                                                    value: { content: [{ type: 'text', text: chunk.text }] }
+                                                };
+                                            }
+                                            return { done: true };
+                                        }
+                                    };
+                                }
+                            };
+                        }
+                    };
+                    engineSource = 'mediapipe';
+
+                } else {
+                    // ===== PATH C: Mode Simulasi =====
+                    console.warn("[Engine] Tidak ada engine tersedia. Mode simulasi aktif.");
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    aiConversation = {
+                        async *sendMessageStreaming(promptText) {
+                            const lines = [
+                                `⚠️ **Mode Simulasi Aktif**\n\n`,
+                                `Tidak ada runtime LLM yang berhasil dimuat.\n\n`,
+                                `**Yang dicoba:**\n`,
+                                `• @litert-lm/core (3 CDN) → Gagal\n`,
+                                `• @mediapipe/tasks-genai (2 CDN) → Gagal\n\n`,
+                                `**Kemungkinan penyebab:**\n`,
+                                `1. Browser tidak mendukung WebGPU (gunakan Chrome 125+)\n`,
+                                `2. Koneksi internet terputus saat memuat CDN\n`,
+                                `3. Library masih dalam tahap preview\n\n`,
+                                `**Solusi:**\n`,
+                                `• Buka DevTools (F12) → Console untuk melihat log detail\n`,
+                                `• Coba refresh halaman dengan koneksi stabil\n`,
+                                `• Pastikan chrome://flags → WebGPU aktif\n`,
+                            ];
+                            for (const line of lines) {
+                                yield { content: [{ type: 'text', text: line }] };
+                                await new Promise(r => setTimeout(r, 50));
+                            }
+                        }
+                    };
+                    engineSource = 'simulasi';
+                }
+
+                loadedModelName = modelName;
+                selectedFileObject = modelSource;
+                updateStatus(`✅ ${modelName.length > 20 ? modelName.substring(0,20) + '…' : modelName}`, "success");
+                promptInput.disabled = false;
+                sendBtn.disabled = false;
+                promptInput.placeholder = `Tanya ${modelName} via WebGPU...`;
+
+                modalStatusMsg.innerText = `✅ Model "${modelName}" berhasil dimuat ke WebGPU engine!`;
+                let engineDisplayName = engineSource === 'litert-lm' ? 'LiteRT-LM' : 
+                                        (engineSource === 'mediapipe' ? 'MediaPipe LlmInference' : 'Mode Simulasi');
+                appendSystemMessage(`Model <b>${modelName}</b> (${(modelSource.size/(1024*1024)).toFixed(1)} MB) aktif via ${engineDisplayName} WebGPU.`);
+
+                setTimeout(() => closeModal(), 1500);
+            } catch (error) {
+                updateStatus("Gagal memuat model", "error");
+                modalStatusMsg.innerText = `Error LiteRT-LM: ${error.message}`;
+            } finally {
+                loadModelBtn.disabled = false;
+                loadModelBtn.innerHTML = `<span>🚀 Muat ke WebGPU</span>`;
+            }
+        }
+
+        loadModelBtn.addEventListener('click', loadModelAction);
+
+        function appendSystemMessage(text) {
+            const div = document.createElement('div');
+            div.className = "message ai";
+            div.innerHTML = `
+                <div class="avatar" style="background: #d97706;">SYS</div>
+                <div class="message-bubble" style="background: #1e293b; border: 1px solid var(--border-color); color: #cbd5e1;">
+                    ${text}
+                </div>
+            `;
+            chatbox.appendChild(div);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+        async function kirimPesan() {
+            const promptText = promptInput.value.trim();
+            if (!promptText || !aiConversation) return;
+
+            if (welcomeCard) welcomeCard.style.display = 'none';
+            promptInput.value = '';
+            promptInput.disabled = true;
+            sendBtn.disabled = true;
+
+            // ===== KNOWLEDGE BASE INTERCEPT =====
+            let augmentedText = promptText;
+            let ragCitations = null;
+            try {
+                console.log("[KB] Mencari context untuk:", promptText.substring(0, 60));
+                const kbResults = await searchKnowledgeBase(promptText, 3);
+                console.log("[KB] Hasil search:", kbResults ? kbResults.length : 0, "chunk(s)");
+                if (kbResults && kbResults.length > 0) {
+                    const kbContext = kbResults.map(res => `[Dokumen: ${res.fileName}]\n${res.text}`).join('\n\n---\n\n');
+                    augmentedText = `[INFO DARI KNOWLEDGE BASE LOKAL]\nBerikut adalah potongan dokumen relevan (prioritaskan jika relevan):\n\n${kbContext}\n\n[AKHIR INFO]\n\nPertanyaan Pengguna: ${promptText}`;
+                    ragCitations = kbResults;
+                    showKBToast(`🗂️ KB Aktif: ${ragCitations.length} referensi ditemukan`);
+                }
+            } catch (e) {
+                console.warn("[KB] RAG Error:", e);
+            }
+
+            // Render user bubble dengan KB citations jika ada
+            let citationHtml = '';
+            if (ragCitations && ragCitations.length > 0) {
+                let citItems = ragCitations.map(cit => `
+                    <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:8px; padding:8px; margin-bottom:4px;">
+                        <div style="display:flex; justify-content:space-between; font-size:9px; font-weight:700; color:#94a3b8; margin-bottom:4px;">
+                            <span>📄 ${escapeHtml(cit.fileName)}</span>
+                            <span style="color:#34d399;">Sim: ${(cit.score*100).toFixed(0)}%</span>
+                        </div>
+                        <p style="font-size:10px; color:#cbd5e1; font-style:italic; line-height:1.4; border-left:2px solid #475569; padding-left:6px; margin:0;">${escapeHtml(cit.text.substring(0, 200))}${cit.text.length > 200 ? '...' : ''}</p>
+                    </div>
+                `).join('');
+                citationHtml = `
+                    <details style="margin-top:8px; background:rgba(15,23,42,0.5); border:1px solid rgba(99,102,241,0.2); border-radius:10px; overflow:hidden; text-align:left;">
+                        <summary style="cursor:pointer; padding:8px 12px; font-size:11px; font-weight:600; color:#818cf8; list-style:none; user-select:none;">
+                            📚 ${ragCitations.length} Referensi Knowledge Base ▾
+                        </summary>
+                        <div style="padding:8px; border-top:1px solid rgba(255,255,255,0.05);">${citItems}</div>
+                    </details>
+                `;
+            }
+
+            const userDiv = document.createElement('div');
+            userDiv.className = "message user";
+            userDiv.innerHTML = `
+                <div class="avatar">Anda</div>
+                <div class="message-bubble" style="display:flex; flex-direction:column; max-width:100%;">
+                    <div>${escapeHtml(promptText)}</div>
+                    ${citationHtml}
+                </div>
+            `;
+            chatbox.appendChild(userDiv);
+            chatbox.scrollTop = chatbox.scrollHeight;
+
+            const aiDiv = document.createElement('div');
+            aiDiv.className = "message ai";
+            aiDiv.innerHTML = `
+                <div class="avatar">AI</div>
+                <div class="message-bubble response-content"><span style="color: #818cf8; animation: pulse 1s infinite;">Memproses token via WebGPU...</span></div>
+            `;
+            chatbox.appendChild(aiDiv);
+            chatbox.scrollTop = chatbox.scrollHeight;
+
+            const responseContent = aiDiv.querySelector('.response-content');
+
+            try {
+                responseContent.innerHTML = '';
+                const stream = aiConversation.sendMessageStreaming(augmentedText);
+                
+                for await (const chunk of stream) {
+                    if (chunk && chunk.content) {
+                        for (const item of chunk.content) {
+                            if (item.type === 'text') {
+                                responseContent.innerHTML += escapeHtml(item.text);
+                                chatbox.scrollTop = chatbox.scrollHeight;
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                responseContent.innerHTML = `<span style="color: #fb7185;">[Error Inference: ${escapeHtml(error.message)}]</span>`;
+            } finally {
+                promptInput.disabled = false;
+                sendBtn.disabled = false;
+                promptInput.focus();
+            }
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        sendBtn.addEventListener('click', kirimPesan);
+        promptInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                kirimPesan();
+            }
+        });
+    </script>
+</body>
+</html>

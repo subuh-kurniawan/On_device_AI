@@ -39,10 +39,10 @@ body.hacker-theme .bg-gradient-to-tr { background: #00aa00 !important; }
 <script src="nano_asset/assets/js/FileSaver.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="nano_asset/assets/js/mermaid.min.js"></script>
-        <script src="nano_asset/assets/js/markmap-autoloader.min.js"></script>
-    <!-- Flowchart.js -->
-    <script src="nano_asset/assets/js/raphael.min.js"></script>
-    <script src="nano_asset/assets/js/flowchart.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@latest"></script>
+    <!-- Flowchart.js (via CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.17.1/flowchart.min.js"></script>
     <!-- Tambahan Fitur Baru -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/material-darker.min.css">
@@ -1039,7 +1039,8 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
             <textarea id="split-code-textarea"></textarea>
         </div>
         <div class="h-[40%] bg-white relative">
-            <iframe id="split-preview-iframe" class="w-full h-full border-0" sandbox="allow-scripts allow-forms allow-same-origin allow-popups"></iframe>
+            <!-- allow-same-origin dihapus: srcdoc tidak perlu same-origin & menghindari sandbox escape warning -->
+            <iframe id="split-preview-iframe" class="w-full h-full border-0" sandbox="allow-scripts allow-forms allow-popups"></iframe>
         </div>
     </aside>
     </div>
@@ -1312,7 +1313,8 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
                 </button>
             </div>
             <div class="flex-1 bg-white relative">
-                <iframe id="previewIframe" class="w-full h-full border-0" sandbox="allow-scripts allow-forms allow-same-origin allow-popups"></iframe>
+                <!-- allow-same-origin dihapus: srcdoc tidak perlu same-origin & menghindari sandbox escape warning -->
+                <iframe id="previewIframe" class="w-full h-full border-0" sandbox="allow-scripts allow-forms allow-popups"></iframe>
             </div>
         </div>
     </div>
@@ -1685,7 +1687,8 @@ function handleTextareaInput(textarea) {
                     if (cap.available !== 'no' && cap.available !== 'unknown (metode cek tidak ditemukan)') {
                         try {
                             const testSession = await apiObj.create({
-                                expectedInputs: [{ type: 'text' }, { type: 'image' }]
+                                expectedInputs: [{ type: 'text' }, { type: 'image' }],
+                                outputLanguage: 'id'
                             });
                             addRes('Dukungan Multimodal (Gambar)', true, 'Sesi berhasil menoleransi expectedInputs: image');
                             if (testSession && testSession.destroy) testSession.destroy();
@@ -2795,21 +2798,29 @@ div.innerHTML = `
             let ragCitations = null;
             try {
                 if (typeof searchKnowledgeBase === 'function') {
+                    console.log("[KB] Mencari context untuk:", text.substring(0, 60));
                     const kbResults = await searchKnowledgeBase(text, 3);
+                    console.log("[KB] Hasil search:", kbResults ? kbResults.length : 0, "chunk(s)");
                     if (kbResults && kbResults.length > 0) {
                         const kbContext = kbResults.map(res => `[Dokumen: ${res.fileName}]\n${res.text}`).join('\n\n---\n\n');
                         augmentedText = `[INFO DARI KNOWLEDGE BASE LOKAL]\nBerikut adalah potongan dokumen relevan yang ditemukan di Knowledge Base (prioritaskan info ini jika relevan):\n\n${kbContext}\n\n[AKHIR INFO]\n\nPertanyaan Pengguna: ${text}`;
-                        console.log("RAG Injected:", kbResults.length, "chunks");
+                        console.log("[KB] RAG Injected:", kbResults.length, "chunks dari file:", kbResults.map(r=>r.fileName));
                         ragCitations = kbResults;
+                    } else {
+                        console.log("[KB] Tidak ada hasil relevan ditemukan (kosong atau di bawah threshold).");
                     }
+                } else {
+                    console.warn("[KB] searchKnowledgeBase tidak tersedia!");
                 }
             } catch (e) {
-                console.warn("RAG Error:", e);
+                console.warn("[KB] RAG Error:", e);
             }
             
             if (ragCitations && ragCitations.length > 0) {
                 if (!Array.isArray(fileObjs)) fileObjs = fileObjs ? [fileObjs] : [];
                 fileObjs.push({ type: 'rag_citation', name: 'Knowledge Base', citations: ragCitations });
+                // Tampilkan notifikasi KB aktif
+                showKBToast(`🗂️ KB Aktif: ${ragCitations.length} referensi ditemukan`);
             }
 
             if (aiSettings.mode === 'ollama') {
@@ -3866,8 +3877,10 @@ div.innerHTML = `
 
         // ===== MANAJEMEN SESI (SESSION MANAGEMENT) =====
         function saveCurrentSession() {
-            const transaction = db.transaction('history', 'readonly');
+            const transaction = db.transaction(['history', 'kb_files', 'kb_chunks'], 'readonly');
             const store = transaction.objectStore('history');
+            const kbFilesStore = transaction.objectStore('kb_files');
+            const kbChunksStore = transaction.objectStore('kb_chunks');
 
             store.getAll().onsuccess = (e) => {
                 const messages = e.target.result;
@@ -3876,32 +3889,38 @@ div.innerHTML = `
                     return;
                 }
 
-                const sessionName = prompt('Masukkan nama untuk sesi ini:', `Sesi ${new Date().toLocaleString('id-ID')}`);
-                if (!sessionName || sessionName.trim() === '') return;
+                kbFilesStore.getAll().onsuccess = (kbFilesEvent) => {
+                    kbChunksStore.getAll().onsuccess = (kbChunksEvent) => {
+                        const sessionName = prompt('Masukkan nama untuk sesi ini:', `Sesi ${new Date().toLocaleString('id-ID')}`);
+                        if (!sessionName || sessionName.trim() === '') return;
 
-                // Strip ID dari messages agar tidak bentrok saat di-restore
-                const messagesWithoutId = messages.map(msg => {
-                    const copy = { ...msg };
-                    delete copy.id;
-                    return copy;
-                });
+                        // Strip ID dari messages agar tidak bentrok saat di-restore
+                        const messagesWithoutId = messages.map(msg => {
+                            const copy = { ...msg };
+                            delete copy.id;
+                            return copy;
+                        });
 
-                const sessionData = {
-                    name: sessionName.trim(),
-                    messages: messagesWithoutId,
-                    createdAt: Date.now(),
-                    messageCount: messages.length
-                };
+                        const sessionData = {
+                            name: sessionName.trim(),
+                            messages: messagesWithoutId,
+                            kb_files: kbFilesEvent.target.result || [],
+                            kb_chunks: kbChunksEvent.target.result || [],
+                            createdAt: Date.now(),
+                            messageCount: messages.length
+                        };
 
-                const sessionsTransaction = db.transaction('sessions', 'readwrite');
-                const sessionsStore = sessionsTransaction.objectStore('sessions');
+                        const sessionsTransaction = db.transaction('sessions', 'readwrite');
+                        const sessionsStore = sessionsTransaction.objectStore('sessions');
 
-                sessionsStore.add(sessionData).onsuccess = () => {
-                    alert(`Sesi "${sessionName}" berhasil disimpan dengan ${messages.length} pesan!`);
-                };
+                        sessionsStore.add(sessionData).onsuccess = () => {
+                            alert(`Sesi "${sessionName}" berhasil disimpan dengan ${messages.length} pesan dan ${sessionData.kb_files.length} dokumen KB!`);
+                        };
 
-                sessionsTransaction.onerror = (err) => {
-                    alert('Gagal menyimpan sesi: ' + err.target.error.message);
+                        sessionsTransaction.onerror = (err) => {
+                            alert('Gagal menyimpan sesi: ' + err.target.error.message);
+                        };
+                    };
                 };
             };
         }
@@ -4021,67 +4040,65 @@ div.innerHTML = `
                 }
 
                 try {
-                    // Clear current messages
-                    const historyTransaction = db.transaction('history', 'readwrite');
-                    const historyStore = historyTransaction.objectStore('history');
-                    const clearRequest = historyStore.clear();
+                    // Clear current messages and KB
+                    const tx = db.transaction(['history', 'kb_files', 'kb_chunks'], 'readwrite');
+                    
+                    tx.objectStore('history').clear();
+                    tx.objectStore('kb_files').clear();
+                    tx.objectStore('kb_chunks').clear();
 
-                    clearRequest.onsuccess = () => {
-                        // Add loaded session messages
-                        const addTransaction = db.transaction('history', 'readwrite');
-                        const addStore = addTransaction.objectStore('history');
+                    const addStore = tx.objectStore('history');
+                    const addKbFilesStore = tx.objectStore('kb_files');
+                    const addKbChunksStore = tx.objectStore('kb_chunks');
 
-                        let addCount = 0;
-                        session.messages.forEach(msg => {
-                            addStore.add(msg).onsuccess = () => {
-                                addCount++;
-                            };
-                        });
+                    session.messages.forEach(msg => addStore.add(msg));
+                    
+                    if (session.kb_files) {
+                        session.kb_files.forEach(f => addKbFilesStore.add(f));
+                    }
+                    if (session.kb_chunks) {
+                        session.kb_chunks.forEach(c => addKbChunksStore.add(c));
+                    }
 
-                        addTransaction.oncomplete = () => {
-                            // Refresh UI
-                            const messagesDiv = document.getElementById('messages');
-                            if (messagesDiv) {
-                                messagesDiv.innerHTML = '';
-                            }
+                    tx.oncomplete = () => {
+                        renderKBList();
+                        
+                        // Refresh UI
+                        const messagesDiv = document.getElementById('messages');
+                        if (messagesDiv) {
+                            messagesDiv.innerHTML = '';
+                        }
 
-                            const placeholder = document.getElementById('initial-placeholder');
-                            if (placeholder) {
-                                placeholder.style.display = 'block';
-                            }
+                        const placeholder = document.getElementById('initial-placeholder');
+                        if (placeholder) {
+                            placeholder.style.display = 'block';
+                        }
 
-                            // Reload and render messages
-                            const reloadTransaction = db.transaction('history', 'readonly');
-                            const reloadStore = reloadTransaction.objectStore('history');
+                        // Reload and render messages
+                        const reloadTransaction = db.transaction('history', 'readonly');
+                        const reloadStore = reloadTransaction.objectStore('history');
 
-                            reloadStore.getAll().onsuccess = (reloadEvent) => {
-                                const messages = reloadEvent.target.result;
-                                if (messages.length > 0) {
-                                    if (placeholder) {
-                                        placeholder.style.display = 'none';
-                                    }
-                                    messages.forEach(msg => {
-                                        renderMessage(msg.role, msg.text, msg.fileMetadata, false);
-                                    });
-                                    scrollToBottom();
+                        reloadStore.getAll().onsuccess = (reloadEvent) => {
+                            const messages = reloadEvent.target.result;
+                            if (messages.length > 0) {
+                                if (placeholder) {
+                                    placeholder.style.display = 'none';
                                 }
-                            };
-
-                            reloadTransaction.onerror = (err) => {
-                                alert('Gagal me-reload pesan: ' + err.target.error.message);
-                            };
+                                messages.forEach(msg => {
+                                    renderMessage(msg.role, msg.text, msg.fileMetadata, false);
+                                });
+                                scrollToBottom();
+                            }
                         };
 
-                        addTransaction.onerror = (err) => {
-                            alert('Gagal menambahkan pesan: ' + err.target.error.message);
-                        };
+                        closeSessionManagementModal();
                     };
 
-                    clearRequest.onerror = (err) => {
-                        alert('Gagal menghapus pesan lama: ' + err.target.error.message);
+                    tx.onerror = (err) => {
+                        console.error('Error in load transaction:', err);
+                        alert('Gagal memuat sesi: ' + err.target.error.message);
                     };
 
-                    closeSessionManagementModal();
                 } catch (err) {
                     alert('Error saat memuat sesi: ' + err.message);
                     console.error('Load session error:', err);
@@ -4638,14 +4655,32 @@ div.innerHTML = `
         }
 
         // SISTEM SESI BARU (RESET CONTEXT & MODEL INSTANCE)
-        async function resetChat() {
-            if (!confirm("Mulai obrolan baru? Pesan saat ini akan dibersihkan dari layar dan riwayat lokal Anda.")) return;
+        async function resetChat(options = {}) {
+            const clearKB = options.clearKB !== undefined ? options.clearKB : true;
+            const force = options.force || false;
+
+            if (!force) {
+                let msg = "Mulai obrolan baru? Pesan saat ini akan dibersihkan dari layar dan riwayat lokal Anda.";
+                if (clearKB) msg = "Mulai obrolan baru? Pesan saat ini beserta seluruh dokumen di Knowledge Base akan DIBERSIHKAN.";
+                if (!confirm(msg)) return;
+            }
 
             // Bersihkan IndexedDB
             if (db) {
-                const transaction = db.transaction("history", "readwrite");
-                const store = transaction.objectStore("history");
-                store.clear().onsuccess = async () => {
+                const stores = ["history"];
+                if (clearKB) {
+                    stores.push("kb_files", "kb_chunks");
+                }
+                const transaction = db.transaction(stores, "readwrite");
+                
+                transaction.objectStore("history").clear();
+                if (clearKB) {
+                    transaction.objectStore("kb_files").clear();
+                    transaction.objectStore("kb_chunks").clear();
+                }
+
+                transaction.oncomplete = async () => {
+                    if (clearKB) renderKBList();
                     // Bersihkan Tampilan
                     document.getElementById('messages').innerHTML = '';
 
@@ -5748,17 +5783,62 @@ div.innerHTML = `
         }
 
         // ================= KNOWLEDGE BASE (KB) & RAG =================
-        // ================= KNOWLEDGE BASE (KB) & RAG =================
 
+        function showKBToast(message) {
+            let toast = document.getElementById('kb-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'kb-toast';
+                toast.style.cssText = `
+                    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+                    background: linear-gradient(135deg, #059669, #047857);
+                    color: white; padding: 8px 16px; border-radius: 20px;
+                    font-size: 12px; font-weight: 600; z-index: 9999;
+                    box-shadow: 0 4px 20px rgba(5,150,105,0.4);
+                    opacity: 0; transition: all 0.3s ease; pointer-events: none;
+                    white-space: nowrap;
+                `;
+                document.body.appendChild(toast);
+            }
+            toast.textContent = message;
+            // Animasi masuk
+            requestAnimationFrame(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(-50%) translateY(0)';
+            });
+            // Animasi keluar setelah 3 detik
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(20px)';
+            }, 3000);
+        }
 
-                let featureExtractor = null;
+        let featureExtractor = null;
 
         async function initFeatureExtractor() {
             if (featureExtractor) return featureExtractor;
+
+            // Tunggu hingga window.transformersPipeline tersedia (ES module bersifat async)
+            // Maksimal 8 detik retry
             if (!window.transformersPipeline) {
-                console.warn("Transformers.js belum dimuat.");
+                let waited = 0;
+                await new Promise(resolve => {
+                    const interval = setInterval(() => {
+                        waited += 200;
+                        if (window.transformersPipeline || waited >= 8000) {
+                            clearInterval(interval);
+                            resolve();
+                        }
+                    }, 200);
+                });
+            }
+
+            if (!window.transformersPipeline) {
+                console.warn("[KB] Transformers.js gagal dimuat setelah 8 detik.");
                 return null;
             }
+
             try {
                 document.getElementById('kb-progress-text').innerText = "Memuat model AI (Xenova/all-MiniLM-L6-v2)...";
                 document.getElementById('kb-progress-container').classList.remove('hidden');
@@ -5772,10 +5852,11 @@ div.innerHTML = `
                         }
                     }
                 });
+                console.log("[KB] Model embedding berhasil dimuat.");
                 document.getElementById('kb-progress-container').classList.add('hidden');
                 return featureExtractor;
             } catch (err) {
-                console.error("Gagal memuat model embedding:", err);
+                console.error("[KB] Gagal memuat model embedding:", err);
                 document.getElementById('kb-progress-container').classList.add('hidden');
                 return null;
             }
@@ -5831,8 +5912,9 @@ div.innerHTML = `
                         });
                         
                         scoredChunks.sort((a, b) => b.score - a.score);
-                        scoredChunks = scoredChunks.filter(c => c.score > 0.25);
                         
+                        // "selalu gunakan kontek sesuai knowledge base": remove strict threshold
+                        // so it always returns the top K chunks if KB is not empty.
                         resolve(scoredChunks.slice(0, topK));
                     };
                 };
@@ -5883,7 +5965,9 @@ div.innerHTML = `
                     for (let i = 1; i <= pdf.numPages; i++) {
                         const page = await pdf.getPage(i);
                         const content = await page.getTextContent();
-                        text += content.items.map(item => item.str).join(' ') + '\n';
+                        // Gabungkan item teks per baris, lalu pisahkan antar halaman dengan \n\n
+                        // agar semantic chunking per paragraf bisa bekerja
+                        text += content.items.map(item => item.str).join(' ') + '\n\n';
                         document.getElementById('kb-progress-percentage').innerText = Math.round((i/pdf.numPages)*30) + "%";
                         document.getElementById('kb-progress-bar').style.width = Math.round((i/pdf.numPages)*30) + "%";
                     }
@@ -5899,7 +5983,9 @@ div.innerHTML = `
                     });
                 }
 
-                text = text.replace(/\s+/g, ' ').trim();
+                // Normalisasi: hanya collapse spasi/tab berulang, BUKAN newline
+                // agar struktur paragraf tetap utuh untuk semantic chunking
+                text = text.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
                 if (!text) throw new Error("Teks kosong atau gagal diekstrak");
 
                 document.getElementById('kb-progress-text').innerText = "Membuat vector embeddings...";
@@ -5937,6 +6023,7 @@ div.innerHTML = `
                 }
                 
                 renderKBList();
+                resetChat({ clearKB: false, force: true }); // Reset sesi setelah ada perubahan di KB tanpa menghapus KB
                 
             } catch (err) {
                 console.error(err);
@@ -5992,6 +6079,7 @@ div.innerHTML = `
             
             tx.oncomplete = () => {
                 renderKBList();
+                resetChat({ clearKB: false, force: true }); // Reset sesi setelah penghapusan tanpa menghapus KB
             };
         }
 
