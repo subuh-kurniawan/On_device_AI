@@ -1,104 +1,151 @@
-# 🚀 Chrome On-Device AI Playground
+# 🚀 Chrome On-Device AI Playground (V1.5.0)
 
-<img width="100%" alt="Screenshot 2026-08-27 at 18 05 38" src="https://github.com/user-attachments/assets/a2c87635-7af2-45d2-83a3-39fbf10527a9" />
-
-Repositori ini berisi kumpulan eksperimen dan implementasi **On-Device AI** menggunakan kemampuan bawaan Google Chrome (seperti **Gemini Nano**, **LiteRT-LM WebGPU**, dan **Prompt API**). Semua berjalan secara lokal di perangkat tanpa memerlukan server pihak ketiga!
-
----
-
-## 📂 Struktur Proyek
-
-Berikut adalah daftar file utama di dalam direktori proyek ini:
-
-* **`claude.html`**: Halaman eksperimen antarmuka dan perbandingan integrasi model dengan dukungan RAG lokal (Knowledge Base), multi-provider (Chrome AI, Ollama, API Eksternal).
-* **`liter.html`**: Implementasi AI menggunakan **WebGPU** dan **LiteRT-LM** (`@litert-lm/core`) atau fallback **MediaPipe LLM Inference** (`@mediapipe/tasks-genai`) yang memuat model `.litertlm` (misal Gemma 4) langsung ke GPU lokal Anda secara offline. Didukung juga fitur RAG/Knowledge Base.
-* **`vision_code.html`** & **`vision_code copy.html`**: Implementasi fitur AI untuk pemrosesan atau analisis *vision/code* secara lokal.
-* **`vision_ulti.html`**: Versi *ultimate/advanced* dari eksperimen berbasis *vision* dengan Prompt API.
-* **`nano_asset/`**: Folder penyimpanan aset pendukung untuk eksperimen Gemini Nano.
+<div align="center">
+  <img width="100%" alt="Screenshot 2026-08-27 at 18 05 38" src="https://github.com/user-attachments/assets/a2c87635-7af2-45d2-83a3-39fbf10527a9" />
+  <p><em>Kumpulan eksperimen dan purwarupa (prototype) aplikasi AI Client-Side yang berjalan 100% secara lokal di dalam browser Anda, tanpa server backend, tanpa biaya API, dan dengan privasi data yang terjamin.</em></p>
+</div>
 
 ---
 
-## ✨ Fitur Utama
-
-* **100% Client-Side:** Pemrosesan AI berjalan secara lokal di perangkat keras Anda, menjaga privasi data sepenuhnya tanpa upload ke server.
-* **Integrasi WebGPU & Prompt API:** Memanfaatkan standar web baru (Built-in AI & WebGPU) untuk berinteraksi langsung dengan LLM di dalam browser dengan performa hardware-accelerated.
-* **Eksperimen Multimodal & RAG:** Pengujian kapabilitas teks, *vision*, serta Injeksi Dokumen (PDF, DOCX, TXT) langsung di lingkungan browser menggunakan IndexedDB lokal.
-
----
-
-## 🛠️ Prasyarat & Cara Menjalankan
-
-### 1. Mengaktifkan Chrome Built-in AI (Prompt API)
-Gunakan Google Chrome versi terbaru (Dev / Canary sangat direkomendasikan).
-* Buka `chrome://flags` di browser Anda.
-* Aktifkan flag berikut:
-  * `#optimization-guide-on-device-model` (Set ke *Enabled BypassPerfRequirement*)
-  * `#prompt-api-for-gemini-nano` (Set ke *Enabled*)
-
-<img width="100%" alt="Screenshot 2026-08-27 at 18 11 32" src="https://github.com/user-attachments/assets/b4b0d194-f1e4-41d8-869f-55ee50c4d67f" />
-
-### 2. Menjalankan File
-Aplikasi ini hanya berupa file statis. Untuk menjalankan:
-* Buka terminal di folder proyek dan jalankan lokal server sederhana:
-  ```bash
-  python3 -m http.server 8080
-  ```
-* Buka browser dan akses `http://localhost:8080/` dan pilih file `.html` yang ingin dicoba (contoh: `claude.html` atau `liter.html`).
+## 📑 Daftar Isi
+- [🚀 Chrome On-Device AI Playground (V1.5.0)](#-chrome-on-device-ai-playground-v150)
+  - [📑 Daftar Isi](#-daftar-isi)
+  - [✨ Gambaran Umum](#-gambaran-umum)
+  - [📂 Struktur & Modul Proyek](#-struktur--modul-proyek)
+    - [1. `liter.html` (WebGPU LiteRT-LM Engine)](#1-literhtml-webgpu-litert-lm-engine)
+    - [2. `claude.html` (Multi-Provider Chat Interface)](#2-claudehtml-multi-provider-chat-interface)
+    - [3. `vision_ulti.html` & `vision_code.html` (Vision & Code Analysis)](#3-vision_ultihtml--vision_codehtml-vision--code-analysis)
+  - [🧠 In-Browser RAG & Knowledge Base Lokal](#-in-browser-rag--knowledge-base-lokal)
+  - [🛠️ Arsitektur & Teknologi](#️-arsitektur--teknologi)
+  - [🚀 Prasyarat & Cara Menjalankan](#-prasyarat--cara-menjalankan)
+    - [Langkah 1: Konfigurasi Chrome Flags](#langkah-1-konfigurasi-chrome-flags)
+    - [Langkah 2: Jalankan Local Server](#langkah-2-jalankan-local-server)
+  - [🐛 Troubleshooting](#-troubleshooting)
+  - [🤝 Kontribusi](#-kontribusi)
+  - [📄 Lisensi](#-lisensi)
 
 ---
 
-## 📖 Dokumentasi & Penjelasan Teknis: Chrome On-Device AI Suite
+## ✨ Gambaran Umum
 
-### 📌 Gambaran Umum Arsitektur
-Proyek ini adalah Client-Side Multimodal AI Suite berbasis peramban (browser) yang dirancang untuk berinteraksi langsung dengan AI tanpa memerlukan infrastruktur server backend pihak ketiga. Seluruh proses inferensi dilakukan secara lokal.
+Repositori ini adalah sebuah _playground_ untuk mengeksplorasi batas kemampuan **Browser-based AI**. Dengan memanfaatkan standar web mutakhir seperti **WebGPU** dan **Chrome Built-in AI (Prompt API)**, repositori ini mendemonstrasikan bahwa model bahasa besar (LLM) dapat berjalan langsung di perangkat keras pengguna (GPU/NPU lokal) dengan latensi yang sangat rendah.
 
-### 🛠️ Komponen Teknis Utama
+**Keunggulan Utama:**
+* **Privasi Maksimal (100% Offline):** Semua pemrosesan prompt dan dokumen dilakukan secara lokal. Tidak ada data yang dikirim ke server.
+* **Performa Hardware-Accelerated:** Menggunakan WebGPU untuk memanfaatkan kartu grafis perangkat secara langsung.
+* **Arsitektur Tanpa Server (Serverless):** Aplikasi murni dibangun menggunakan HTML, CSS (Vanilla), dan JavaScript ES Modules.
 
-#### 1. Engine & Integrasi Model (Mode AI)
-* **Chrome Built-in AI (Gemini Nano):** Menggunakan standar web Prompt API untuk komunikasi langsung antara JavaScript di sisi klien dan model lokal browser.
-* **WebGPU LiteRT-LM & MediaPipe:** Menggunakan engine berbasis WebGPU (`liter.html`) untuk memuat model `.litertlm` (contoh: Gemma 4) yang dijalankan oleh hardware grafis lokal PC Anda dengan performa tinggi.
-* **Multi-Provider Support:** Selain mode lokal, arsitektur mendukung opsi integrasi provider lain seperti Ollama, OpenAI, dan lainnya.
+---
 
-<img width="100%" alt="Screenshot 2026-08-27 at 18 13 20" src="https://github.com/user-attachments/assets/4ab5decf-1d49-4368-93ba-74e9a09e735c" />
+## 📂 Struktur & Modul Proyek
 
-#### 2. Manajemen Konteks & Knowledge Base (KB) / RAG
-* **Dokumen Lokal:** Mendukung injeksi file dokumen lokal secara langsung ke dalam sesi aktif (seperti format .pdf, .docx, .txt, .md). Dokumen dibaca dan di-embedding di sisi klien (menggunakan `transformers.js`).
-* **RAG Mini (Retrieval-Augmented Generation):** Dokumen disimpan di IndexedDB (`LiterChatDB` / `ClaudeChatDB`), memori browser akan mencari konteks paling mirip via cosine similarity, dan memberikan referensi mendalam.
+Setiap file `.html` dalam repositori ini bertindak sebagai sebuah *Single-Page Application (SPA)* mandiri yang mendemonstrasikan teknologi yang berbeda.
+
+### 1. `liter.html` (WebGPU LiteRT-LM Engine)
+File ini adalah implementasi *state-of-the-art* dari inferensi WebGPU menggunakan framework terbaru dari Google.
+* **Teknologi:** `@litert-lm/core` (Primary) dan `@mediapipe/tasks-genai` (Fallback).
+* **Fitur:** 
+  * Dapat memuat model bahasa berformat `.litertlm` (misal: `Gemma 4 E2B Instruct`) langsung dari penyimpanan lokal (File System) atau diunduh dari URL HuggingFace.
+  * Memiliki *progress bar* realtime saat mengunduh bobot model dari jaringan.
+  * Pipeline inferensi menggunakan VRAM (GPU) secara langsung untuk streaming respons berkecepatan tinggi.
+
+### 2. `claude.html` (Multi-Provider Chat Interface)
+Halaman antarmuka obrolan yang kaya fitur, dirancang mirip dengan aplikasi AI profesional kelas atas (seperti Claude/ChatGPT).
+* **Teknologi:** Google Chrome Built-in AI (`window.ai`), Ollama REST API, OpenAI-compatible API.
+* **Fitur:**
+  * **Dukungan Eksternal LLM Server (Pengaturan):** Melalui menu pengaturan bawaan (Settings), pengguna dapat mengonfigurasi aplikasi agar terhubung dengan server LLM eksternal. Kami mendukung:
+    * **Ollama:** Hubungkan langsung ke server Ollama lokal Anda (contoh: `http://localhost:11434`) untuk menjalankan Llama 3, Mistral, dll.
+    * **OpenAI API / Custom Endpoint:** Masukkan Base URL dan API Key untuk menggunakan model dari OpenAI (GPT-4o), Groq, Together AI, atau server LM Studio lokal.
+  * **Multi-Provider Switcher:** Memungkinkan Anda berganti dengan mulus antara model bawaan Chrome (Gemini Nano) dan model jaringan/server yang dikonfigurasi di atas.
+  * **Persona/Prompt Library:** Pustaka *system prompt* bawaan untuk mengubah karakter asisten AI (sebagai Programmer, Editor, Translator, dll).
+  * **Session Management:** Percakapan disimpan secara presisten ke IndexedDB (`ClaudeChatDB`). Ekspor percakapan ke format PDF, DOCX, TXT, dan JSON tersedia.
+
+### 3. `vision_ulti.html` & `vision_code.html` (Vision & Code Analysis)
+Fokus pada analisis teks lanjutan dan tugas multimodal sederhana.
+* **Fitur Khusus:** Tombol *Quick Action* untuk manipulasi teks secara instan (Translate, Summarize, Refine, Code Review).
+* UI yang dioptimalkan untuk membaca baris kode panjang dan sintaks yang diformat khusus.
+
+---
+
+## 🧠 In-Browser RAG & Knowledge Base Lokal
+
+Semua modul aplikasi di atas (`liter.html`, `claude.html`, `vision_code.html`) kini dilengkapi dengan sistem **Retrieval-Augmented Generation (RAG)** yang berjalan sepenuhnya di sisi klien!
+
+**Bagaimana ini bekerja?**
+1. **Parsing Dokumen:** Pengguna mengunggah dokumen referensi (mendukung `.pdf` via PDF.js, `.docx` via Mammoth.js, serta `.txt` dan `.md`).
+2. **Chunking & Embedding:** Teks diekstrak dan dipecah (chunking) dengan teknik *overlapping*. Kemudian, menggunakan `Transformers.js` (model `Xenova/all-MiniLM-L6-v2`), teks diubah menjadi vektor (embeddings).
+3. **Penyimpanan Lokal:** Vektor dan teks asli disimpan ke dalam browser menggunakan IndexedDB secara permanen.
+4. **Vector Search:** Saat pengguna bertanya, pertanyaan diubah menjadi vektor, lalu dicari kecocokannya (cosine similarity) dengan dokumen dalam IndexedDB. Konteks yang relevan disuntikkan langsung ke dalam prompt AI!
 
 <details>
-<summary>📸 Lihat Screenshot Knowledge Base & RAG</summary>
+<summary>📸 <strong>Lihat Tangkapan Layar RAG / Knowledge Base</strong></summary>
 <br/>
-<img width="100%" alt="Screenshot" src="https://github.com/user-attachments/assets/8cbedf0e-d84a-49e0-8962-4741f7576bbc" />
-<img width="100%" alt="Screenshot" src="https://github.com/user-attachments/assets/3e2f8834-9e58-43c7-9bd1-94ddecce5e6b" />
-<img width="100%" alt="Screenshot" src="https://github.com/user-attachments/assets/31bf68d9-d1ad-4602-8018-afb003713a51" />
-<img width="100%" alt="Screenshot" src="https://github.com/user-attachments/assets/902be638-080d-43f3-970f-2ddcb68504cc" />
-<img width="100%" alt="Screenshot" src="https://github.com/user-attachments/assets/17d43877-8855-41d0-bb6a-2f887343814e" />
+<img width="100%" alt="RAG Screenshot 1" src="https://github.com/user-attachments/assets/8cbedf0e-d84a-49e0-8962-4741f7576bbc" />
+<img width="100%" alt="RAG Screenshot 2" src="https://github.com/user-attachments/assets/3e2f8834-9e58-43c7-9bd1-94ddecce5e6b" />
+<img width="100%" alt="RAG Screenshot 3" src="https://github.com/user-attachments/assets/31bf68d9-d1ad-4602-8018-afb003713a51" />
+<img width="100%" alt="RAG Screenshot 4" src="https://github.com/user-attachments/assets/902be638-080d-43f3-970f-2ddcb68504cc" />
+<img width="100%" alt="RAG Screenshot 5" src="https://github.com/user-attachments/assets/17d43877-8855-41d0-bb6a-2f887343814e" />
 </details>
-
-#### 3. Manajemen Sesi & Penyimpanan (State Management)
-* **Sesi Lokal:** Menyediakan fitur penyimpanan riwayat percakapan secara lokal menggunakan IndexedDB.
-* **Ekspor & Impor Fleksibel:** Pengguna dapat mengekspor hasil obrolan ke format PDF, DOCX, TXT, maupun format JSON.
-
-#### 4. Antarmuka Pengguna & Persona (Prompt Library)
-* **Multimodal UI Suite:** Dilengkapi dengan panel kontrol dinamis, pemilihan persona, dan pustaka prompt cepat (Prompt Library).
-* **Fitur Tambahan:** Tombol utilitas instan untuk Ringkasan (Summarization), Perbaikan teks (Refinement), Terjemahan, dll secara real-time.
 
 ---
 
-## ⚙️ Alur Kerja Sistem (Workflow)
+## 🛠️ Arsitektur & Teknologi
 
-1. **Inisialisasi & Pengecekan Status:** Saat aplikasi dimuat, skrip memeriksa ketersediaan model lokal menggunakan fungsi `ai.languageModel.availability()` (Prompt API) atau `navigator.gpu` (WebGPU).
-2. **Injeksi Konteks (Knowledge Base):** Pengguna mengunggah dokumen. Teks diekstrak, di-chunk, di-embed menjadi vektor (Transformers.js), dan disimpan di IndexedDB.
-3. **Eksekusi Inferensi:** Prompt dikirim bersama konteks dokumen terkait ke model lokal. Perangkat keras pengguna (NPU/GPU) memproses token dan mengembalikan respons streaming seketika tanpa network payload!
+* **Frontend:** HTML5, CSS3 (Vanilla dengan variabel kustom untuk *Dynamic Theming*), Vanilla JavaScript (ESM).
+* **Local Storage:** IndexedDB (menyimpan riwayat sesi dan Vector Database chunk RAG).
+* **Machine Learning / AI API:**
+  * [Chrome Prompt API](https://github.com/WICG/prompt-api) (`window.ai`)
+  * [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) (`@litert-lm/core`) via WebGPU
+  * [Transformers.js](https://huggingface.co/docs/transformers.js/index) (untuk eksekusi model *embedding* di browser)
+* **File Parsers:** `pdf.min.js`, `mammoth.browser.min.js`, `marked.js` (untuk rendering markdown), `highlight.js`.
+
+---
+
+## 🚀 Prasyarat & Cara Menjalankan
+
+Karena aplikasi ini berinteraksi dengan API eksperimental (seperti membaca file lokal, WebGPU, dan akses memori tinggi), aplikasi ini **tidak bisa dijalankan langsung dengan klik ganda** (`file:///` protocol). Anda harus melayaninya melalui HTTP Server lokal.
+
+### Langkah 1: Konfigurasi Chrome Flags
+Agar fitur AI Bawaan Chrome aktif, gunakan versi Google Chrome terbaru (Developer Edition direkomendasikan):
+1. Buka URL: `chrome://flags`
+2. Cari dan aktifkan opsi berikut:
+   * **Optimization Guide On Device Model:** Set ke `Enabled BypassPerfRequirement`
+   * **Prompt API for Gemini Nano:** Set ke `Enabled`
+   * **Enables WebGPU:** Set ke `Enabled` (Biasanya sudah aktif secara default, namun pastikan untuk berjaga-jaga)
+3. *Relaunch* browser Anda.
+
+<img width="100%" alt="Chrome Flags Config" src="https://github.com/user-attachments/assets/b4b0d194-f1e4-41d8-869f-55ee50c4d67f" />
+
+### Langkah 2: Jalankan Local Server
+Buka terminal Anda, arahkan ke direktori repositori ini, dan jalankan server lokal:
+
+**Menggunakan Python:**
+```bash
+python3 -m http.server 8080
+```
+**Atau menggunakan Node.js (http-server):**
+```bash
+npx http-server -p 8080
+```
+
+Buka browser Anda dan akses `http://localhost:8080/`. Silakan klik salah satu file `.html` untuk memulai pengujian!
+
+---
+
+## 🐛 Troubleshooting
+
+* **Model Simulasi Aktif di `liter.html`:** Ini terjadi karena CDN package `@litert-lm/core` saat ini masih berstatus "Early Preview" oleh Google dan kadang tidak dapat diunduh (tergantung registry CDN saat itu). Skrip kami telah dilengkapi dengan fallback multi-CDN. Pastikan koneksi internet stabil saat inisialisasi awal.
+* **Error CORS pada Transformers.js:** Pastikan Anda mengakses aplikasi melalui `localhost` atau IP lokal (`127.0.0.1`), bukan dengan membuka file langsung dari File Explorer (protokol `file://`).
+* **Gemini Nano tidak merespons (`claude.html`):** Terkadang model lokal Chrome memerlukan waktu untuk terunduh di latar belakang. Coba buka `chrome://components/`, cari *Optimization Guide On Device Model*, dan klik tombol *Check for update*.
 
 ---
 
 ## 🤝 Kontribusi
 
-Silakan buat *Pull Request* atau laporkan *Issue* jika Anda ingin mengembangkan eksperimen ini bersama-sama!
+Proyek ini sangat terbuka untuk kontribusi! Jika Anda tertarik untuk menambahkan integrasi API baru, memperbaiki bug, atau menyempurnakan UI, silakan ajukan *Pull Request* atau laporkan masalah melalui tab *Issues*.
 
 ---
 
 ## 📄 Lisensi
 
-Proyek ini bersifat open-source di bawah [MIT License](https://opensource.org/licenses/MIT).
+Proyek ini bersifat open-source di bawah [MIT License](https://opensource.org/licenses/MIT). Anda bebas untuk menggunakan, mengubah, dan mendistribusikan perangkat lunak ini.
