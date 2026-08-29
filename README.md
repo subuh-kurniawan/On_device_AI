@@ -128,19 +128,51 @@ Agar fitur AI bawaan Chrome dapat berjalan secara lokal, Anda perlu mengaktifkan
 
 <img width="100%" alt="Chrome Flags Config" src="https://github.com/user-attachments/assets/b4b0d194-f1e4-41d8-869f-55ee50c4d67f" />
 
-### Langkah 2: Jalankan Local Server
-Buka terminal Anda, arahkan ke direktori repositori ini, dan jalankan server lokal:
+### Langkah 2: Jalankan Local Server & Buka Browser (Otomatis)
+Untuk mempermudah Anda, kami telah menyediakan skrip otomatisasi yang akan:
+1. Memulai HTTP server lokal (menggunakan Python).
+2. Membuka Google Chrome dengan parameter baris perintah (CLI flags) yang dibutuhkan secara otomatis.
 
-**Menggunakan Python:**
+**Bagi Pengguna Windows:**
+Cukup klik ganda (double-click) file `start_windows.bat` yang ada di folder repositori ini.
+
+**Bagi Pengguna Mac:**
+Cukup klik ganda (double-click) file `start_mac.command`.
+*(Catatan: Jika ditolak karena masalah izin, buka terminal, arahkan ke folder ini, dan jalankan `chmod +x start_mac.command` terlebih dahulu).*
+
+---
+
+*(Opsional) Menjalankan Manual via Terminal:*
+Jika Anda lebih suka menjalankannya secara manual tanpa skrip di atas, Anda bisa memulai server dengan:
 ```bash
 python3 -m http.server 8080
+# Atau menggunakan Node.js: npx http-server -p 8080
 ```
-**Atau menggunakan Node.js (http-server):**
-```bash
-npx http-server -p 8080
-```
+Lalu buka `http://localhost:8080/` di browser yang telah dikonfigurasi flags-nya secara manual.
 
-Buka browser Anda dan akses `http://localhost:8080/`. Silakan klik salah satu file `.html` untuk memulai pengujian!
+---
+
+## ⚙️ Panduan Pengaturan Mode AI (Multi-Provider)
+
+Aplikasi ini (khususnya pada antarmuka `claude.html` dan `vision_ulti.html`) mendukung pergantian model AI secara dinamis. Anda dapat beralih model melalui menu **Pengaturan (Settings)** (Ikon Roda Gigi di antarmuka obrolan). Berikut adalah panduan konfigurasi untuk masing-masing mode:
+
+### 1. Mode Chrome On-Device (Gemini Nano)
+Mode ini adalah **default** dari aplikasi dan berjalan 100% secara offline di dalam RAM komputer Anda.
+* **Cara Penggunaan:** Langsung berfungsi apabila Anda telah berhasil mengikuti *Langkah 1 (Aktivasi Chrome Flags)* di atas.
+* **Keunggulan:** Privasi maksimal (data tidak keluar dari browser), latensi sangat rendah, dan tidak butuh internet.
+
+### 2. Mode Ollama (Lokal Server)
+Gunakan mode ini jika Anda ingin menjalankan model open-source (Llama 3, Mistral, dll) melalui server Ollama lokal Anda.
+* **Prasyarat:** Anda harus menginstal [Ollama](https://ollama.com/) dan mengunduh sebuah model (misal via terminal: `ollama run llama3`).
+* **Konfigurasi CORS (Sangat Penting):** Agar browser diizinkan menarik data dari API Ollama, Anda WAJIB mengatur CORS.
+  * **Windows:** Buka *Environment Variables*, tambahkan *System Variable* baru bernama `OLLAMA_ORIGINS` dengan nilai `*`. Restart aplikasi Ollama di system tray.
+  * **Mac/Linux:** Matikan Ollama, lalu jalankan dari terminal menggunakan perintah: `OLLAMA_ORIGINS="*" ollama serve`
+* **Pengaturan di Aplikasi UI:** Buka Settings, pilih **Ollama**, pastikan **Base URL** berisi `http://localhost:11434`, lalu masukkan nama model sesuai yang terunduh (contoh: `llama3`).
+
+### 3. Mode OpenAI API / Custom API (LM Studio, Groq, dll)
+Gunakan mode ini untuk terhubung ke layanan Cloud API premium (seperti OpenAI GPT-4o) atau server lokal pihak ketiga (seperti LM Studio) yang menyediakan Endpoint kompatibel dengan OpenAI.
+* **Untuk OpenAI / Cloud API:** Pilih mode **OpenAI**, masukkan **API Key** valid Anda, dan isi nama model (misal: `gpt-4o`). Base URL dapat dikosongkan (default mengarah ke OpenAI).
+* **Untuk LM Studio (Lokal):** Buka LM Studio dan nyalakan Local Server. Di aplikasi web ini, masukkan **Base URL** dari LM Studio (biasanya `http://localhost:1234/v1`), isi API Key bebas (misal: `lm-studio`), dan masukkan nama model.
 
 ---
 
