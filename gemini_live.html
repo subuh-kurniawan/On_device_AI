@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#121212">
+    <title>Gemini Live Lokal</title>
+    <script src="nano_asset/assets/js/tailwindcss.js"></script>
+    <link rel="stylesheet" href="nano_asset/assets/css/boxicons.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        live: { bg: '#121212', panel: '#1d1d1b', accent: '#d97757', soft: '#292825' }
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        :root { color-scheme: dark; }
+        * { box-sizing: border-box; }
+        body { margin: 0; min-height: 100vh; background: #121212; color: #f4f0ea; font-family: ui-sans-serif, system-ui, sans-serif; }
+        .live-shell { min-height: 100vh; min-height: 100dvh; height: 100dvh; overflow: hidden; background: radial-gradient(circle at 50% 12%, rgba(217,119,87,.14), transparent 34%), #121212; }
+        .glass { background: rgba(29,29,27,.82); border: 1px solid rgba(255,255,255,.09); backdrop-filter: blur(18px); }
+        .orb { width: 112px; height: 112px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #f6c4a1, #d97757 48%, #793e31 100%); box-shadow: 0 0 0 12px rgba(217,119,87,.06), 0 0 80px rgba(217,119,87,.35); transition: transform .35s ease, box-shadow .35s ease; }
+        .orb.listening { animation: breathe 2s ease-in-out infinite; box-shadow: 0 0 0 20px rgba(217,119,87,.08), 0 0 100px rgba(217,119,87,.48); }
+        .orb.thinking { animation: think 1.1s linear infinite; }
+        .orb.speaking { animation: speak .65s ease-in-out infinite alternate; }
+        @keyframes breathe { 50% { transform: scale(1.08); } }
+        @keyframes think { to { transform: rotate(360deg); } }
+        @keyframes speak { to { transform: scale(1.12); } }
+        .wave { height: 36px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        .wave span { width: 4px; height: 8px; border-radius: 99px; background: #d97757; transition: height .2s; }
+        .wave.active span { animation: wave 1s ease-in-out infinite; }
+        .wave span:nth-child(2) { animation-delay: .1s; } .wave span:nth-child(3) { animation-delay: .2s; } .wave span:nth-child(4) { animation-delay: .3s; } .wave span:nth-child(5) { animation-delay: .4s; }
+        @keyframes wave { 50% { height: 30px; } }
+        #transcript, #response { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.15) transparent; }
+        .timeline { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.15) transparent; }
+        .timeline-item { border-left: 2px solid rgba(217,119,87,.5); padding: .45rem .7rem; border-radius: .5rem; background: rgba(217,119,87,.07); }
+        .timeline-item.user { border-left-color: rgba(125,190,255,.55); background: rgba(125,190,255,.07); }
+        .timeline-item.assistant .timeline-label { color: #e89a7d; }
+        .timeline-item.user .timeline-label { color: #8fc8f2; }
+        .timeline-label { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #8b8680; }
+        .timeline-text p { margin: 0 0 .55rem; }
+        .timeline-text p:last-child { margin-bottom: 0; }
+        .timeline-text ul, .timeline-text ol { margin: .35rem 0 .65rem 1.2rem; }
+        .timeline-text li { margin: .2rem 0; }
+        .timeline-text code { padding: .1rem .3rem; border-radius: .3rem; background: rgba(255,255,255,.08); color: #f4c0a8; }
+        .timeline-text pre { margin: .5rem 0; padding: .65rem; overflow-x: auto; border-radius: .5rem; background: rgba(0,0,0,.28); }
+        .timeline-text pre code { padding: 0; background: transparent; color: inherit; }
+        .conversation-panel { display: flex; flex-direction: column; min-height: 0; height: calc(100dvh - 7rem); }
+        .conversation-panel .timeline { flex: 1; min-height: 0; max-height: none; }
+        .voice-layout { width: calc(100% / var(--viewport-scale, 1)); max-width: 64rem; transform: scale(var(--viewport-scale, 1)); transform-origin: top center; }
+        .voice-controls select, .voice-controls input { min-height: 2.5rem; padding-top: .45rem; padding-bottom: .45rem; }
+        .voice-controls label { margin-bottom: .35rem; }
+        @media (min-width: 900px) {
+            .voice-layout { display: grid; grid-template-columns: minmax(300px, .85fr) minmax(360px, 1.15fr); gap: 2rem; align-items: start; }
+            .voice-controls { min-height: 100%; }
+        }
+        @media (max-width: 640px) { .orb { width: 88px; height: 88px; } }
+    </style>
+</head>
+<body>
+    <main class="live-shell min-h-screen flex flex-col">
+        <header class="h-16 px-5 sm:px-8 flex items-center justify-between border-b border-white/5">
+            <div class="flex items-center gap-3">
+                <span class="text-live-accent text-2xl">✦</span>
+                <div>
+                    <h1 class="text-sm font-semibold tracking-tight">Gemini Live Lokal</h1>
+                    <p class="text-[10px] text-stone-500">Chrome On-Device AI</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 text-[10px] text-stone-500">
+                <span id="connection-dot" class="w-2 h-2 rounded-full bg-stone-600"></span>
+                <span id="connection-label">Belum aktif</span>
+            </div>
+        </header>
+
+        <section class="flex-1 min-h-0 overflow-hidden w-full max-w-4xl mx-auto px-5 py-3 sm:py-4 flex flex-col items-center">
+            <div class="voice-layout">
+                <div class="voice-controls flex flex-col items-center">
+                    <div id="orb" class="orb mb-3" aria-label="Status AI"></div>
+                    <div class="text-center mb-3">
+                        <p id="state-label" class="text-xs uppercase tracking-[.24em] text-live-accent font-semibold">Siap mendengar</p>
+                        <h2 id="state-title" class="mt-3 text-2xl sm:text-3xl font-medium tracking-tight">Mulai percakapan suara</h2>
+                        <p id="state-detail" class="mt-3 text-sm text-stone-500 max-w-md">Tekan tombol mikrofon, lalu bicara dalam Bahasa Indonesia.</p>
+                    </div>
+
+                    <div class="wave mb-2" id="wave" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+
+                    <div class="flex items-center justify-center gap-2 mb-3">
+                        <span class="text-[10px] uppercase tracking-[.22em] text-stone-500">Mode</span>
+                        <div class="rounded-full border border-white/10 bg-white/5 p-1 flex items-center gap-1">
+                            <button id="mode-manual" type="button" class="mode-btn rounded-full px-3 py-1.5 text-[11px] font-medium text-stone-300 transition-all">Manual</button>
+                            <button id="mode-auto" type="button" class="mode-btn rounded-full px-3 py-1.5 text-[11px] font-medium text-stone-300 transition-all bg-live-accent text-white shadow-[0_0_18px_rgba(217,119,87,.24)]">Auto</button>
+                        </div>
+                    </div>
+
+                    <div class="mb-2 w-full max-w-xs">
+                        <label for="persona-select" class="block mb-2 text-[10px] uppercase tracking-[.22em] text-stone-500">Persona AI</label>
+                        <select id="persona-select" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-stone-200 outline-none focus:border-live-accent">
+                            <option value="natural">Natural dan santai</option>
+                            <option value="concise">Singkat dan langsung</option>
+                            <option value="friendly">Ramah dan hangat</option>
+                            <option value="formal">Profesional dan formal</option>
+                            <option value="custom">Instruksi custom...</option>
+                        </select>
+                        <input id="persona-custom" type="text" class="hidden mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-stone-200 placeholder:text-stone-600 outline-none focus:border-live-accent" placeholder="Contoh: jawab seperti tutor yang sabar">
+                    </div>
+
+                    <div class="mb-2 w-full max-w-xs">
+                        <label for="voice-select" class="block mb-2 text-[10px] uppercase tracking-[.22em] text-stone-500">Suara</label>
+                        <select id="voice-select" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-stone-200 outline-none focus:border-live-accent">
+                            <option value="">Memuat suara...</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4 w-full max-w-xs">
+                        <label for="tts-engine-select" class="block mb-2 text-[10px] uppercase tracking-[.22em] text-stone-500">TTS Engine</label>
+                        <select id="tts-engine-select" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-stone-200 outline-none focus:border-live-accent">
+                            <option value="system">Google Web Speech (Chrome, id-ID)</option>
+                            <option value="local-onnx">Local ONNX (beta)</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-3 mb-3">
+                        <button id="live-button" type="button" class="w-16 h-16 rounded-full bg-live-accent hover:bg-[#c86649] text-white shadow-[0_0_35px_rgba(217,119,87,.28)] transition-all active:scale-95" title="Mulai percakapan">
+                            <i class="bx bx-microphone text-2xl"></i>
+                        </button>
+                        <button id="stop-button" type="button" class="hidden w-12 h-12 rounded-full bg-white/10 hover:bg-white/15 text-stone-300 transition-all" title="Hentikan percakapan">
+                            <i class="bx bx-stop text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <section class="conversation-panel glass rounded-2xl p-4 w-full">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-xs font-semibold text-stone-300 flex items-center gap-2"><i class="bx bx-conversation text-live-accent"></i> Percakapan</h3>
+                    <div class="flex items-center gap-2">
+                        <button id="new-session" type="button" class="text-[10px] text-stone-500 hover:text-stone-200">Sesi baru</button>
+                        <button id="clear-conversation" type="button" class="text-[10px] text-stone-600 hover:text-stone-300">Bersihkan</button>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 mb-3">
+                    <select id="session-select" class="min-w-0 flex-1 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-xs text-stone-300 outline-none focus:border-live-accent" aria-label="Pilih sesi tersimpan">
+                        <option value="">Memuat sesi...</option>
+                    </select>
+                    <span id="session-status" class="shrink-0 text-[10px] text-stone-600">Menyimpan lokal</span>
+                </div>
+                <div id="conversation-timeline" class="timeline space-y-3 max-h-52 overflow-y-auto pr-2">
+                    <p id="timeline-empty" class="text-sm leading-6 text-stone-500">Belum ada percakapan.</p>
+                </div>
+                </section>
+            </div>
+            <p id="error-message" class="hidden mt-5 text-xs text-red-300 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 w-full"></p>
+        </section>
+
+        <footer class="px-5 py-5 text-center text-[10px] text-stone-600 border-t border-white/5">Pemrosesan suara dan jawaban menggunakan kemampuan browser yang tersedia.</footer>
+    </main>
+
+    <script src="nano_asset/assets/js/marked.min.js"></script>
+    <script src="live-conversation.js"></script>
+    <script>
+        const orb = document.getElementById('orb');
+        const wave = document.getElementById('wave');
+        const liveButton = document.getElementById('live-button');
+        const stopButton = document.getElementById('stop-button');
+        const modeManualButton = document.getElementById('mode-manual');
+        const modeAutoButton = document.getElementById('mode-auto');
+        const personaSelect = document.getElementById('persona-select');
+        const personaCustom = document.getElementById('persona-custom');
+        const voiceSelect = document.getElementById('voice-select');
+        const ttsEngineSelect = document.getElementById('tts-engine-select');
+        const stateLabel = document.getElementById('state-label');
+        const stateTitle = document.getElementById('state-title');
+        const stateDetail = document.getElementById('state-detail');
+        const conversationTimeline = document.getElementById('conversation-timeline');
+        const errorMessage = document.getElementById('error-message');
+        const connectionDot = document.getElementById('connection-dot');
+        const connectionLabel = document.getElementById('connection-label');
+        let finalTranscript = '';
+        let lastFinalTranscript = '';
+        let userTimelineEntry = null;
+        let assistantTimelineEntry = null;
+        const sessionSelect = document.getElementById('session-select');
+        const sessionStatus = document.getElementById('session-status');
+        const newSessionButton = document.getElementById('new-session');
+        let sessionDb = null;
+        let activeSession = null;
+        let activeUserMessageId = null;
+        let activeAssistantMessageId = null;
+
+        function createId() {
+            return window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        }
+
+        function openSessionDb() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('index.db', 1);
+                request.onupgradeneeded = () => {
+                    if (!request.result.objectStoreNames.contains('sessions')) {
+                        request.result.createObjectStore('sessions', { keyPath: 'id' });
+                    }
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function storeRequest(request) {
+            return new Promise((resolve, reject) => {
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function createSessionRecord() {
+            const now = Date.now();
+            return {
+                id: createId(),
+                title: 'Sesi baru',
+                createdAt: now,
+                updatedAt: now,
+                persona: 'natural',
+                personaPrompt: 'Gunakan gaya bahasa natural, santai, dan mudah dipahami.',
+                messages: []
+            };
+        }
+
+        async function saveActiveSession() {
+            if (!sessionDb || !activeSession) return;
+            activeSession.updatedAt = Date.now();
+            await storeRequest(sessionDb.transaction('sessions', 'readwrite').objectStore('sessions').put(activeSession));
+            sessionStatus.textContent = 'Tersimpan';
+        }
+
+        async function listSessions() {
+            return storeRequest(sessionDb.transaction('sessions', 'readonly').objectStore('sessions').getAll());
+        }
+
+        async function refreshSessionSelect() {
+            const sessions = (await listSessions()).sort((first, second) => second.updatedAt - first.updatedAt);
+            sessionSelect.innerHTML = '';
+            sessions.forEach(session => {
+                const option = document.createElement('option');
+                option.value = session.id;
+                option.textContent = `${session.title} · ${new Date(session.updatedAt).toLocaleDateString('id-ID')}`;
+                sessionSelect.appendChild(option);
+            });
+            if (activeSession) sessionSelect.value = activeSession.id;
+        }
+
+        function renderSessionMessages() {
+            conversationTimeline.innerHTML = '';
+            userTimelineEntry = null;
+            assistantTimelineEntry = null;
+            activeUserMessageId = null;
+            activeAssistantMessageId = null;
+            if (!activeSession?.messages?.length) {
+                conversationTimeline.innerHTML = '<p id="timeline-empty" class="text-sm leading-6 text-stone-500">Belum ada percakapan.</p>';
+                return;
+            }
+            activeSession.messages.forEach(message => {
+                const entry = createTimelineEntry(message.role, message.role === 'user' ? 'Anda' : 'Asisten');
+                if (message.role === 'assistant') entry.innerHTML = renderAssistantMarkdown(message.text);
+                else entry.textContent = message.text;
+            });
+        }
+
+        function renderAssistantMarkdown(text) {
+            const escaped = String(text || '').replace(/[&<>"']/g, character => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[character]));
+            const parser = window.marked?.parse || window.marked;
+            return typeof parser === 'function' ? parser(escaped, { breaks: true }) : escaped.replace(/\n/g, '<br>');
+        }
+
+        function conversationContext() {
+            return (activeSession?.messages || [])
+                .map(message => `${message.role === 'user' ? 'Pengguna' : 'Asisten'}: ${message.text}`)
+                .join('\n');
+        }
+
+        async function restoreSession(session) {
+            if (!session) return;
+            if (liveAI.running) liveAI.stop();
+            activeSession = session;
+            liveAI.options.personaPrompt = session.personaPrompt || personaPrompts[session.persona] || personaPrompts.natural;
+            liveAI.options.conversationContext = conversationContext();
+            personaSelect.value = session.persona || 'natural';
+            personaCustom.value = session.persona === 'custom' ? session.personaPrompt : '';
+            personaCustom.classList.toggle('hidden', session.persona !== 'custom');
+            renderSessionMessages();
+            await refreshSessionSelect();
+            setState('idle');
+        }
+
+        async function initializeSessionStore() {
+            try {
+                sessionDb = await openSessionDb();
+                let sessions = await listSessions();
+                if (!sessions.length) {
+                    activeSession = createSessionRecord();
+                    await saveActiveSession();
+                    sessions = [activeSession];
+                } else {
+                    activeSession = sessions.sort((first, second) => second.updatedAt - first.updatedAt)[0];
+                }
+                await restoreSession(activeSession);
+            } catch (error) {
+                sessionStatus.textContent = 'Penyimpanan gagal';
+                errorMessage.textContent = `IndexedDB index.db: ${error.message}`;
+                errorMessage.classList.remove('hidden');
+            }
+        }
+
+        function fitViewport() {
+            const viewportHeight = window.visualViewport?.height || window.innerHeight;
+            const availableHeight = Math.max(280, viewportHeight - 128);
+            const targetHeight = window.innerWidth <= 640 ? 760 : 680;
+            const scale = Math.min(1, Math.max(0.64, availableHeight / targetHeight));
+            document.documentElement.style.setProperty('--viewport-scale', scale.toFixed(3));
+        }
+
+        fitViewport();
+        window.addEventListener('resize', fitViewport);
+        window.addEventListener('orientationchange', fitViewport);
+        window.visualViewport?.addEventListener('resize', fitViewport);
+
+        function createTimelineEntry(role, label) {
+            document.getElementById('timeline-empty')?.remove();
+            const entry = document.createElement('article');
+            entry.className = `timeline-item ${role} py-1`;
+            entry.innerHTML = `<div class="timeline-label mb-1">${label}</div><div class="timeline-text text-sm leading-6"></div>`;
+            conversationTimeline.insertBefore(entry, conversationTimeline.firstChild);
+            conversationTimeline.scrollTop = 0;
+            return entry.querySelector('.timeline-text');
+        }
+
+        function updateTimelineEntry(entry, role, label, text) {
+            const target = entry || createTimelineEntry(role, label);
+            if (role === 'assistant') target.innerHTML = renderAssistantMarkdown(text || '...');
+            else target.textContent = text || '...';
+            conversationTimeline.scrollTop = 0;
+            return target;
+        }
+
+        const stateCopy = {
+            idle: ['Siap mendengar', 'Mulai percakapan suara', 'Tekan tombol mikrofon, lalu bicara dalam Bahasa Indonesia.'],
+            listening: ['Mendengarkan', 'Saya mendengar Anda', 'Bicaralah. Saya akan menjawab setelah Anda selesai.'],
+            thinking: ['Berpikir', 'Menyiapkan jawaban', 'Chrome On-Device AI sedang memproses pesan Anda.'],
+            speaking: ['Berbicara', 'Jawaban sedang dibacakan', 'Anda dapat menghentikan percakapan kapan saja.'],
+            error: ['Perlu perhatian', 'Percakapan belum siap', 'Periksa dukungan Chrome Built-in AI dan izin mikrofon.']
+        };
+
+        function setState(state) {
+            const copy = stateCopy[state] || stateCopy.idle;
+            stateLabel.textContent = copy[0];
+            stateTitle.textContent = copy[1];
+            stateDetail.textContent = copy[2];
+            orb.className = `orb mb-7 ${state}`;
+            wave.classList.toggle('active', state === 'listening' || state === 'speaking');
+            const active = state !== 'idle' && state !== 'error';
+            liveButton.classList.toggle('hidden', active);
+            stopButton.classList.toggle('hidden', !active);
+            connectionDot.className = `w-2 h-2 rounded-full ${active ? 'bg-emerald-400' : state === 'error' ? 'bg-red-400' : 'bg-stone-600'}`;
+            connectionLabel.textContent = active ? 'Aktif' : state === 'error' ? 'Perlu perhatian' : 'Belum aktif';
+        }
+
+        const liveAI = new LiveConversationController({
+            manualMode: false,
+            voiceName: '',
+            useLocalTts: false,
+            onStateChange: setState,
+            onTranscript: data => {
+                if (data.final && lastFinalTranscript && !data.final.startsWith(lastFinalTranscript)) {
+                    userTimelineEntry = null;
+                    assistantTimelineEntry = null;
+                    activeUserMessageId = null;
+                    activeAssistantMessageId = null;
+                }
+                if (data.final) finalTranscript = data.final;
+                if (data.final) lastFinalTranscript = data.final;
+                const text = [finalTranscript, data.interim].filter(Boolean).join(' ');
+                if (text) {
+                    userTimelineEntry = updateTimelineEntry(userTimelineEntry, 'user', 'Anda', text);
+                    updateSessionMessage('user', text);
+                }
+            },
+            onResponse: data => {
+                assistantTimelineEntry = updateTimelineEntry(assistantTimelineEntry, 'assistant', 'Asisten', data.text);
+                updateSessionMessage('assistant', data.text);
+            },
+            onError: error => {
+                errorMessage.textContent = error.message;
+                errorMessage.classList.remove('hidden');
+            }
+        });
+
+        const personaPrompts = {
+            natural: 'Gunakan gaya bahasa natural, santai, dan mudah dipahami.',
+            concise: 'Jawab sangat singkat, langsung ke inti, dan hindari penjelasan yang tidak diperlukan.',
+            friendly: 'Gunakan gaya bahasa ramah, hangat, empatik, dan tetap jelas.',
+            formal: 'Gunakan gaya bahasa profesional, terstruktur, sopan, dan formal.'
+        };
+
+        let sessionSaveTimer = null;
+        function queueSessionSave() {
+            clearTimeout(sessionSaveTimer);
+            sessionSaveTimer = setTimeout(async () => {
+                await saveActiveSession();
+                await refreshSessionSelect();
+            }, 250);
+        }
+
+        function updateSessionMessage(role, text) {
+            if (!activeSession || !text) return;
+            let messageId = role === 'user' ? activeUserMessageId : activeAssistantMessageId;
+            let message = activeSession.messages.find(item => item.id === messageId);
+            if (!message) {
+                message = { id: createId(), role, text: '' };
+                activeSession.messages.push(message);
+                messageId = message.id;
+                if (role === 'user') activeUserMessageId = messageId;
+                else activeAssistantMessageId = messageId;
+                if (role === 'user' && activeSession.title === 'Sesi baru') activeSession.title = text.slice(0, 34);
+            }
+            message.text = text;
+            queueSessionSave();
+        }
+
+        async function applyPersona() {
+            const isCustom = personaSelect.value === 'custom';
+            personaCustom.classList.toggle('hidden', !isCustom);
+            const customPrompt = personaCustom.value.trim();
+            liveAI.options.personaPrompt = isCustom && customPrompt
+                ? customPrompt
+                : personaPrompts[personaSelect.value] || personaPrompts.natural;
+            if (activeSession) {
+                activeSession.persona = personaSelect.value;
+                activeSession.personaPrompt = liveAI.options.personaPrompt;
+                queueSessionSave();
+            }
+            if (liveAI.running) {
+                liveAI.options.conversationContext = conversationContext();
+                liveAI.session = await liveAI.createSession();
+            }
+        }
+
+        function populateVoices() {
+            const voices = window.speechSynthesis?.getVoices?.() || [];
+            const options = voices
+                .filter(voice => /id|indonesia|indonesian|en|english/i.test(`${voice.name} ${voice.lang}`))
+                .sort((firstVoice, secondVoice) => {
+                    const firstIsGoogle = /google/i.test(firstVoice.name) ? 0 : 1;
+                    const secondIsGoogle = /google/i.test(secondVoice.name) ? 0 : 1;
+                    return firstIsGoogle - secondIsGoogle;
+                });
+            if (!options.length) {
+                voiceSelect.innerHTML = '<option value="">Suara sistem tidak tersedia</option>';
+                return;
+            }
+
+            const defaultVoice = options.find(voice => /google/i.test(voice.name) && /^id(?:-|$)/i.test(voice.lang))
+                || options.find(voice => /^id(?:-|$)/i.test(voice.lang))
+                || options.find(voice => /google/i.test(voice.name))
+                || options[0];
+            voiceSelect.innerHTML = options.map((voice, index) => {
+                const selected = voice.name === defaultVoice.name && voice.lang === defaultVoice.lang ? 'selected' : '';
+                return `<option value="${voice.name}" ${selected}>${voice.name} (${voice.lang})</option>`;
+            }).join('');
+
+            if (defaultVoice) {
+                liveAI.options.voiceName = defaultVoice.name;
+                voiceSelect.value = defaultVoice.name;
+            }
+        }
+
+        function setMode(mode) {
+            const isManual = mode === 'manual';
+            liveAI.options.manualMode = isManual;
+            modeManualButton.classList.toggle('bg-live-accent', isManual);
+            modeManualButton.classList.toggle('text-white', isManual);
+            modeManualButton.classList.toggle('shadow-[0_0_18px_rgba(217,119,87,.24)]', isManual);
+            modeAutoButton.classList.toggle('bg-live-accent', !isManual);
+            modeAutoButton.classList.toggle('text-white', !isManual);
+            modeAutoButton.classList.toggle('shadow-[0_0_18px_rgba(217,119,87,.24)]', !isManual);
+
+            if (liveAI.running) {
+                if (isManual) {
+                    liveAI.recognition?.stop();
+                    liveAI.listening = false;
+                    liveAI.setState('idle');
+                } else {
+                    liveAI.setState('listening');
+                    liveAI.startListening();
+                }
+            }
+        }
+
+        async function triggerStart() {
+            errorMessage.classList.add('hidden');
+            await sessionStoreReady;
+            liveAI.options.conversationContext = conversationContext();
+            liveAI.start();
+        }
+
+        voiceSelect.addEventListener('change', event => {
+            liveAI.options.voiceName = event.target.value || '';
+        });
+        personaSelect.addEventListener('change', applyPersona);
+        personaCustom.addEventListener('change', applyPersona);
+        sessionSelect.addEventListener('change', async event => {
+            if (!sessionDb || !event.target.value) return;
+            const session = await storeRequest(sessionDb.transaction('sessions', 'readonly').objectStore('sessions').get(event.target.value));
+            await restoreSession(session);
+        });
+        newSessionButton.addEventListener('click', async () => {
+            if (!sessionDb) return;
+            if (liveAI.running) liveAI.stop();
+            activeSession = createSessionRecord();
+            activeSession.persona = personaSelect.value;
+            activeSession.personaPrompt = liveAI.options.personaPrompt;
+            await saveActiveSession();
+            await restoreSession(activeSession);
+        });
+        ttsEngineSelect.addEventListener('change', event => {
+            liveAI.options.useLocalTts = event.target.value === 'local-onnx';
+        });
+
+        liveButton.addEventListener('click', triggerStart);
+        liveButton.addEventListener('pointerdown', event => {
+            event.preventDefault();
+            triggerStart();
+        });
+        liveButton.addEventListener('touchstart', event => {
+            event.preventDefault();
+            triggerStart();
+        }, { passive: false });
+        stopButton.addEventListener('click', () => liveAI.stop());
+        stopButton.addEventListener('pointerdown', event => {
+            event.preventDefault();
+            liveAI.stop();
+        });
+
+        if (window.speechSynthesis) {
+            populateVoices();
+            if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                window.speechSynthesis.onvoiceschanged = populateVoices;
+            }
+        }
+        modeManualButton.addEventListener('click', () => setMode('manual'));
+        modeAutoButton.addEventListener('click', () => setMode('auto'));
+        document.getElementById('clear-conversation').addEventListener('click', () => {
+            finalTranscript = '';
+            lastFinalTranscript = '';
+            userTimelineEntry = null;
+            assistantTimelineEntry = null;
+            activeUserMessageId = null;
+            activeAssistantMessageId = null;
+            if (activeSession) {
+                activeSession.messages = [];
+                activeSession.title = 'Sesi baru';
+                queueSessionSave();
+            }
+            conversationTimeline.innerHTML = '<p id="timeline-empty" class="text-sm leading-6 text-stone-500">Belum ada percakapan.</p>';
+        });
+        const sessionStoreReady = initializeSessionStore();
+        setState('idle');
+    </script>
+</body>
+</html>

@@ -33,24 +33,24 @@ body.hacker-theme .bg-gradient-to-tr { background: #00aa00 !important; }
 <script src="nano_asset/assets/js/mammoth.browser.min.js"></script>
 <script src="nano_asset/assets/js/xlsx.full.min.js"></script>
     <script src="nano_asset/assets/js/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link id="hljs-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="nano_asset/assets/js/html2pdf.bundle.min.js"></script>
+    <link id="hljs-theme" rel="stylesheet" href="nano_asset/assets/css/github-dark.min.css">
+    <script src="nano_asset/assets/js/highlight.min.js"></script>
 <script src="nano_asset/assets/js/FileSaver.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="nano_asset/assets/js/chart.min.js"></script>
 <script src="nano_asset/assets/js/mermaid.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@latest"></script>
-    <!-- Flowchart.js (via CDN) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.17.1/flowchart.min.js"></script>
+        <script src="nano_asset/assets/js/markmap-autoloader.js"></script>
+    <!-- Flowchart.js lokal -->
+    <script src="nano_asset/assets/js/raphael.min.js"></script>
+    <script src="nano_asset/assets/js/flowchart.min.js"></script>
     <!-- Tambahan Fitur Baru -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/material-darker.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+    <link rel="stylesheet" href="nano_asset/assets/css/codemirror.min.css">
+    <link rel="stylesheet" href="nano_asset/assets/css/material-darker.min.css">
+    <script src="nano_asset/assets/js/codemirror.min.js"></script>
+    <script src="nano_asset/assets/js/xml.min.js"></script>
+    <script src="nano_asset/assets/js/javascript-mode.min.js"></script>
+    <script src="nano_asset/assets/js/css-mode.min.js"></script>
+    <script src="nano_asset/assets/js/htmlmixed.min.js"></script>
 <script>
     if (typeof mermaid !== 'undefined') {
         mermaid.initialize({ startOnLoad: false, theme: 'dark' });
@@ -81,15 +81,13 @@ body.hacker-theme .bg-gradient-to-tr { background: #00aa00 !important; }
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700&family=JetBrains+Mono:wght=400;500&display=swap');
-
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: ui-sans-serif, system-ui, sans-serif;
             transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         pre, code {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         }
        :root {
             --bg-color: #0b0f19;
@@ -1346,10 +1344,15 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
     </div>
 
     <script type="module">
-        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
-        env.allowLocalModels = false;
-        window.transformersPipeline = pipeline;
-        console.log("Transformers.js loaded");
+        if (location.protocol === 'http:' || location.protocol === 'https:') {
+            import('./nano_asset/assets/js/transformers.min.js').then(({ pipeline, env }) => {
+                env.allowLocalModels = true;
+                env.allowRemoteModels = false;
+                env.localModelPath = './nano_asset/models/';
+                window.transformersPipeline = pipeline;
+                console.log("Transformers.js lokal siap");
+            }).catch(error => console.warn('Transformers.js lokal tidak tersedia:', error.message));
+        }
     </script>
     <script>
    function acakWarna() {
@@ -2091,6 +2094,63 @@ function handleTextareaInput(textarea) {
         }
         // ===== END PENGATURAN MODE AI =====
 
+        function extractBalancedObject(source) {
+            const text = String(source || '');
+            const start = text.indexOf('{');
+            if (start < 0) return '';
+            let depth = 0;
+            let quote = '';
+            let escaped = false;
+            for (let index = start; index < text.length; index += 1) {
+                const char = text[index];
+                if (quote) {
+                    if (escaped) escaped = false;
+                    else if (char === '\\') escaped = true;
+                    else if (char === quote) quote = '';
+                    continue;
+                }
+                if (char === '"' || char === "'") { quote = char; continue; }
+                if (char === '{') depth += 1;
+                if (char === '}') {
+                    depth -= 1;
+                    if (depth === 0) return text.slice(start, index + 1);
+                }
+            }
+            return '';
+        }
+
+        function normalizeChartResponse(text) {
+            const content = String(text || '');
+            if (/```chart\b/i.test(content) || !/(data\s+grafik|visualisasi\s+grafik|grafik\s+tren|jumlah\s+penjualan)/i.test(content)) return content;
+            const lines = content.split(/\r?\n/);
+            for (let index = 0; index < lines.length - 2; index += 1) {
+                if (!/^\s*\|/.test(lines[index]) || !/^\s*\|?\s*:?-{2,}/.test(lines[index + 1])) continue;
+                const splitRow = row => row.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map(cell => cell.trim());
+                const headers = splitRow(lines[index]);
+                const rows = [];
+                let cursor = index + 2;
+                while (cursor < lines.length && /^\s*\|/.test(lines[cursor])) {
+                    const cells = splitRow(lines[cursor]);
+                    if (cells.length >= 2) rows.push(cells);
+                    cursor += 1;
+                }
+                if (!headers.length || rows.length < 2) continue;
+                const labels = rows.map(row => row[0]);
+                const datasets = headers.slice(1).map((header, columnIndex) => ({
+                    label: header || `Data ${columnIndex + 1}`,
+                    data: rows.map(row => {
+                        const raw = String(row[columnIndex + 1] || '0').replace(/[^0-9,.-]/g, '').replace(/\.(?=\d{3}(?:\D|$))/g, '').replace(',', '.');
+                        const value = Number(raw);
+                        return Number.isFinite(value) ? value : 0;
+                    })
+                }));
+                if (!datasets.some(dataset => dataset.data.some(value => value !== 0))) continue;
+                const chart = { type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false } };
+                return `${lines.slice(0, index).join('\n')}\n\n\`\`\`chart\n${JSON.stringify(chart, null, 2)}\n\`\`\`\n${lines.slice(cursor).join('\n')}`;
+            }
+            return content;
+        }
+
         async function initChat() {
             const statusIndicator = document.getElementById("status");
             const badge = document.getElementById('model-badge');
@@ -2230,7 +2290,7 @@ function handleTextareaInput(textarea) {
 
             renderer.code = function(tokenOrCode, infostring) {
                 const isToken = typeof tokenOrCode === 'object';
-                const code = isToken ? (tokenOrCode.text || '') : (tokenOrCode || '');
+                let code = isToken ? (tokenOrCode.text || '') : (tokenOrCode || '');
                 const langRaw = isToken ? tokenOrCode.lang : infostring;
                 const lang = (langRaw || '').trim().toLowerCase();
 
@@ -2255,15 +2315,11 @@ function handleTextareaInput(textarea) {
 
             // 1. Jika AI membuat script JS penuh (new Chart(...)), ekstrak konfigurasi di dalamnya
             // [FIX #2] Regex diperbaiki: sebelumnya memakai escape ganda (\\\\) yang salah untuk JS literal
-            const scriptMatch = extractedCode.match(/new\s+Chart\s*\(\s*[^,]+,\s*(\{[\s\S]+\})\s*\)/);
+            const scriptMatch = extractedCode.match(/new\s+Chart\s*\(\s*[^,]+,\s*(\{[\s\S]*)/);
             if (scriptMatch) {
-                extractedCode = scriptMatch[1];
+                extractedCode = extractBalancedObject(scriptMatch[1]);
             } else {
-                // 2. Jika ada teks pengantar, ekstrak blok JSON terbesarnya saja
-                const objMatch = extractedCode.match(/\{[\s\S]*\}/);
-                if (objMatch) {
-                    extractedCode = objMatch[0];
-                }
+                extractedCode = extractBalancedObject(extractedCode) || extractedCode;
             }
 
             // 3. Evaluasi fleksibel layaknya JS (Aman dari unquoted keys, single quotes, atau trailing commas)
@@ -2304,7 +2360,7 @@ function handleTextareaInput(textarea) {
         const chartId = `chart-${Math.random().toString(36).slice(2)}`;
         // Gunakan encodeURIComponent agar aman dari kutip tunggal/ganda di dalam JSON
         const safeCode = encodeURIComponent(code);
-        return `<div class="chart-container my-4 p-4 rounded-2xl bg-[#1e1f20] border border-white/10 shadow-lg" style="position: relative; height:350px; width:100%">
+        return `<div class="chart-container my-4 p-4 rounded-2xl bg-[#1e1f20] border border-white/10 shadow-lg" style="position: relative; height:var(--diagram-height, 350px); width:100%">
                     <canvas id="${chartId}" class="ai-chart" data-config="${safeCode}"></canvas>
                 </div>`;
     }
@@ -2392,8 +2448,14 @@ marked.setOptions({ renderer: renderer });
                     charts.forEach((canvas) => {
                         if (canvas.classList.contains('rendered')) return;
                         try {
-                            const rawConfig = decodeURIComponent(canvas.getAttribute('data-config'));
-                            const config = JSON.parse(rawConfig);
+                            const rawConfig = decodeURIComponent(canvas.getAttribute('data-config') || '');
+                            const cleanConfig = extractBalancedObject(rawConfig) || rawConfig.trim();
+                            let config;
+                            try {
+                                config = JSON.parse(cleanConfig);
+                            } catch (jsonError) {
+                                config = new Function(`return (${cleanConfig})`)();
+                            }
                             if (!config.options) config.options = {};
                             config.options.color = '#94a3b8';
                             new Chart(canvas.getContext('2d'), config);
@@ -3310,7 +3372,7 @@ div.innerHTML = `
 
             // Render ulang markdown dengan status Finished (untuk auto-preview iframe)
             window.__isRenderingFinished = true;
-            document.getElementById(resId).innerHTML = renderMarkdown(res);
+            document.getElementById(resId).innerHTML = renderMarkdown(normalizeChartResponse(res));
             window.__isRenderingFinished = false;
 
             initializeResponseCopyButton(resId, res);
@@ -3324,8 +3386,14 @@ div.innerHTML = `
                 const charts = resDiv.querySelectorAll('canvas.ai-chart[data-config]');
                 charts.forEach((canvas) => {
                     try {
-                        const rawConfig = decodeURIComponent(canvas.getAttribute('data-config'));
-                        const config = JSON.parse(rawConfig);
+                        const rawConfig = decodeURIComponent(canvas.getAttribute('data-config') || '');
+                        const cleanConfig = extractBalancedObject(rawConfig) || rawConfig.trim();
+                        let config;
+                        try {
+                            config = JSON.parse(cleanConfig);
+                        } catch (jsonError) {
+                            config = new Function(`return (${cleanConfig})`)();
+                        }
                         // Sesuaikan tema agar cocok dengan dark mode
                         if (!config.options) config.options = {};
                         config.options.color = '#94a3b8';
@@ -3574,13 +3642,14 @@ div.innerHTML = `
                             await new Promise((resolve, reject) => {
                                 const script = document.createElement('script');
                                 script.id = 'pyodide-script';
-                                script.src = 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js';
+                                script.src = 'nano_asset/assets/js/pyodide.js';
                                 script.onload = resolve;
                                 script.onerror = reject;
                                 document.head.appendChild(script);
                             });
                         }
                         window.pyodideInstance = await loadPyodide({
+                            indexURL: 'nano_asset/assets/js/',
                             stdout: (text) => {
                                 if (window.currentPyodideOutputDiv) {
                                     window.currentPyodideOutputDiv.textContent += text + '\\n';
@@ -5441,9 +5510,9 @@ div.innerHTML = `
             let finalCode = codeRaw;
             if (finalCode && !finalCode.includes('tailwindcss.com') && !finalCode.includes('cdn.tailwindcss.com')) {
                 if (finalCode.includes('<head>')) {
-                    finalCode = finalCode.replace('<head>', '<head>\n<script src="https://cdn.tailwindcss.com"></' + 'script>');
+                    finalCode = finalCode.replace('<head>', '<head>\n<script src="nano_asset/assets/js/tailwindcss.js"></' + 'script>');
                 } else if (!finalCode.includes('<html')) {
-                    finalCode = `<!DOCTYPE html><html><head><script src="https://cdn.tailwindcss.com"></` + `script></head><body class="p-4 bg-white">${finalCode}</body></html>`;
+                    finalCode = `<!DOCTYPE html><html><head><script src="nano_asset/assets/js/tailwindcss.js"></` + `script></head><body class="p-4 bg-white">${finalCode}</body></html>`;
                 }
             }
 
@@ -5467,9 +5536,9 @@ div.innerHTML = `
             let finalCode = codeRaw;
             if (finalCode && !finalCode.includes('tailwindcss.com') && !finalCode.includes('cdn.tailwindcss.com')) {
                 if (finalCode.includes('<head>')) {
-                    finalCode = finalCode.replace('<head>', '<head>\n<script src="https://cdn.tailwindcss.com"></' + 'script>');
+                    finalCode = finalCode.replace('<head>', '<head>\n<script src="nano_asset/assets/js/tailwindcss.js"></' + 'script>');
                 } else if (!finalCode.includes('<html')) {
-                    finalCode = `<!DOCTYPE html><html><head><script src="https://cdn.tailwindcss.com"></` + `script></head><body class="p-4 bg-white">${finalCode}</body></html>`;
+                    finalCode = `<!DOCTYPE html><html><head><script src="nano_asset/assets/js/tailwindcss.js"></` + `script></head><body class="p-4 bg-white">${finalCode}</body></html>`;
                 }
             }
 
@@ -6087,6 +6156,6 @@ div.innerHTML = `
 
 </script>
     <!-- Id Tag Unik untuk pergantian dinamis tema highlight.js -->
-    <link id="hljs-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+    <link id="hljs-theme" rel="stylesheet" href="nano_asset/assets/css/github-dark.min.css">
 </body>
 </html>

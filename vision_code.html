@@ -34,14 +34,14 @@ body.hacker-theme .bg-gradient-to-tr { background: #00aa00 !important; }
 <script src="nano_asset/assets/js/xlsx.full.min.js"></script>
 <script src="nano_asset/assets/js/jszip.min.js"></script>
 <script src="nano_asset/assets/js/FileSaver.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="nano_asset/assets/js/chart.min.js"></script>
 <script src="nano_asset/assets/js/mermaid.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@0.16.1/dist/index.min.js"></script>
     <!-- Flowchart.js -->
     <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.17.1/release/flowchart.min.js"></script>
     <!-- Tambahan Fitur Baru -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="nano_asset/assets/js/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/material-darker.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
@@ -53,7 +53,7 @@ body.hacker-theme .bg-gradient-to-tr { background: #00aa00 !important; }
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/clike/clike.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/php/php.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/markdown/markdown.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="nano_asset/assets/js/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/java.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/cpp.min.js"></script>
@@ -2215,6 +2215,63 @@ function handleTextareaInput(textarea) {
         }
         // ===== END PENGATURAN MODE AI =====
 
+        function extractBalancedObject(source) {
+            const text = String(source || '');
+            const start = text.indexOf('{');
+            if (start < 0) return '';
+            let depth = 0;
+            let quote = '';
+            let escaped = false;
+            for (let index = start; index < text.length; index += 1) {
+                const char = text[index];
+                if (quote) {
+                    if (escaped) escaped = false;
+                    else if (char === '\\') escaped = true;
+                    else if (char === quote) quote = '';
+                    continue;
+                }
+                if (char === '"' || char === "'") { quote = char; continue; }
+                if (char === '{') depth += 1;
+                if (char === '}') {
+                    depth -= 1;
+                    if (depth === 0) return text.slice(start, index + 1);
+                }
+            }
+            return '';
+        }
+
+        function normalizeChartResponse(text) {
+            const content = String(text || '');
+            if (/```chart\b/i.test(content) || !/(data\s+grafik|visualisasi\s+grafik|grafik\s+tren|jumlah\s+penjualan)/i.test(content)) return content;
+            const lines = content.split(/\r?\n/);
+            for (let index = 0; index < lines.length - 2; index += 1) {
+                if (!/^\s*\|/.test(lines[index]) || !/^\s*\|?\s*:?-{2,}/.test(lines[index + 1])) continue;
+                const splitRow = row => row.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map(cell => cell.trim());
+                const headers = splitRow(lines[index]);
+                const rows = [];
+                let cursor = index + 2;
+                while (cursor < lines.length && /^\s*\|/.test(lines[cursor])) {
+                    const cells = splitRow(lines[cursor]);
+                    if (cells.length >= 2) rows.push(cells);
+                    cursor += 1;
+                }
+                if (!headers.length || rows.length < 2) continue;
+                const labels = rows.map(row => row[0]);
+                const datasets = headers.slice(1).map((header, columnIndex) => ({
+                    label: header || `Data ${columnIndex + 1}`,
+                    data: rows.map(row => {
+                        const raw = String(row[columnIndex + 1] || '0').replace(/[^0-9,.-]/g, '').replace(/\.(?=\d{3}(?:\D|$))/g, '').replace(',', '.');
+                        const value = Number(raw);
+                        return Number.isFinite(value) ? value : 0;
+                    })
+                }));
+                if (!datasets.some(dataset => dataset.data.some(value => value !== 0))) continue;
+                const chart = { type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false } };
+                return `${lines.slice(0, index).join('\n')}\n\n\`\`\`chart\n${JSON.stringify(chart, null, 2)}\n\`\`\`\n${lines.slice(cursor).join('\n')}`;
+            }
+            return content;
+        }
+
         async function initChat() {
             const statusIndicator = document.getElementById("status");
             const badge = document.getElementById('model-badge');
@@ -2325,7 +2382,7 @@ function handleTextareaInput(textarea) {
 
             renderer.code = function(tokenOrCode, infostring) {
                 const isToken = typeof tokenOrCode === 'object';
-                const code = isToken ? (tokenOrCode.text || '') : (tokenOrCode || '');
+                let code = isToken ? (tokenOrCode.text || '') : (tokenOrCode || '');
                 const langRaw = isToken ? tokenOrCode.lang : infostring;
                 const lang = (langRaw || '').trim().toLowerCase();
 
@@ -2349,15 +2406,11 @@ function handleTextareaInput(textarea) {
             let extractedCode = code;
 
             // 1. Jika AI membuat script JS penuh (new Chart(...)), ekstrak konfigurasi di dalamnya
-            const scriptMatch = extractedCode.match(/new\\s+Chart\\s*\\(\\s*[^,]+,\\s*(\\{[\\s\\S]+\\})\\s*\\)/);
+            const scriptMatch = extractedCode.match(/new\\s+Chart\\s*\\(\\s*[^,]+,\\s*(\\{[\\s\\S]*)/);
             if (scriptMatch) {
-                extractedCode = scriptMatch[1];
+                extractedCode = extractBalancedObject(scriptMatch[1]);
             } else {
-                // 2. Jika ada teks pengantar, ekstrak blok JSON terbesarnya saja
-                const objMatch = extractedCode.match(/\\{[\\s\\S]*\\}/);
-                if (objMatch) {
-                    extractedCode = objMatch[0];
-                }
+                extractedCode = extractBalancedObject(extractedCode) || extractedCode;
             }
 
             // 3. Evaluasi fleksibel layaknya JS (Aman dari unquoted keys, single quotes, atau trailing commas)
@@ -2398,7 +2451,7 @@ function handleTextareaInput(textarea) {
         const chartId = `chart-${Math.random().toString(36).slice(2)}`;
         // Gunakan encodeURIComponent agar aman dari kutip tunggal/ganda di dalam JSON
         const safeCode = encodeURIComponent(code);
-        return `<div class="chart-container my-4 p-4 rounded-2xl bg-[#1e1f20] border border-white/10 shadow-lg" style="position: relative; height:350px; width:100%">
+        return `<div class="chart-container my-4 p-4 rounded-2xl bg-[#1e1f20] border border-white/10 shadow-lg" style="position: relative; height:var(--diagram-height, 350px); width:100%">
                     <canvas id="${chartId}" class="ai-chart" data-config="${safeCode}"></canvas>
                 </div>`;
     }
@@ -2485,7 +2538,11 @@ async function updateContent(markdownText) {
     const charts = outputElement.querySelectorAll('canvas[data-config]');
     charts.forEach((canvas) => {
         try {
-            const config = JSON.parse(canvas.getAttribute('data-config'));
+            const rawConfig = decodeURIComponent(canvas.getAttribute('data-config') || '');
+            const cleanConfig = extractBalancedObject(rawConfig) || rawConfig.trim();
+            let config;
+            try { config = JSON.parse(cleanConfig); }
+            catch (jsonError) { config = new Function(`return (${cleanConfig})`)(); }
             new Chart(canvas.getContext('2d'), config);
         } catch (e) {
             console.error("Gagal merender chart:", e);
@@ -2523,8 +2580,11 @@ async function updateContent(markdownText) {
                     charts.forEach((canvas) => {
                         if (canvas.classList.contains('rendered')) return;
                         try {
-                            const rawConfig = decodeURIComponent(canvas.getAttribute('data-config'));
-                            const config = JSON.parse(rawConfig);
+                            const rawConfig = decodeURIComponent(canvas.getAttribute('data-config') || '');
+                            const cleanConfig = extractBalancedObject(rawConfig) || rawConfig.trim();
+                            let config;
+                            try { config = JSON.parse(cleanConfig); }
+                            catch (jsonError) { config = new Function(`return (${cleanConfig})`)(); }
                             if (!config.options) config.options = {};
                             config.options.color = '#94a3b8';
                             new Chart(canvas.getContext('2d'), config);
@@ -3425,7 +3485,7 @@ try {
 
             // Render ulang markdown dengan status Finished (untuk auto-preview iframe)
             window.__isRenderingFinished = true;
-            document.getElementById(resId).innerHTML = renderMarkdown(res);
+            document.getElementById(resId).innerHTML = renderMarkdown(normalizeChartResponse(res));
             window.__isRenderingFinished = false;
 
             initializeResponseCopyButton(resId, res);
@@ -3439,8 +3499,11 @@ try {
                 const charts = resDiv.querySelectorAll('canvas.ai-chart[data-config]');
                 charts.forEach((canvas) => {
                     try {
-                        const rawConfig = decodeURIComponent(canvas.getAttribute('data-config'));
-                        const config = JSON.parse(rawConfig);
+                        const rawConfig = decodeURIComponent(canvas.getAttribute('data-config') || '');
+                        const cleanConfig = extractBalancedObject(rawConfig) || rawConfig.trim();
+                        let config;
+                        try { config = JSON.parse(cleanConfig); }
+                        catch (jsonError) { config = new Function(`return (${cleanConfig})`)(); }
                         // Sesuaikan tema agar cocok dengan dark mode
                         if (!config.options) config.options = {};
                         config.options.color = '#94a3b8';

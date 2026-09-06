@@ -9,9 +9,12 @@
     <!-- manifest.json removed: causes CORS error when opened as file:// protocol -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✱</text></svg>">
 
+    <!-- Tipografi Claude: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Highlight.js untuk Pewarnaan Kode -->
-    <link rel="stylesheet" href="nano_asset/assets/css/github-dark.min.css">
-    <script src="nano_asset/assets/js/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
     <title>Claude Local AI</title>
    <script src="nano_asset/assets/js/tailwindcss.js"></script>
@@ -87,11 +90,11 @@ body.hacker-theme {
 <script src="nano_asset/assets/js/xlsx.full.min.js"></script>
 <script src="nano_asset/assets/js/jszip.min.js"></script>
 <script src="nano_asset/assets/js/FileSaver.min.js"></script>
-<script src="nano_asset/assets/js/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="nano_asset/assets/js/mermaid.min.js"></script>
-<script src="nano_asset/assets/js/d3.v7.min.js"></script>
-<script src="nano_asset/assets/js/markmap-view.min.js"></script>
-<script src="nano_asset/assets/js/markmap-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-view"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-lib"></script>
 <script>
     if (typeof mermaid !== 'undefined') {
         mermaid.initialize({
@@ -130,13 +133,15 @@ body.hacker-theme {
         }
     </script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700&family=JetBrains+Mono:wght=400;500&display=swap');
+
         body {
-            font-family: ui-sans-serif, system-ui, sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         pre, code {
-            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-family: 'JetBrains Mono', monospace;
         }
 
         /* Custom Scrollbar minimalis ala Gemini */
@@ -683,8 +688,7 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
 
   /* === MESSAGE COLUMN === */
   #messages { scroll-behavior: smooth; display: flex; flex-direction: column; align-items: center; }
-    #messages > div { width: 100% !important; max-width: min(900px, 100%) !important; margin: 0 auto !important; }
-    @media (max-width: 767px) { #messages { padding-left: 12px; padding-right: 12px; } #messages > div { max-width: 100% !important; } }
+  #messages > div { width: 100% !important; max-width: 50rem !important; margin: 0 auto !important; }
 
   /* === BUBBLE RESET — all styling handled by inner divs === */
   .chat-bubble-user, .chat-bubble-ai,
@@ -779,17 +783,6 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
   body.light-theme #chat-history-list a, body.light-theme #chat-history-list div { color: #5c5c5c; }
   body.light-theme #chat-history-list a:hover, body.light-theme #chat-history-list div:hover { background: rgba(0,0,0,.04); color: #1a1a1a; }
   body.light-theme #chat-history-list .active { background: rgba(217,119,87,.1); color: #D97757; }
-
-    #command-palette { background: rgba(10,10,10,.72); }
-    #command-palette-dialog { background: var(--diagram-surface); border-color: var(--diagram-border); }
-    .command-item[aria-selected="true"] { background: rgba(217,119,87,.16); color: #fff; }
-    #artifact-dock { background: var(--diagram-surface); border-color: var(--diagram-border); resize: horizontal; min-width: 360px; max-width: 85vw; overflow: hidden; }
-    #artifact-dock iframe { background: #fff; }
-    @media (max-width: 767px) {
-        #artifact-dock { width: 100%; max-width: 100%; min-width: 100%; resize: none; }
-        #command-palette { padding-top: 8vh; }
-        #command-palette-dialog { max-height: 84vh; }
-    }
 </style>
 
 <!-- ALL MODALS (custom-dialog, session, ai-settings, previewModal, ai-diagnostic) -->
@@ -955,11 +948,11 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
                         </div>
                     </label>
                     <div class="space-y-3">
-                        <!-- Standard OpenAI-compatible base endpoint -->
-                        <div>
+                        <!-- Base URL disembunyikan agar otomatis mengikuti IP server/host -->
+                        <div class="hidden">
                             <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Base URL API</label>
-                            <input id="ai-openai-baseurl" type="url" placeholder="https://api.openai.com/v1" class="w-full bg-black/30 border border-white/10 focus:border-purple-400/50 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none transition-all font-mono">
-                            <p class="text-[10px] text-slate-500 mt-1">Gunakan base endpoint OpenAI-compatible, misalnya <span class="text-purple-400 font-mono">http://localhost:1234/v1</span> atau <span class="text-purple-400 font-mono">https://api.openai.com/v1</span>.</p>
+                            <input id="ai-openai-baseurl" type="text" placeholder="http://localhost:8080/exec.php?route=" class="w-full bg-black/30 border border-white/10 focus:border-purple-400/50 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none transition-all font-mono">
+                            <p class="text-[10px] text-slate-500 mt-1">Untuk server sendiri: <span class="text-purple-400 font-mono">http://localhost:1234/v1</span> (LM Studio), <span class="text-purple-400 font-mono">http://localhost:8000/v1</span> (vLLM), dll</p>
                         </div>
 
                         <!-- API Key -->
@@ -1038,8 +1031,8 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
                         <i class='bx bx-window-alt text-xl text-white'></i>
                     </div>
                     <div>
-                        <h3 class="font-bold text-lg text-slate-100 tracking-tight">Pratinjau Interaktif</h3>
-                        <p class="text-xs text-slate-400 font-medium">HTML/CSS/JS yang dirender</p>
+                        <h3 class="font-bold text-lg text-slate-100 tracking-tight">Interactive Preview</h3>
+                        <p class="text-xs text-slate-400 font-medium">Rendered HTML/CSS/JS</p>
                     </div>
                 </div>
                 <button onclick="closePreviewModal()" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all">
@@ -1052,34 +1045,6 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
         </div>
     </div>
     <!-- ===== END MODAL PREVIEW ===== -->
-
-    <!-- ===== WORKSPACE ARTIFACT DOCK ===== -->
-    <aside id="artifact-dock" class="hidden fixed inset-y-0 right-0 z-[60] w-full max-w-2xl border-l shadow-2xl flex-col">
-        <div class="h-14 shrink-0 flex items-center justify-between px-5 border-b border-white/10">
-            <div class="flex items-center gap-2">
-                <i class='bx bx-window-alt text-[#D97757] text-lg'></i>
-                <span class="text-sm font-semibold text-slate-100">Workspace Artifact</span>
-            </div>
-            <div class="flex items-center gap-1">
-                <button onclick="downloadCurrentArtifact()" title="Download artifact" class="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white"><i class='bx bx-download text-lg'></i></button>
-                <button onclick="closeArtifactDock()" title="Tutup workspace" class="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white"><i class='bx bx-x text-xl'></i></button>
-            </div>
-        </div>
-        <iframe id="artifactIframe" class="flex-1 w-full border-0" sandbox="allow-scripts allow-forms allow-popups"></iframe>
-    </aside>
-
-    <!-- ===== COMMAND PALETTE ===== -->
-    <div id="command-palette" class="hidden fixed inset-0 z-[100] items-start justify-center pt-[15vh] px-4" onclick="closeCommandPalette()">
-        <div id="command-palette-dialog" class="w-full max-w-xl overflow-hidden rounded-2xl border shadow-2xl" onclick="event.stopPropagation()">
-            <div class="flex items-center gap-3 px-4 border-b border-white/10">
-                <i class='bx bx-search text-lg text-slate-500'></i>
-                <input id="command-search" type="text" autocomplete="off" placeholder="Cari perintah..." class="flex-1 bg-transparent py-4 text-sm text-slate-100 outline-none">
-                <kbd class="text-[10px] text-slate-500 border border-white/10 rounded px-1.5 py-0.5">ESC</kbd>
-            </div>
-            <div id="command-list" class="max-h-80 overflow-y-auto p-2"></div>
-            <div class="px-4 py-2 border-t border-white/10 text-[10px] text-slate-500">Panah atas/bawah untuk memilih, Enter untuk menjalankan</div>
-        </div>
-    </div>
 
     <!-- ===== MODAL DIAGNOSA AI ===== -->
     <div id="ai-diagnostic-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
@@ -1155,18 +1120,6 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
     </button>
   </div>
 
-    <!-- Project scope -->
-    <div class="px-3 pb-2">
-        <div class="flex items-center gap-2 mb-1.5 px-1">
-            <i class='bx bx-briefcase-alt-2 text-sm text-[#D97757]'></i>
-            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Project</span>
-            <button onclick="createProject()" title="Buat project" class="ml-auto text-slate-500 hover:text-[#D97757]"><i class='bx bx-plus text-sm'></i></button>
-        </div>
-        <select id="project-selector" onchange="selectProject(this.value)" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-300 outline-none">
-            <option value="default">Personal workspace</option>
-        </select>
-    </div>
-
   <!-- Accordion Knowledge Base -->
   <div class="px-3 pb-2">
     <details id="kb-accordion" class="group bg-white/5 border border-white/5 rounded-xl transition-all cursor-pointer">
@@ -1233,7 +1186,6 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
       <span id="model-badge" class="text-[9px] bg-[#D97757]/10 text-[#D97757] border border-[#D97757]/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">Nano</span>
     </div>
     <div class="flex items-center gap-2">
-            <button onclick="openCommandPalette()" title="Command palette (Cmd/Ctrl+K)" class="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-white/5 border border-white/5 text-slate-500 hover:text-white transition-all"><i class='bx bx-command text-sm'></i><span class="text-[10px]">Cmd K</span></button>
       <button onclick="startVoiceInput()" title="Suara" class="p-2 rounded-xl hover:bg-white/5 text-slate-500 hover:text-white transition-all"><i class='bx bx-microphone text-lg'></i></button>
       <button onclick="toggleTheme()" title="Tema" class="p-2 rounded-xl hover:bg-white/5 text-slate-500 hover:text-white transition-all"><i class='bx bx-moon text-lg'></i></button>
       <button onclick="resetChat()" class="text-xs font-semibold px-3 py-1.5 bg-[#D97757]/10 hover:bg-[#D97757]/20 border border-[#D97757]/20 rounded-xl transition-all text-[#D97757] flex items-center gap-1.5">
@@ -1250,7 +1202,7 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
       <div class="text-6xl mb-5 text-[#D97757] select-none">&#10033;</div>
       <h2 class="text-2xl font-medium text-white mb-2">Selamat datang, Subuh Kurniawan</h2>
       <p class="text-slate-500 text-sm max-w-sm mb-8">Tanyakan apa saja. AI lokal berjalan penuh di Chrome Anda tanpa internet.</p>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg text-left">
+      <div class="grid grid-cols-2 gap-3 w-full max-w-lg text-left">
         <button onclick="fillPrompt('Bantu saya menulis esai tentang kecerdasan buatan')" class="p-4 bg-[#1e1e1e] hover:bg-[#252525] border border-white/5 hover:border-[#D97757]/30 rounded-2xl transition-all">
           <p class="text-xs font-semibold text-[#D97757] mb-1">&#9997; Menulis</p><p class="text-xs text-slate-500">Bantu saya menulis esai tentang AI</p>
         </button>
@@ -1287,7 +1239,7 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
         </div>
       </div>
       <!-- Textarea -->
-    <textarea id="prompt" rows="1" placeholder="Tulis pesan..."
+      <textarea id="prompt" rows="1" placeholder="Write a message..."
         class="w-full bg-transparent px-5 pt-4 pb-2 text-slate-100 placeholder-slate-400 text-[15px] resize-none focus:outline-none max-h-52 overflow-y-auto"
         oninput="handleTextareaInput(this);"></textarea>
       <!-- Bottom bar -->
@@ -1315,13 +1267,13 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V14"/><path d="M4 10V3"/><path d="M12 21V12"/><path d="M12 8V3"/><path d="M20 21V16"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></svg>
           </button>
           <!-- Send Button (Claude Terracotta Accent) -->
-          <button id="send-button" onclick="sendMessage()" title="Kirim pesan" class="w-8 h-8 rounded-xl text-white bg-[#D97757] hover:bg-[#C4956A] active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all shadow-md ml-1">
+          <button id="send-button" onclick="sendMessage()" class="w-8 h-8 rounded-xl text-white bg-[#D97757] hover:bg-[#C4956A] active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all shadow-md ml-1">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M12 5l-7 7M12 5l7 7"/></svg>
           </button>
         </div>
       </div>
     </div>
-    <p class="text-center text-xs text-slate-500 mt-4">AI dapat membuat kesalahan. Periksa kembali jawaban penting.</p>
+    <p class="text-center text-xs text-slate-500 mt-4">Claude in Chrome can make mistakes. Please double-check responses.</p>
   </div>
 </div>
 
@@ -1343,17 +1295,11 @@ function exportAllSessions(){if(typeof exportHistoryToDocx==='function')exportHi
 function importSessions(event){if(typeof handleImportSessions==='function')handleImportSessions(event);}
 </script>
 
-    <script>
-        if (location.protocol === 'http:' || location.protocol === 'https:') {
-            import('./nano_asset/assets/js/transformers.min.js').then(transformers => {
-                window.transformers = transformers;
-                window.transformers.env.allowLocalModels = true;
-                window.transformers.env.allowRemoteModels = false;
-                window.transformers.env.localModelPath = './nano_asset/models/';
-                window.transformersPipeline = window.transformers.pipeline;
-                console.log("Transformers.js lokal siap");
-            }).catch(error => console.warn('Transformers.js lokal tidak tersedia:', error.message));
-        }
+    <script type="module">
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+        env.allowLocalModels = false;
+        window.transformersPipeline = pipeline;
+        console.log("Transformers.js loaded");
     </script>
 
 <!-- ===== OTAK JS UTAMA_VISION 100% UTUH ===== -->
@@ -1497,8 +1443,8 @@ function handleTextareaInput(textarea) {
             ollamaModel: 'llama3',
             openaiKey: '',
             openaiModel: 'litert-lm',
-            openaiBaseUrl: 'https://api.openai.com/v1',
-            systemPrompt: 'Anda adalah Yaya Tata, asisten AI cerdas berbahasa Indonesia. ATURAN FORMAT WAJIB: jika prompt mengandung kata mindmap, main map, mind map, peta pikiran, atau pemetaan pikiran, jawab dengan SATU blok kode ```markmap berisi struktur Markdown dan jangan gunakan format lain. Jika prompt mengandung flowchart, flow chart, diagram alur, atau bagan alir, jawab dengan SATU blok kode ```mermaid berisi sintaks Mermaid dan jangan gunakan ASCII art. Jika prompt mengandung chart, grafik, plot, atau diagram data, jawab dengan SATU blok kode ```chart berisi JSON Chart.js murni tanpa komentar. Jika prompt meminta kode, gunakan fenced code block dengan bahasa yang sesuai. Jangan mengganti tag format tersebut.',
+            openaiBaseUrl: window.location.origin + '/exec.php?route=',
+            systemPrompt: 'Anda adalah Yaya Tata, asisten AI cerdas berbahasa Indonesia. ATURAN WAJIB: 1) Jika diminta grafik/chart, WAJIB berikan konfigurasi JSON murni tanpa komentar di dalam blok kode dengan format ```chart\\n(isi JSON)\\n``` (JANGAN gunakan ```json). 2) Jika diminta flowchart/diagram alur, WAJIB gunakan sintaks Mermaid di dalam blok kode ```mermaid\\n(isi mermaid)\\n```. 3) Jika diminta mindmap/pemetaan pikiran, WAJIB gunakan format Markmap dengan daftar markdown di dalam blok kode ```markmap\\n(isi markdown headers/list)\\n```.',
             maxNumTokens: 4096,   // Opsi A: batas KV-cache token LiteRT-LM
             uiTheme: 'dark'
         };
@@ -1529,7 +1475,6 @@ function handleTextareaInput(textarea) {
             initTheme();
             loadAISettings().then(() => {
                 initChat();
-                initProjectManager();
                 if (typeof renderKBList === 'function') renderKBList();
             });
         };
@@ -1544,9 +1489,8 @@ function handleTextareaInput(textarea) {
                     req.onsuccess = (e) => {
                         if (e.target.result) {
                             aiSettings = { ...aiSettings, ...e.target.result.value };
-                            if (!aiSettings.openaiBaseUrl || aiSettings.openaiBaseUrl.includes('/route=')) {
-                                aiSettings.openaiBaseUrl = 'https://api.openai.com/v1';
-                            }
+                            // Selalu paksa openaiBaseUrl menggunakan URL dinamis host saat ini
+                            aiSettings.openaiBaseUrl = window.location.origin + '/exec.php?route=';
                         }
                         resolve();
                     };
@@ -1697,12 +1641,7 @@ function handleTextareaInput(textarea) {
             aiSettings.ollamaModel = document.getElementById('ai-ollama-model')?.value?.trim() || aiSettings.ollamaModel;
             aiSettings.openaiKey = document.getElementById('ai-openai-key')?.value?.trim() || '';
             aiSettings.openaiModel = document.getElementById('ai-openai-model')?.value?.trim() || aiSettings.openaiModel;
-            const customOpenAIBaseUrl = getOpenAIBaseUrl(document.getElementById('ai-openai-baseurl')?.value || aiSettings.openaiBaseUrl);
-            if (customOpenAIBaseUrl.includes('/route=')) {
-                alert('Gunakan base endpoint OpenAI-compatible langsung, bukan proxy route.');
-                return;
-            }
-            aiSettings.openaiBaseUrl = customOpenAIBaseUrl || 'https://api.openai.com/v1';
+            aiSettings.openaiBaseUrl = document.getElementById('ai-openai-baseurl')?.value?.trim() || aiSettings.openaiBaseUrl;
             aiSettings.systemPrompt = document.getElementById('ai-system-prompt')?.value?.trim() || aiSettings.systemPrompt;
             aiSettings.uiTheme = document.getElementById('ai-ui-theme')?.value || aiSettings.uiTheme;
             // Opsi A: simpan max tokens
@@ -1794,6 +1733,26 @@ function handleTextareaInput(textarea) {
                 const base64Data = fileObj.raw.split(',')[1] || fileObj.raw;
                 messages[0].images = [base64Data];
             }
+
+        /**
+         * Potong isi dokumen agar tidak melebihi batas token model.
+         * Model LiteRT-LM biasanya memiliki batas 4096 token.
+         * [OPSI A] Buat model spec untuk LiteRT-LM dengan format: 'model_id,,max_tokens'
+         * Format: modelId[,backend][,max_tokens] — kosongkan backend agar auto-detect.
+         */
+        function getOpenAIModelSpec() {
+            const base = aiSettings.openaiModel || 'litert-lm';
+            const maxTok = aiSettings.maxNumTokens || 4096;
+            // Hanya tambahkan token spec jika ini LiteRT-LM lokal (bukan OpenAI/cloud)
+            const isLocal = (aiSettings.openaiBaseUrl || '').includes('localhost') ||
+                            (aiSettings.openaiBaseUrl || '').includes('127.0.0.1') ||
+                            (aiSettings.openaiBaseUrl || '').includes('/exec.php');
+            if (isLocal && maxTok !== 4096) {
+                // Format: 'modelId,,8192' (backend kosong = auto-detect)
+                return `${base},,${maxTok}`;
+            }
+            return base;
+        }
 
         /**
          * [OPSI B] RAG Chunking sederhana: potong dokumen menjadi chunk-chunk kecil
@@ -1902,24 +1861,7 @@ function handleTextareaInput(textarea) {
             }
         }
 
-        /**
-         * Build the model identifier expected by local LiteRT-LM endpoints.
-         */
-        function getOpenAIModelSpec() {
-            const base = aiSettings.openaiModel || 'litert-lm';
-            const maxTok = aiSettings.maxNumTokens || 4096;
-            const isLocal = (aiSettings.openaiBaseUrl || '').includes('localhost') ||
-                            (aiSettings.openaiBaseUrl || '').includes('127.0.0.1');
-            return isLocal && maxTok !== 4096 ? `${base},,${maxTok}` : base;
-        }
-
-        function getOpenAIBaseUrl(value = aiSettings.openaiBaseUrl) {
-            let baseUrl = String(value || '').trim().replace(/\/+$/, '');
-            baseUrl = baseUrl.replace(/\/(chat\/completions|models)$/i, '');
-            return baseUrl;
-        }
-
-        // === Kirim ke OpenAI-compatible endpoint ===
+        // === Kirim ke OpenAI ===
         async function* sendToOpenAI(prompt, signal, fileObj = null, history = []) {
             let userContent = prompt;
 
@@ -1938,11 +1880,7 @@ function handleTextareaInput(textarea) {
                 { role: 'user', content: userContent }
             ];
 
-            const baseUrl = getOpenAIBaseUrl();
-            if (!baseUrl || baseUrl.includes('/route=')) {
-                throw new Error('Base URL OpenAI-compatible belum diatur. Gunakan endpoint seperti https://api.openai.com/v1.');
-            }
-            const response = await fetch(`${baseUrl}/chat/completions`, {
+            const response = await fetch(`${aiSettings.openaiBaseUrl}/chat/completions`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2092,7 +2030,7 @@ function handleTextareaInput(textarea) {
 
             renderer.code = function(tokenOrCode, infostring) {
                 const isToken = typeof tokenOrCode === 'object';
-                let code = isToken ? (tokenOrCode.text || '') : (tokenOrCode || '');
+                const code = isToken ? (tokenOrCode.text || '') : (tokenOrCode || '');
                 const langRaw = isToken ? tokenOrCode.lang : infostring;
                 const lang = (langRaw || '').trim().toLowerCase();
 
@@ -2108,42 +2046,13 @@ function handleTextareaInput(textarea) {
 
     // 1b. Penanganan khusus untuk Markmap / Mindmap
     if (lang === 'markmap' || (lang === 'mindmap' && !code.trim().startsWith('mindmap'))) {
-        const markmapCode = normalizeMarkmapCode(String(code || '').trim());
+        const markmapCode = String(code || '').trim();
         if (window.isCurrentlyStreaming) {
             return `<div class="code-container my-4 overflow-hidden rounded-2xl border border-white/5 shadow-lg bg-black/40"><div class="flex items-center justify-between px-5 py-3 bg-[#131314] text-[10px] text-slate-400 border-b border-white/5"><span class="font-bold uppercase tracking-wider font-mono">markmap</span></div><pre class="!mt-0 !rounded-t-none bg-black/30 p-5 overflow-x-auto text-[13px] text-slate-200 leading-relaxed"><code class="hljs markmap">${escapeHtml(markmapCode)}</code></pre></div>`;
         }
         const safeCode = encodeURIComponent(markmapCode);
         return `<div class="markmap-container" data-markmap-code="${safeCode}" data-markmap-rendered="false"></div>`;
     }
-
-    function extractBalancedObject(source) {
-        const text = String(source || '');
-        const start = text.indexOf('{');
-        if (start < 0) return '';
-        let depth = 0;
-        let quote = '';
-        let escaped = false;
-        for (let index = start; index < text.length; index += 1) {
-            const char = text[index];
-            if (quote) {
-                if (escaped) escaped = false;
-                else if (char === '\\') escaped = true;
-                else if (char === quote) quote = '';
-                continue;
-            }
-            if (char === '"' || char === "'") {
-                quote = char;
-                continue;
-            }
-            if (char === '{') depth += 1;
-            if (char === '}') {
-                depth -= 1;
-                if (depth === 0) return text.slice(start, index + 1);
-            }
-        }
-        return '';
-    }
-    window.extractBalancedObject = extractBalancedObject;
 
     // Penanganan Chart.js (deteksi otomatis meski AI menggunakan tag ```json atau kosong)
     let isChart = false;
@@ -2154,12 +2063,15 @@ function handleTextareaInput(textarea) {
             let extractedCode = code;
 
             // 1. Jika AI membuat script JS penuh (new Chart(...)), ekstrak konfigurasi di dalamnya
-            const scriptMatch = extractedCode.match(/new\s+Chart\s*\(\s*[^,]+,\s*(\{[\s\S]*)/);
+            const scriptMatch = extractedCode.match(/new\s+Chart\s*\(\s*[^,]+,\s*(\{[\s\S]+\})\s*\)/);
             if (scriptMatch) {
-                extractedCode = extractBalancedObject(scriptMatch[1]);
+                extractedCode = scriptMatch[1];
             } else {
-                // 2. Ambil hanya objek pertama yang kurung kurawalnya berimbang.
-                extractedCode = extractBalancedObject(extractedCode) || extractedCode;
+                // 2. Jika ada teks pengantar, ekstrak blok JSON terbesarnya saja
+                const objMatch = extractedCode.match(/\{[\s\S]*\}/);
+                if (objMatch) {
+                    extractedCode = objMatch[0];
+                }
             }
 
             // 3. Evaluasi fleksibel layaknya JS (Aman dari unquoted keys, single quotes, atau trailing commas)
@@ -2190,9 +2102,14 @@ function handleTextareaInput(textarea) {
                 
                 code = JSON.stringify(parsed);
                 isChart = true;
+            } else if (isExplicitChart) {
+                isChart = true;
             }
         } catch(e) {
-            console.warn('Konfigurasi chart tidak valid:', e.message);
+            // Jika dievaluasi gagal, namun tag-nya eksplisit chart, paksakan render chart
+            if (isExplicitChart) {
+                isChart = true;
+            }
         }
     }
 
@@ -2230,7 +2147,7 @@ function handleTextareaInput(textarea) {
     } else if (lang === 'html' || lang === 'htm' || lang === 'svg' || lang === 'xml') {
         const safeCodeForPreview = encodeURIComponent(code);
         runButton = `
-                <button onclick="openArtifactDock('${safeCodeForPreview}')"
+                <button onclick="openPreviewModal('${safeCodeForPreview}')"
                     class="hover:text-purple-400 text-purple-500 transition-colors flex items-center gap-1.5 font-semibold">
                     <i class='bx bx-window-alt text-sm'></i> Preview
                 </button>`;
@@ -2620,31 +2537,6 @@ function autoFixMermaid(code) {
 
 window.autoFixMermaid = autoFixMermaid;
 
-function normalizeMarkmapCode(source) {
-    const lines = String(source || '').replace(/\r/g, '').split('\n');
-    const normalized = [];
-    for (const line of lines) {
-        const match = line.match(/^(\s*)(?:[-*]\s+)?(box|judul|title|isi|content)\s*:\s*(.*)$/i);
-        if (!match) {
-            normalized.push(line);
-            continue;
-        }
-        const indent = match[1];
-        const key = match[2].toLowerCase();
-        const value = match[3].trim();
-        if ((key === 'judul' || key === 'title') && value) {
-            normalized.push(`${indent}## ${value}`);
-        } else if (key === 'box' && value) {
-            normalized.push(`${indent}- ${value}`);
-        } else if (value && key !== 'isi' && key !== 'content') {
-            normalized.push(`${indent}- ${value}`);
-        }
-    }
-    return normalized.join('\n').replace(/\n{3,}/g, '\n\n').trim();
-}
-
-window.normalizeMarkmapCode = normalizeMarkmapCode;
-
 window.renderMarkmapBlocks = async function(root = document) {
     if (typeof markmap === 'undefined' || !markmap.Transformer || !markmap.Markmap) return;
 
@@ -2656,7 +2548,7 @@ window.renderMarkmapBlocks = async function(root = document) {
 
     for (const div of markmapDivs) {
         try {
-            const rawCode = normalizeMarkmapCode(div.dataset.markmapCode ? decodeURIComponent(div.dataset.markmapCode) : div.textContent || '');
+            const rawCode = div.dataset.markmapCode ? decodeURIComponent(div.dataset.markmapCode) : div.textContent || '';
             if (!rawCode.trim()) continue;
 
             const wrapper = document.createElement('div');
@@ -2763,14 +2655,8 @@ async function updateContent(markdownText) {
                     const existingChart = typeof Chart !== 'undefined' && Chart.getChart(canvas);
                     if (existingChart) existingChart.destroy();
 
-                    const rawConfig = decodeURIComponent(canvas.getAttribute('data-config') || '');
-                    const cleanConfig = (window.extractBalancedObject?.(rawConfig) || rawConfig.trim());
-                    let config;
-                    try {
-                        config = JSON.parse(cleanConfig);
-                    } catch (jsonError) {
-                        config = new Function(`return (${cleanConfig})`)();
-                    }
+                    const rawConfig = decodeURIComponent(canvas.getAttribute('data-config'));
+                    const config = JSON.parse(rawConfig);
                     if (!config.options) config.options = {};
                     const diagramStyle = getComputedStyle(document.body);
                     const diagramText = diagramStyle.getPropertyValue('--diagram-text').trim();
@@ -2952,17 +2838,9 @@ async function updateContent(markdownText) {
                     <button onclick="copyToClipboard(\`${escapeHtmlForJsString(text)}\`, this)" class="claude-action-btn">
                         <i class='bx bx-copy'></i><span>Salin</span>
                     </button>
-                    ${isUser ? `<button onclick="editMessage('${escapeHtmlForJsString(text)}')" class="claude-action-btn">
-                                <i class='bx bx-edit-alt'></i><span>Edit</span>
-                            </button>` : `<button onclick="translateMessage(this, '${escapeHtmlForJsString(text)}')" class="claude-action-btn translate-btn">
+                    ${!isUser ? `<button onclick="translateMessage(this, '${escapeHtmlForJsString(text)}')" class="claude-action-btn translate-btn">
                         <i class='bx bx-world'></i><span>Terjemahkan</span>
-                            </button>
-                            <button onclick="rateMessage(this, 'up')" class="claude-action-btn feedback-btn" title="Jawaban membantu">
-                                <i class='bx bx-like'></i>
-                            </button>
-                            <button onclick="rateMessage(this, 'down')" class="claude-action-btn feedback-btn" title="Jawaban tidak membantu">
-                                <i class='bx bx-dislike'></i>
-                            </button>`}
+                    </button>` : ''}
                 </div>`;
 
             if (isUser) {
@@ -2991,43 +2869,8 @@ async function updateContent(markdownText) {
             }
         }
 
-        let activeGenerationController = null;
-
-        function setGenerationState(isGenerating) {
-            const button = document.getElementById('send-button');
-            if (!button) return;
-            button.onclick = isGenerating ? stopGeneration : sendMessage;
-            button.title = isGenerating ? 'Hentikan respons' : 'Kirim pesan';
-            button.innerHTML = isGenerating
-                ? `<i class='bx bx-stop text-base'></i>`
-                : `<i class='bx bx-up-arrow-alt text-lg'></i>`;
-        }
-
-        function stopGeneration() {
-            if (activeGenerationController) activeGenerationController.abort();
-            setGenerationState(false);
-        }
-
-        function getFormatLockInstruction(text) {
-            const normalized = String(text || '').toLowerCase().replace(/[\u2010-\u2015_]+/g, ' ');
-            const instructions = [];
-            if (/\b(mind\s*map|mindmap|main\s*map|peta\s*pikiran|pemetaan\s*pikiran)\b/.test(normalized)) {
-                instructions.push('FORMAT LOCK: Jawab HANYA dengan satu blok kode ```markmap. Gunakan heading/list Markdown murni untuk struktur mindmap. Jangan gunakan label box:, judul:, title:, isi:, atau content:. Jangan menambahkan pembuka, penutup, atau format lain.');
-            }
-            if (/\b(flow\s*chart|flowchart|diagram\s*alur|bagan\s*alir)\b/.test(normalized)) {
-                instructions.push('FORMAT LOCK: Jawab HANYA dengan satu blok kode ```mermaid. Gunakan sintaks flowchart Mermaid yang valid. Jangan gunakan ASCII art atau narasi di luar blok.');
-            }
-            if (/\b(chart|grafik|plot|diagram\s*data)\b/.test(normalized)) {
-                instructions.push('FORMAT LOCK: Jawab HANYA dengan satu blok kode ```chart yang berisi JSON Chart.js murni. Jangan gunakan ```json, komentar, HTML, atau narasi di luar blok.');
-            }
-            if (/\b(kode|coding|program|script|fungsi|function)\b/.test(normalized)) {
-                instructions.push('FORMAT LOCK: Berikan kode dalam fenced code block dengan bahasa pemrograman yang sesuai dan jelaskan singkat setelah blok jika diperlukan.');
-            }
-            return instructions.length ? `\n\n[ATURAN FORMAT OTOMATIS]\n${instructions.join('\n')}\n[AKHIR ATURAN FORMAT]\n` : '';
-        }
-
-        async function sendMessageWithPayload(text, fileObj = null, isRegenerating = false, signal = null) {
-            let augmentedText = `${text}${getFormatLockInstruction(text)}`;
+        async function sendMessageWithPayload(text, fileObj = null, isRegenerating = false) {
+            let augmentedText = text;
             let ragCitations = null;
             try {
                 if (typeof searchKnowledgeBase === 'function') {
@@ -3062,11 +2905,11 @@ async function updateContent(markdownText) {
 
             // Routing berdasarkan mode AI yang dipilih
             if (aiSettings.mode === 'ollama') {
-                await sendMessageViaOllama(augmentedText, fileObj, isRegenerating, text, fileMetadatas, signal);
+                await sendMessageViaOllama(augmentedText, fileObj, isRegenerating, text, fileMetadatas);
                 return;
             }
             if (aiSettings.mode === 'openai') {
-                await sendMessageViaOpenAI(augmentedText, fileObj, isRegenerating, text, fileMetadatas, signal);
+                await sendMessageViaOpenAI(augmentedText, fileObj, isRegenerating, text, fileMetadatas);
                 return;
             }
 
@@ -3087,7 +2930,15 @@ async function updateContent(markdownText) {
             let finalPromptChrome = augmentedText;
             if (text.trim().toLowerCase().startsWith('/search ')) {
                 const query = text.trim().substring(8).trim();
-                finalPromptChrome = `Pencarian web belum dikonfigurasi. Jawab berdasarkan pengetahuan lokal yang tersedia dan jelaskan keterbatasan ini. Pertanyaan pengguna: ${query}`;
+                try {
+                    const searchUrl = window.location.origin + '/exec.php?route=search&q=' + encodeURIComponent(query);
+                    const res = await fetch(searchUrl);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const snippets = data.results && data.results.length > 0 ? data.results.join('\\n\\n') : 'Tidak ada hasil.';
+                        finalPromptChrome = `[Informasi dari Web Search untuk kueri "${query}"]:\\n${snippets}\\n\\nBerdasarkan informasi di atas, tolong jawab pertanyaan ini: ${query}`;
+                    }
+                } catch(e) { console.warn(e); }
             }
 const messagesContainer = document.getElementById("messages");
 
@@ -3279,7 +3130,6 @@ try {
     if (chatSession.promptStreaming) {
 
         for await (const chunk of promptAPI) {
-            if (signal?.aborted) throw new DOMException('Generasi dihentikan', 'AbortError');
 
             try {
 
@@ -3334,9 +3184,8 @@ try {
 
     console.error("Gagal mendapatkan respons AI:", err);
 
-    res = err.name === 'AbortError'
-        ? '(Respons dihentikan)'
-        : `❌ Gagal memproses permintaan: ${err.message || 'Sistem galat.'}`;
+    res =
+        `❌ Gagal memproses permintaan: ${err.message || 'Sistem galat.'}`;
 
     document.getElementById(resId).innerHTML =
         `<span class="text-red-400 font-semibold">${res}</span>`;
@@ -3363,8 +3212,6 @@ try {
     }
 
     initializeResponseCopyButton(resId, res);
-    activeGenerationController = null;
-    setGenerationState(false);
 
     // Render komponen cerdas (Chart & Mermaid) via fungsi terpusat
     setTimeout(async () => {
@@ -3375,7 +3222,7 @@ try {
 }
         }
 
-        async function sendMessageViaOllama(text, fileObj = null, isRegenerating = false, originalText = null, fileMetadatas = null, signal = null) {
+        async function sendMessageViaOllama(text, fileObj = null, isRegenerating = false, originalText = null, fileMetadatas = null) {
             const history = await getChatHistoryFromDB(10);
             let finalPrompt = applyKaTeXPrompt(text);
 
@@ -3405,7 +3252,15 @@ try {
             // WEB SEARCH UNTUK OLLAMA
             if (text.trim().toLowerCase().startsWith('/search ')) {
                 const query = text.trim().substring(8).trim();
-                finalPrompt = `Pencarian web belum dikonfigurasi. Jawab berdasarkan pengetahuan lokal yang tersedia dan jelaskan keterbatasan ini. Pertanyaan pengguna: ${query}`;
+                try {
+                    const searchUrl = window.location.origin + '/exec.php?route=search&q=' + encodeURIComponent(query);
+                    const res = await fetch(searchUrl);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const snippets = data.results && data.results.length > 0 ? data.results.join('\\n\\n') : 'Tidak ada hasil.';
+                        finalPrompt = `[Informasi dari Web Search untuk kueri "${query}"]:\\n${snippets}\\n\\nBerdasarkan informasi di atas, tolong jawab pertanyaan ini: ${query}`;
+                    }
+                } catch(e) {}
             }
 
             const resId = 'ai_' + Date.now();
@@ -3419,7 +3274,7 @@ try {
 
             let res = '';
             try {
-                for await (const chunk of sendToOllama(finalPrompt, signal, fileObj, history)) {
+                for await (const chunk of sendToOllama(finalPrompt, null, fileObj, history)) {
                     res += chunk;
                     await renderMarkdownAndMermaid(document.getElementById(resId), res, true);
                     scrollToBottom();
@@ -3428,7 +3283,7 @@ try {
                 if (ttsEnabled && res.length > 0) speakText(res);
                 saveMessageToHistory('assistant', res, null);
             } catch(err) {
-                res = err.name === 'AbortError' ? '(Respons dihentikan)' : `❌ Ollama Error: ${err.message}`;
+                res = `❌ Ollama Error: ${err.message}`;
                 document.getElementById(resId).innerHTML = `<span class="text-red-400 font-semibold">${res}</span>`;
             } finally {
                 finishLoadingBubble(resId, timeInterval, indicatorInterval, res);
@@ -3436,7 +3291,7 @@ try {
         }
 
         // ===== OPENAI MESSAGE HANDLER =====
-        async function sendMessageViaOpenAI(text, fileObj = null, isRegenerating = false, originalText = null, fileMetadatas = null, signal = null) {
+        async function sendMessageViaOpenAI(text, fileObj = null, isRegenerating = false, originalText = null, fileMetadatas = null) {
             const history = await getChatHistoryFromDB(10);
             let finalPrompt = applyKaTeXPrompt(text);
             if (fileObj && fileObj.type === 'document') {
@@ -3462,7 +3317,15 @@ try {
             // WEB SEARCH UNTUK OPENAI
             if (text.trim().toLowerCase().startsWith('/search ')) {
                 const query = text.trim().substring(8).trim();
-                finalPrompt = `Pencarian web belum dikonfigurasi. Jawab berdasarkan pengetahuan lokal yang tersedia dan jelaskan keterbatasan ini. Pertanyaan pengguna: ${query}`;
+                try {
+                    const searchUrl = window.location.origin + '/exec.php?route=search&q=' + encodeURIComponent(query);
+                    const res = await fetch(searchUrl);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const snippets = data.results && data.results.length > 0 ? data.results.join('\\n\\n') : 'Tidak ada hasil.';
+                        finalPrompt = `[Informasi dari Web Search untuk kueri "${query}"]:\\n${snippets}\\n\\nBerdasarkan informasi di atas, tolong jawab pertanyaan ini: ${query}`;
+                    }
+                } catch(e) {}
             }
 
             const resId = 'ai_' + Date.now();
@@ -3476,7 +3339,7 @@ try {
 
             let res = '';
             try {
-                for await (const chunk of sendToOpenAI(finalPrompt, signal, fileObj, history)) {
+                for await (const chunk of sendToOpenAI(finalPrompt, null, fileObj, history)) {
                     res += chunk;
                     await renderMarkdownAndMermaid(document.getElementById(resId), res, true);
                     scrollToBottom();
@@ -3485,7 +3348,7 @@ try {
                 if (ttsEnabled && res.length > 0) speakText(res);
                 saveMessageToHistory('assistant', res, null);
             } catch(err) {
-                res = err.name === 'AbortError' ? '(Respons dihentikan)' : `❌ OpenAI Error: ${err.message}`;
+                res = `❌ OpenAI Error: ${err.message}`;
                 document.getElementById(resId).innerHTML = `<span class="text-red-400 font-semibold">${res}</span>`;
             } finally {
                 finishLoadingBubble(resId, timeInterval, indicatorInterval, res);
@@ -3742,14 +3605,13 @@ try {
                             await new Promise((resolve, reject) => {
                                 const script = document.createElement('script');
                                 script.id = 'pyodide-script';
-                                script.src = 'nano_asset/assets/js/pyodide.js';
+                                script.src = 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js';
                                 script.onload = resolve;
                                 script.onerror = reject;
                                 document.head.appendChild(script);
                             });
                         }
                         window.pyodideInstance = await loadPyodide({
-                            indexURL: 'nano_asset/assets/js/',
                             stdout: (text) => {
                                 if (window.currentPyodideOutputDiv) {
                                     window.currentPyodideOutputDiv.textContent += text + '\\n';
@@ -3775,44 +3637,10 @@ try {
 
         window.isCurrentlyStreaming = false;
 
-        function normalizeChartResponse(text) {
-            const content = String(text || '');
-            if (/```chart\b/i.test(content) || !/(data\s+grafik|visualisasi\s+grafik|grafik\s+tren|jumlah\s+penjualan)/i.test(content)) {
-                return content;
-            }
-            const lines = content.split(/\r?\n/);
-            for (let index = 0; index < lines.length - 2; index += 1) {
-                if (!/^\s*\|/.test(lines[index]) || !/^\s*\|?\s*:?-{2,}/.test(lines[index + 1])) continue;
-                const splitRow = row => row.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map(cell => cell.trim());
-                const headers = splitRow(lines[index]);
-                const rows = [];
-                let cursor = index + 2;
-                while (cursor < lines.length && /^\s*\|/.test(lines[cursor])) {
-                    const cells = splitRow(lines[cursor]);
-                    if (cells.length >= 2) rows.push(cells);
-                    cursor += 1;
-                }
-                if (!headers.length || rows.length < 2) continue;
-                const labels = rows.map(row => row[0]);
-                const datasets = headers.slice(1).map((header, columnIndex) => ({
-                    label: header || `Data ${columnIndex + 1}`,
-                    data: rows.map(row => {
-                        const raw = String(row[columnIndex + 1] || '0').replace(/[^0-9,.-]/g, '').replace(/\.(?=\d{3}(?:\D|$))/g, '').replace(',', '.');
-                        const value = Number(raw);
-                        return Number.isFinite(value) ? value : 0;
-                    })
-                }));
-                if (!datasets.some(dataset => dataset.data.some(value => value !== 0))) continue;
-                const chartBlock = `\n\n\`\`\`chart\n${JSON.stringify({ type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false } }, null, 2)}\n\`\`\`\n`;
-                return `${lines.slice(0, index).join('\n')}${chartBlock}${lines.slice(cursor).join('\n')}`;
-            }
-            return content;
-        }
-
         window.renderMarkdownAndMermaid = async function(target, text, skipMermaid = false) {
             if (!target) return '';
             window.isCurrentlyStreaming = skipMermaid;
-            target.innerHTML = renderMarkdown(skipMermaid ? text : normalizeChartResponse(text));
+            target.innerHTML = renderMarkdown(text);
             if (!skipMermaid) {
                 await window.renderMermaidBlocks(target);
             }
@@ -4044,24 +3872,6 @@ try {
             filterMessages();
         }
 
-        function editMessage(text) {
-            const promptEl = document.getElementById('prompt');
-            if (!promptEl) return;
-            promptEl.value = text;
-            handleTextareaInput(promptEl);
-            promptEl.focus();
-            promptEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-
-        function rateMessage(button, rating) {
-            const actionBar = button.closest('.claude-action-bar');
-            if (!actionBar) return;
-            actionBar.querySelectorAll('.feedback-btn').forEach(item => item.classList.remove('text-[#D97757]'));
-            button.classList.add('text-[#D97757]');
-            button.setAttribute('aria-label', rating === 'up' ? 'Jawaban ditandai membantu' : 'Jawaban ditandai tidak membantu');
-            localStorage.setItem(`claude-feedback-${Date.now()}`, rating);
-        }
-
         function updateTTSLanguage() {
             const selectEl = document.getElementById('tts-language');
             ttsLanguage = selectEl?.value || 'id-ID';
@@ -4132,7 +3942,6 @@ try {
 
                 const sessionData = {
                     name: sessionName.trim(),
-                    projectId: getCurrentProject(),
                     messages: messagesWithoutId,
                     createdAt: Date.now(),
                     messageCount: messages.length
@@ -4247,37 +4056,6 @@ try {
 
         function closeSessionManagementModal() {
             document.getElementById('session-management-modal').classList.add('hidden');
-        }
-
-        function getProjects() {
-            try { return JSON.parse(localStorage.getItem('claude-projects') || '[{"id":"default","name":"Personal workspace"}]'); }
-            catch (error) { return [{ id: 'default', name: 'Personal workspace' }]; }
-        }
-
-        function getCurrentProject() { return localStorage.getItem('claude-current-project') || 'default'; }
-
-        function initProjectManager() {
-            const selector = document.getElementById('project-selector');
-            if (!selector) return;
-            const projects = getProjects();
-            selector.innerHTML = projects.map(project => `<option value="${escapeHtml(project.id)}">${escapeHtml(project.name)}</option>`).join('');
-            selector.value = getCurrentProject();
-        }
-
-        function selectProject(projectId) {
-            localStorage.setItem('claude-current-project', projectId || 'default');
-            showKBToast(`Project aktif: ${document.getElementById('project-selector')?.selectedOptions[0]?.text || 'Personal workspace'}`);
-        }
-
-        function createProject() {
-            const name = prompt('Nama project baru:');
-            if (!name || !name.trim()) return;
-            const projects = getProjects();
-            const project = { id: `project-${Date.now()}`, name: name.trim() };
-            projects.push(project);
-            localStorage.setItem('claude-projects', JSON.stringify(projects));
-            localStorage.setItem('claude-current-project', project.id);
-            initProjectManager();
         }
 
         function loadSession(sessionId) {
@@ -4841,10 +4619,7 @@ try {
             if (!text && !selectedFile) return;
 
             lastPromptText = text;
-            activeGenerationController?.abort();
-            activeGenerationController = new AbortController();
-            setGenerationState(true);
-            sendMessageWithPayload(text, selectedFile, false, activeGenerationController.signal);
+            sendMessageWithPayload(text, selectedFile);
 
             // Setel ulang UI input
             promptEl.value = "";
@@ -5432,7 +5207,7 @@ try {
             const dropWrap  = document.getElementById('openai-model-dropdown-wrap');
             const select    = document.getElementById('ai-openai-model-select');
 
-            const baseUrl = getOpenAIBaseUrl(baseUrlEl?.value || 'https://api.openai.com/v1');
+            const baseUrl = (baseUrlEl?.value?.trim() || 'https://api.openai.com/v1').replace(/\/$/, '');
             const apiKey  = keyEl?.value?.trim() || '';
 
             // Loading state
@@ -5447,7 +5222,7 @@ try {
             }
 
             // Deteksi apakah dibuka via file:// (lebih rentan CORS)
-            const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?(?:\/|$)/i.test(baseUrl);
+            const isLocalhost = baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1') || baseUrl.includes('0.0.0.0');
 
             try {
                 // HACK: Kita hapus header 'Accept' untuk menghindari CORS OPTIONS preflight.
@@ -5599,95 +5374,6 @@ try {
             modal.classList.add('flex');
             document.body.style.overflow = 'hidden';
         }
-
-        let currentArtifactSource = '';
-        function openArtifactDock(codeRaw) {
-            currentArtifactSource = decodeURIComponent(codeRaw || '');
-            const dock = document.getElementById('artifact-dock');
-            const iframe = document.getElementById('artifactIframe');
-            if (!dock || !iframe) return;
-            iframe.srcdoc = currentArtifactSource;
-            dock.classList.remove('hidden');
-            dock.classList.add('flex');
-        }
-
-        function closeArtifactDock() {
-            const dock = document.getElementById('artifact-dock');
-            const iframe = document.getElementById('artifactIframe');
-            if (iframe) iframe.srcdoc = '';
-            if (dock) { dock.classList.add('hidden'); dock.classList.remove('flex'); }
-        }
-
-        function downloadCurrentArtifact() {
-            if (!currentArtifactSource) return;
-            const blob = new Blob([currentArtifactSource], { type: 'text/html;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `artifact-${Date.now()}.html`;
-            link.click();
-            URL.revokeObjectURL(url);
-        }
-
-        const commandDefinitions = [
-            { label: 'Obrolan baru', icon: 'bx-plus', run: () => resetChat() },
-            { label: 'Buka pengaturan AI', icon: 'bx-cog', run: () => openAISettingsModal() },
-            { label: 'Tambah dokumen Knowledge Base', icon: 'bx-data', run: () => document.getElementById('kb-file-input')?.click() },
-            { label: 'Simpan sesi sekarang', icon: 'bx-save', run: () => saveCurrentSession() },
-            { label: 'Ganti tema', icon: 'bx-sun', run: () => toggleTheme() },
-            { label: 'Tampilkan/sembunyikan sidebar', icon: 'bx-sidebar', run: () => toggleSidebar() }
-        ];
-        let selectedCommandIndex = 0;
-
-        function renderCommandList(filter = '') {
-            const list = document.getElementById('command-list');
-            if (!list) return;
-            const commands = commandDefinitions.filter(command => command.label.toLowerCase().includes(filter.toLowerCase()));
-            selectedCommandIndex = Math.min(selectedCommandIndex, Math.max(commands.length - 1, 0));
-            list.innerHTML = commands.map((command, index) => `<button class="command-item w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-slate-300" aria-selected="${index === selectedCommandIndex}" data-command-index="${index}"><i class="bx ${command.icon} text-lg text-[#D97757]"></i><span>${command.label}</span></button>`).join('');
-            list.querySelectorAll('.command-item').forEach(item => item.addEventListener('click', () => {
-                commands[Number(item.dataset.commandIndex)]?.run();
-                closeCommandPalette();
-            }));
-        }
-
-        function openCommandPalette() {
-            const palette = document.getElementById('command-palette');
-            const input = document.getElementById('command-search');
-            if (!palette || !input) return;
-            palette.classList.remove('hidden');
-            palette.classList.add('flex');
-            selectedCommandIndex = 0;
-            input.value = '';
-            renderCommandList();
-            requestAnimationFrame(() => input.focus());
-        }
-
-        function closeCommandPalette() {
-            const palette = document.getElementById('command-palette');
-            if (palette) { palette.classList.add('hidden'); palette.classList.remove('flex'); }
-        }
-
-        document.addEventListener('keydown', event => {
-            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-                event.preventDefault();
-                openCommandPalette();
-            }
-            if (event.key === 'Escape') closeCommandPalette();
-        });
-        document.getElementById('command-search')?.addEventListener('input', event => {
-            selectedCommandIndex = 0;
-            renderCommandList(event.target.value);
-        });
-        document.getElementById('command-search')?.addEventListener('keydown', event => {
-            const visible = [...document.querySelectorAll('#command-list .command-item')];
-            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-                event.preventDefault();
-                selectedCommandIndex = (selectedCommandIndex + (event.key === 'ArrowDown' ? 1 : -1) + visible.length) % visible.length;
-                visible.forEach((item, index) => item.setAttribute('aria-selected', index === selectedCommandIndex));
-            }
-            if (event.key === 'Enter') visible[selectedCommandIndex]?.click();
-        });
 
         function closePreviewModal() {
             const modal = document.getElementById('previewModal');
@@ -5911,10 +5597,10 @@ try {
             }
 
             try {
-                document.getElementById('kb-progress-text').innerText = "Memuat model AI lokal...";
+                document.getElementById('kb-progress-text').innerText = "Memuat model AI (Xenova/all-MiniLM-L6-v2)...";
                 document.getElementById('kb-progress-container').classList.remove('hidden');
                 
-                featureExtractor = await window.transformersPipeline('feature-extraction', 'all-MiniLM-L6-v2', {
+                featureExtractor = await window.transformersPipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
                     progress_callback: (x) => {
                         if (x.status === 'progress') {
                             const pct = Math.round(x.progress);
@@ -6150,6 +5836,6 @@ try {
         }
     </script>
     <!-- Id Tag Unik untuk pergantian dinamis tema highlight.js -->
-    <link id="hljs-theme" rel="stylesheet" href="nano_asset/assets/css/github-dark.min.css">
+    <link id="hljs-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
 </body>
 </html>
