@@ -3,7 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nano AI Assistant</title>
+    <!-- PWA & Desktop App -->
+    <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <!-- manifest.json removed: causes CORS error when opened as file:// protocol -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✱</text></svg>">
+
+    <!-- Highlight.js untuk Pewarnaan Kode -->
+    <link rel="stylesheet" href="nano_asset/assets/css/github-dark.min.css">
+    <script src="nano_asset/assets/js/highlight.min.js"></script>
+
+    <title>Claude Local AI</title>
    <script src="nano_asset/assets/js/tailwindcss.js"></script>
 <script src="nano_asset/assets/js/marked.min.js"></script>
 <link rel="stylesheet" href="nano_asset/assets/css/aku.css">
@@ -20,7 +30,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 body.oled-theme { background-color: #000000; color: #e5e5e5; }
 body.oled-theme .chat-bubble-user { background-color: #000000; border-color: #333; }
 body.oled-theme .chat-bubble-ai { background-color: #000000; border-color: #333; }
-body.oled-theme #messages, body.oled-theme .input-panel { background: #000000; }
+body.oled-theme #messages, body.oled-theme .input-panel { background: #0000004d; }
 
 body.hacker-theme { background-color: #050505; color: #00ff00; }
 body.hacker-theme * { font-family: monospace !important; border-color: #003300 !important; }
@@ -29,82 +39,69 @@ body.hacker-theme .chat-bubble-user { background-color: #021102; border: 1px sol
 body.hacker-theme .chat-bubble-ai { background-color: #000000; border: 1px dashed #00ff00; }
 body.hacker-theme .bg-gradient-to-tr { background: #00aa00 !important; }
 
-        /* Diagram CSS Variables */
-        body {
-            --diagram-text: #f1f5f9;
-            --diagram-muted: #94a3b8;
-            --diagram-grid: rgba(255,255,255,0.1);
-        }
-        body.light-theme {
-            --diagram-text: #0f172a;
-            --diagram-muted: #475569;
-            --diagram-grid: rgba(0,0,0,0.1);
-        }
+/* Diagram tokens: every visual component reads the active theme. */
+:root {
+    --diagram-surface: #0a0a0a;
+    --diagram-surface-alt: #131314;
+    --diagram-border: rgba(255, 255, 255, 0.1);
+    --diagram-text: #f1f5f9;
+    --diagram-muted: #94a3b8;
+    --diagram-grid: rgba(148, 163, 184, 0.18);
+    --diagram-height: clamp(260px, 42vw, 380px);
+}
+body.light-theme {
+    --diagram-surface: #ffffff;
+    --diagram-surface-alt: #f8fafc;
+    --diagram-border: #cbd5e1;
+    --diagram-text: #0f172a;
+    --diagram-muted: #475569;
+    --diagram-grid: rgba(71, 85, 105, 0.18);
+}
+body.oled-theme {
+    --diagram-surface: #000000;
+    --diagram-surface-alt: #050505;
+    --diagram-border: #333333;
+}
+body.hacker-theme {
+    --diagram-surface: #000000;
+    --diagram-surface-alt: #021102;
+    --diagram-border: #003300;
+    --diagram-text: #00ff00;
+    --diagram-muted: #00cc00;
+    --diagram-grid: rgba(0, 255, 0, 0.2);
+}
 
-        /* Blinking Cursor */
-        @keyframes ai-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-        .ai-cursor { 
-            display: inline-block; 
-            width: 8px; 
-            height: 1em; 
-            background: currentColor; 
-            vertical-align: text-bottom; 
-            margin-left: 4px; 
-            animation: ai-blink 0.85s step-end infinite;
-        }
-
-        /* Artifact Panel Styles */
-        body.light-theme #artifact-panel { background-color: #f8fafc; border-color: rgba(0,0,0,0.1); }
-        #artifact-panel.open { width: 50vw; display: flex; }
-        @media (max-width: 768px) {
-            #artifact-panel.open { width: 100vw; position: absolute; inset: 0; }
-        }
-
-        .voice-orb-active {
-            background-color: #5436ff !important;
-            color: white !important;
-            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
-            z-index: 50;
-        }
-        body.light-theme #ai-context-menu {
-            background-color: rgba(255,255,255,0.9);
-            border-color: rgba(0,0,0,0.1);
-        }
-        body.light-theme #ai-context-menu button { color: #1e293b; }
-        body.light-theme #ai-context-menu button:hover { background-color: rgba(0,0,0,0.05); }
-        body.light-theme #ai-context-menu .bg-white\/20 { background-color: rgba(0,0,0,0.1); }
+.markmap-svg-container svg { width: 100%; height: 100%; background: transparent; }
+.markmap-node text { fill: var(--diagram-text) !important; font-size: clamp(11px, 1.1vw, 14px) !important; font-weight: 500; }
+.markmap-node circle { cursor: pointer; }
+.markmap-link { fill: none; stroke: var(--diagram-muted); }
+.markmap-wrapper, .mermaid-wrapper, .chart-container { background-color: var(--diagram-surface) !important; border-color: var(--diagram-border) !important; }
+.markmap-svg-container, .mermaid-svg-container { background-color: var(--diagram-surface-alt) !important; }
+.markmap-svg-container { min-height: 240px; height: var(--diagram-height); }
+.mermaid-wrapper svg { max-width: 100%; height: auto; }
+.chart-container { min-height: 240px; height: var(--diagram-height); }
+.chart-container canvas { max-width: 100%; }
 </style>
 
 <script src="nano_asset/assets/js/mammoth.browser.min.js"></script>
 <script src="nano_asset/assets/js/xlsx.full.min.js"></script>
-    <script src="nano_asset/assets/js/jszip.min.js"></script>
-    <script src="nano_asset/assets/js/html2pdf.bundle.min.js"></script>
-    <link id="hljs-theme" rel="stylesheet" href="nano_asset/assets/css/github-dark.min.css">
-    <script src="nano_asset/assets/js/highlight.min.js"></script>
+<script src="nano_asset/assets/js/jszip.min.js"></script>
 <script src="nano_asset/assets/js/FileSaver.min.js"></script>
 <script src="nano_asset/assets/js/chart.min.js"></script>
 <script src="nano_asset/assets/js/mermaid.min.js"></script>
-        <script src="nano_asset/assets/js/d3.v7.min.js"></script>
-        <script src="nano_asset/assets/js/markmap-view.min.js"></script>
-        <script src="nano_asset/assets/js/markmap-lib.min.js"></script>
-    <!-- Flowchart.js lokal -->
-    <script src="nano_asset/assets/js/raphael.min.js"></script>
-    <script src="nano_asset/assets/js/flowchart.min.js"></script>
-    <!-- Tambahan Fitur Baru -->
-    <link rel="stylesheet" href="nano_asset/assets/css/codemirror.min.css">
-    <link rel="stylesheet" href="nano_asset/assets/css/material-darker.min.css">
-    <script src="nano_asset/assets/js/codemirror.min.js"></script>
-    <script src="nano_asset/assets/js/xml.min.js"></script>
-    <script src="nano_asset/assets/js/javascript-mode.min.js"></script>
-    <script src="nano_asset/assets/js/css-mode.min.js"></script>
-    <script src="nano_asset/assets/js/htmlmixed.min.js"></script>
+<script src="nano_asset/assets/js/d3.v7.min.js"></script>
+<script src="nano_asset/assets/js/markmap-view.min.js"></script>
+<script src="nano_asset/assets/js/markmap-lib.min.js"></script>
 <script>
     if (typeof mermaid !== 'undefined') {
         mermaid.initialize({
             startOnLoad: false,
             theme: 'dark',
             securityLevel: 'loose',
-            flowchart: { useMaxWidth: false, htmlLabels: true }
+            flowchart: {
+                useMaxWidth: false,
+                htmlLabels: true
+            }
         });
     }
 </script>
@@ -123,9 +120,9 @@ body.hacker-theme .bg-gradient-to-tr { background: #00aa00 !important; }
                             sidebar: '#1e1f20',
                             card: '#1e1f20',
                             input: '#282a2d',
-                            blue: '#4285f4',
-                            purple: '#9b72cb',
-                            magenta: '#d96570'
+                            blue: '#D97757',
+                            purple: '#C4956A',
+                            magenta: '#D97757'
                         }
                     }
                 }
@@ -133,24 +130,6 @@ body.hacker-theme .bg-gradient-to-tr { background: #00aa00 !important; }
         }
     </script>
     <style>
-        /* Local Fonts Definition */
-        @font-face { font-family: 'Inter'; src: url('nano_asset/assets/fonts/inter-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-        @font-face { font-family: 'Poppins'; src: url('nano_asset/assets/fonts/poppins-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-        @font-face { font-family: 'Fira Code'; src: url('nano_asset/assets/fonts/fira-code-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-        @font-face { font-family: 'Plus Jakarta Sans'; src: url('nano_asset/assets/fonts/jakarta-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-        @font-face { font-family: 'Outfit'; src: url('nano_asset/assets/fonts/outfit-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-        @font-face { font-family: 'Quicksand'; src: url('nano_asset/assets/fonts/quicksand-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-        @font-face { font-family: 'Space Grotesk'; src: url('nano_asset/assets/fonts/space-grotesk-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-
-        /* Font Utility Classes */
-        body.font-inter { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important; }
-        body.font-poppins { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif !important; }
-        body.font-fira { font-family: 'Fira Code', ui-monospace, SFMono-Regular, monospace !important; }
-        body.font-jakarta { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important; }
-        body.font-outfit { font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif !important; }
-        body.font-quicksand { font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, sans-serif !important; }
-        body.font-space { font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif !important; }
-
         body {
             font-family: ui-sans-serif, system-ui, sans-serif;
             transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -159,60 +138,9 @@ body.hacker-theme .bg-gradient-to-tr { background: #00aa00 !important; }
         pre, code {
             font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         }
-       :root {
-            --bg-color: #0b0f19;
-            --card-bg: rgba(22, 29, 49, 0.7);
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --btn-text: #0b0f19;
-            --accent-color: hsl(200, 90%, 65%); /* Default */
-        }
 
-        @media (prefers-color-scheme: light) {
-            :root {
-                --bg-color: #f1f5f9;
-                --card-bg: rgba(255, 255, 255, 0.8);
-                --text-main: #0f172a;
-                --text-muted: #64748b;
-                --btn-text: #ffffff;
-            }
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            transition: background-color 0.5s ease, color 0.5s ease;
-        }
-
-        h1 { margin: 0 0 10px 0; font-size: 28px; }
-        .text-muted { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
-
-        .accent-text {
-            color: var(--accent-color);
-            transition: color 0.4s ease;
-        }
-
-        .accent-button {
-            background-color: var(--accent-color);
-            color: var(--btn-text);
-            border: none;
-            padding: 14px 28px;
-            font-weight: 600;
-            font-size: 14px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: background-color 0.4s ease, transform 0.2s;
-        }
-
-        .accent-button:hover {
-            transform: translateY(-2px);
-        }        ::-webkit-scrollbar {
+        /* Custom Scrollbar minimalis ala Gemini */
+        ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
@@ -229,8 +157,8 @@ body.hacker-theme .bg-gradient-to-tr { background: #00aa00 !important; }
 
         /* Elemen Input Panel Frosted Glass Premium */
         .input-panel {
-            background: linear-gradient(to top, #131314 60%, rgba(19,19,20,0.0));
-            padding-top: 24px;
+            background: linear-gradient(to top, #13131425 60%, rgba(19,19,20,0.0));
+            padding-top: 4px;
             transition: background-color 0.4s, border-color 0.4s;
         }
 
@@ -271,16 +199,16 @@ body.hacker-theme .bg-gradient-to-tr { background: #00aa00 !important; }
 
         /* CSS TEMA TERANG PREMIUM */
         body.light-theme {
-            background-color: #f8fafc;
-            color: #1e293b;
+            background-color: #f0f4f9;
+            color: #1f1f1f;
         }
         .light-theme .sidebar {
-            background-color: #ffffff;
-            border-right: 1px solid #e2e8f0;
+            background-color: #f0f4f9;
+            border-right: 1px solid #e3e3e3;
         }
         .light-theme .card-bg {
             background-color: #ffffff;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #e3e3e3;
         }
         .light-theme .card-bg:hover {
             background-color: #e9eef6 !important;
@@ -299,27 +227,11 @@ body.hacker-theme .bg-gradient-to-tr { background: #00aa00 !important; }
             color: #1f1f1f;
         }
         .chart-container {
-            width: 100%;
-            min-height: 240px;
-            height: var(--diagram-height, 350px);
-            display: block;
-            position: relative;
-        }
-        .chart-container canvas { max-width: 100%; }
-        .markmap-svg-container { min-height: 240px; height: var(--diagram-height, 350px); }
-        .markmap-svg-container svg { width: 100%; height: 100%; background: transparent; }
-        /* Default (Dark Mode) */
-        .markmap-node text { fill: #f1f5f9 !important; font-size: clamp(11px, 1.1vw, 14px) !important; }
-        .markmap-link { fill: none; stroke: #94a3b8; }
-        .markmap-wrapper, .mermaid-wrapper, .chart-container { background-color: rgba(10,10,10,0.8) !important; border-color: rgba(255,255,255,.1) !important; }
-        .markmap-svg-container, .mermaid-svg-container { background-color: rgba(19,19,20,0.8); }
-
-        /* Dynamic Light Mode */
-        body.light-theme .markmap-node text { fill: #1e293b !important; }
-        body.light-theme .markmap-link { stroke: #94a3b8; }
-        body.light-theme .markmap-wrapper, body.light-theme .mermaid-wrapper, body.light-theme .chart-container { background-color: rgba(255,255,255,0.7) !important; border-color: rgba(0,0,0,.1) !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,.05) !important; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-        body.light-theme .markmap-svg-container, body.light-theme .mermaid-svg-container { background-color: transparent; }
-        .mermaid-wrapper svg { max-width: 100%; height: auto; }
+    width: 100%;
+            height: var(--diagram-height);
+    display: block;
+    position: relative;
+}
 /* =========================
    TABLE WRAPPER
    ========================= */
@@ -355,11 +267,9 @@ table {
 table thead tr {
     background: linear-gradient(
         135deg,
-        #2b2ee4,
+        #6366f1,
         #8b5cf6
     );
-  text-align: center !important;
-
 }
 
 table th {
@@ -472,20 +382,33 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
     }
 }
 
+        body:not(.light-theme) #drop-zone {
+            background-color: #222220 !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35) !important;
+        }
         .light-theme .input-panel {
-            background: linear-gradient(to top, #f8f9fa2c 60%, rgba(248,249,250,0.0)) !important;
+            background: linear-gradient(to top, #faf9f7 70%, rgba(250,249,247,0.0)) !important;
         }
         .light-theme #drop-zone {
-            background-color: #ffffff;
-            backdrop-filter: blur(8px);
-            border-color: #cbd5e1;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            background-color: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06) !important;
         }
         .light-theme #prompt {
-            color: #1f1f1f;
+            color: #1e293b !important;
         }
         .light-theme #prompt::placeholder {
-            color: #757575;
+            color: #94a3b8 !important;
+        }
+        .light-theme #drop-zone button:not(#send-button) {
+            background-color: #f1f5f9 !important;
+            border-color: #e2e8f0 !important;
+            color: #475569 !important;
+        }
+        .light-theme #drop-zone button:not(#send-button):hover {
+            background-color: #e2e8f0 !important;
+            color: #0f172a !important;
         }
 
         /* Sinkronisasi Kelas Text Slate-X Tailwind */
@@ -496,11 +419,11 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
         .light-theme .text-slate-500 { color: #70757a !important; }
 
         .light-theme .bg-white\/5 {
-            background-color: #f1f5f9;
+            background-color: #e9eef6;
         }
         .light-theme .border-white\/5,
         .light-theme .border-white\/10 {
-            border-color: #e2e8f0;
+            border-color: #e3e3e3;
         }
         .light-theme .bg-slate-900 {
             background-color: #ffffff;
@@ -515,24 +438,34 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
         }
 
         /* Pewarnaan Khusus Kontainer Blok Kode Tema Terang */
-        .light-theme .code-container {
-            border-color: #e3e3e3;
-            background-color: #f8fafc;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        .light-theme .code-container,
+        .light-theme .mermaid-wrapper,
+        .light-theme .markmap-wrapper,
+        .light-theme .chart-container {
+            border-color: #cbd5e1 !important;
+            background-color: #ffffff !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
         }
         .light-theme .code-container > div {
-            background-color: #f0f4f9;
-            border-color: #e3e3e3;
-            color: #5f6368;
+            background-color: #f1f5f9 !important;
+            border-color: #e2e8f0 !important;
+            color: #475569 !important;
         }
         .light-theme .code-container pre {
-            background-color: #f8fafc;
+            background-color: #ffffff !important;
+        }
+        .light-theme .code-container pre code {
+            color: #0f172a !important;
+        }
+        .light-theme .mermaid-svg-container,
+        .light-theme .markmap-svg-container {
+            background-color: #f8fafc !important;
         }
 
         /* Penyelarasan Header */
         .light-theme header {
-            background-color: rgba(255, 255, 255, 0.8) !important;
-            border-bottom-color: #e2e8f0 !important;
+            background-color: rgba(240, 244, 249, 0.8) !important;
+            border-bottom-color: #e3e3e3 !important;
         }
 
         /* Penyelarasan Scrollbar pada Tema Terang */
@@ -675,651 +608,230 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
 }
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-.animate-fade-in-up {
-    animation: fadeInUp 0.4s ease-out forwards;
-}
-    
-        .voice-orb-active {
-            background-color: #5436ff !important;
-            color: white !important;
-            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
-            z-index: 50;
-        }
-        body.light-theme #ai-context-menu {
-            background-color: rgba(255,255,255,0.9);
-            border-color: rgba(0,0,0,0.1);
-        }
-        body.light-theme #ai-context-menu button { color: #1e293b; }
-        body.light-theme #ai-context-menu button:hover { background-color: rgba(0,0,0,0.05); }
-        body.light-theme #ai-context-menu .bg-white\/20 { background-color: rgba(0,0,0,0.1); }
-</style>
-
-    <!-- PREMIUM LIGHT THEME OVERRIDES -->
-    <!-- MACOS IOS GLASS LIGHT THEME OVERRIDES -->
-    <style id="premium-light-theme">
-
-        /* Ambient Glow Blobs in Background */
-        body.light-theme::before {
-            content: '';
-            position: fixed;
-            top: -20%;
-            left: -10%;
-            width: 50vw;
-            height: 50vw;
-            background: radial-gradient(circle, rgba(90, 75, 250, 0.08) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-            filter: blur(60px);
-        }
-        
-        body.light-theme::after {
-            content: '';
-            position: fixed;
-            bottom: -20%;
-            right: -10%;
-            width: 60vw;
-            height: 60vw;
-            background: radial-gradient(circle, rgba(230, 60, 200, 0.05) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-            filter: blur(60px);
-        }
-
-        /* Sidebar - Bright Frost */
-        body.light-theme .sidebar {
-            background-color: rgba(255, 255, 255, 0.45) !important;
-            backdrop-filter: blur(28px) saturate(180%) !important;
-            -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
-            border-right: 1px solid rgba(0, 0, 0, 0.05) !important;
-            position: relative;
-            z-index: 10;
-        }
-        
-        /* Sidebar Elements */
-        body.light-theme .card-bg,
-        body.light-theme .border-white\/5,
-        body.light-theme .border-white\/10 {
-            border-color: rgba(0, 0, 0, 0.05) !important;
-            background-color: rgba(255, 255, 255, 0.4) !important;
-        }
-        
-        body.light-theme .sidebar button {
-            color: #475569 !important;
-        }
-        
-        body.light-theme .sidebar button:hover {
-            color: #0f172a !important;
-            background-color: rgba(0, 0, 0, 0.03) !important;
-        }
-        
-        /* Text Overrides */
-        body.light-theme .text-slate-100,
-        body.light-theme .text-slate-200,
-        body.light-theme .text-white {
-            color: #0f172a !important;
-        }
-        
-        body.light-theme .text-slate-300,
-        body.light-theme .text-slate-400 {
-            color: #475569 !important;
-        }
-
-        /* Main Chat Area */
-        body.light-theme main#chat-area {
-            background-color: transparent !important;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Header - Thin Bright Frost */
-        body.light-theme header {
-            background: rgba(255, 255, 255, 0.45) !important;
-            backdrop-filter: blur(24px) saturate(180%) !important;
-            -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
-        }
-        
-        /* Pewarnaan Header Tombol - Mode Terang (Lebih Gelap & Terbaca) */
-        body.light-theme header h1 { color: #1d4ed8 !important; } /* blue-700 */
-        body.light-theme header span.text-gemini-purple { color: #7e22ce !important; background-color: rgba(126, 34, 206, 0.1) !important; border-color: rgba(126, 34, 206, 0.2) !important; } /* purple-700 */
-        body.light-theme header button.text-purple-400 { color: #7e22ce !important; background-color: rgba(126, 34, 206, 0.1) !important; border-color: rgba(126, 34, 206, 0.2) !important; }
-        body.light-theme header button.text-purple-400:hover { background-color: rgba(126, 34, 206, 0.15) !important; }
-        body.light-theme header button.text-emerald-400 { color: #047857 !important; background-color: rgba(4, 120, 87, 0.1) !important; border-color: rgba(4, 120, 87, 0.2) !important; }
-        body.light-theme header button.text-emerald-400:hover { background-color: rgba(4, 120, 87, 0.15) !important; }
-        body.light-theme header button.text-gemini-blue { color: #1d4ed8 !important; background-color: rgba(29, 78, 216, 0.1) !important; border-color: rgba(29, 78, 216, 0.2) !important; }
-        body.light-theme header button.text-gemini-blue:hover { background-color: rgba(29, 78, 216, 0.15) !important; }
-        body.light-theme header button.text-slate-300 { color: #334155 !important; background-color: rgba(51, 65, 85, 0.1) !important; border-color: rgba(51, 65, 85, 0.2) !important; }
-        body.light-theme header button.text-slate-300:hover { background-color: rgba(51, 65, 85, 0.15) !important; }
-        
-        /* Pewarnaan Header Tombol - Mode Gelap (Lebih Terang & Jelas) */
-        body:not(.light-theme) header h1 { color: #60a5fa !important; text-shadow: 0 0 10px rgba(96,165,250,0.3); } /* blue-400 */
-        body:not(.light-theme) header span.text-gemini-purple { color: #c084fc !important; background-color: rgba(192, 132, 252, 0.15) !important; border-color: rgba(192, 132, 252, 0.3) !important; } /* purple-400 */
-        body:not(.light-theme) header button.text-purple-400 { color: #c084fc !important; background-color: rgba(192, 132, 252, 0.15) !important; border-color: rgba(192, 132, 252, 0.3) !important; }
-        body:not(.light-theme) header button.text-purple-400:hover { background-color: rgba(192, 132, 252, 0.25) !important; }
-        body:not(.light-theme) header button.text-emerald-400 { color: #34d399 !important; background-color: rgba(52, 211, 153, 0.15) !important; border-color: rgba(52, 211, 153, 0.3) !important; }
-        body:not(.light-theme) header button.text-emerald-400:hover { background-color: rgba(52, 211, 153, 0.25) !important; }
-        body:not(.light-theme) header button.text-gemini-blue { color: #60a5fa !important; background-color: rgba(96, 165, 250, 0.15) !important; border-color: rgba(96, 165, 250, 0.3) !important; }
-        body:not(.light-theme) header button.text-gemini-blue:hover { background-color: rgba(96, 165, 250, 0.25) !important; }
-        body:not(.light-theme) header button.text-slate-300 { color: #f8fafc !important; background-color: rgba(248, 250, 252, 0.1) !important; border-color: rgba(248, 250, 252, 0.2) !important; }
-        body:not(.light-theme) header button.text-slate-300:hover { background-color: rgba(248, 250, 252, 0.15) !important; }
-
-        /* Input Box (Drop-Zone) - Prominent Bright Glass Pill */
-        body.light-theme #drop-zone {
-            background-color: rgba(255, 255, 255, 0.6) !important;
-            backdrop-filter: blur(32px) saturate(200%) !important;
-            -webkit-backdrop-filter: blur(32px) saturate(200%) !important;
-            border: 1px solid rgba(0, 0, 0, 0.08) !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
-            border-radius: 1.25rem !important;
-        }
-        
-        body.light-theme #drop-zone:focus-within {
-            border-color: rgba(0, 0, 0, 0.15) !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
-        }
-
-        body.light-theme #drop-zone textarea,
-        body.light-theme #drop-zone input {
-            color: #0f172a !important;
-        }
-        
-        body.light-theme #drop-zone textarea::placeholder {
-            color: rgba(0, 0, 0, 0.4) !important;
-        }
-
-        /* Chat Bubbles */
-        /* User iMessage Style: Solid Blue for Light Mode */
-        body.light-theme .chat-bubble-user {
-            background-color: #007aff !important; /* Apple Blue */
-            color: #ffffff !important;
-            border: none !important;
-            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.2) !important;
-        }
-
-        /* AI Glass Bubble */
-        body.light-theme .chat-bubble-ai {
-            background-color: rgba(255, 255, 255, 0.5) !important;
-            backdrop-filter: blur(24px) saturate(180%) !important;
-            -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
-            color: #0f172a !important;
-            border: 1px solid rgba(0, 0, 0, 0.05) !important;
-            border-radius: 1.25rem !important;
-            padding: 1.25rem !important;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
-        }
-        
-        body.light-theme .chat-bubble-ai.ai-loading-glow {
-            border: none !important;
-            box-shadow: none !important;
-            animation: none !important;
-        }
-
-        /* Modals - Heavy Bright Glass */
-        body.light-theme dialog > div, body.light-theme #preview-modal > div, body.light-theme #diagnosis-modal > div, body.light-theme #system-persona-modal > div {
-            background-color: rgba(255, 255, 255, 0.7) !important;
-            backdrop-filter: blur(40px) saturate(200%) !important;
-            -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-            border: 1px solid rgba(0, 0, 0, 0.1) !important;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
-        }
-
-        /* FORCE DARK MODE PADA AI SETTINGS MODAL MESKIPUN DI TEMA TERANG */
-        body.light-theme #ai-settings-modal > div {
-            background-color: #111111 !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-        }
-        
-        body.light-theme #ai-settings-modal .text-white { color: #ffffff !important; }
-        body.light-theme #ai-settings-modal .text-slate-100 { color: #f1f5f9 !important; }
-        body.light-theme #ai-settings-modal .text-slate-200 { color: #e2e8f0 !important; }
-        body.light-theme #ai-settings-modal .text-slate-300 { color: #cbd5e1 !important; }
-        body.light-theme #ai-settings-modal .text-slate-400 { color: #94a3b8 !important; }
-        body.light-theme #ai-settings-modal .text-slate-500 { color: #64748b !important; }
-        
-        body.light-theme #ai-settings-modal .bg-white\/5 { background-color: rgba(255, 255, 255, 0.05) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
-        body.light-theme #ai-settings-modal .bg-black\/30 { background-color: rgba(0, 0, 0, 0.3) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
-        body.light-theme #ai-settings-modal .bg-black\/40 { background-color: rgba(0, 0, 0, 0.4) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
-        body.light-theme #ai-settings-modal .border-white\/10 { border-color: rgba(255, 255, 255, 0.1) !important; }
-        
-        body.light-theme #ai-settings-modal .bg-emerald-500\/10 { background-color: rgba(16, 185, 129, 0.1) !important; border-color: rgba(16, 185, 129, 0.2) !important; }
-        body.light-theme #ai-settings-modal .text-emerald-400 { color: #34d399 !important; }
-        body.light-theme #ai-settings-modal .text-emerald-500 { color: #10b981 !important; }
-        
-        body.light-theme #ai-settings-modal input, 
-        body.light-theme #ai-settings-modal select, 
-        body.light-theme #ai-settings-modal textarea {
-            color: #e2e8f0 !important;
-            background-color: rgba(0, 0, 0, 0.3) !important;
-            border-color: rgba(255, 255, 255, 0.1) !important;
-        }
-        
-        /* Secondary tools on bottom */
-        body.light-theme .bg-white\/5 {
-            background-color: rgba(0, 0, 0, 0.03) !important;
-            border-color: rgba(0, 0, 0, 0.05) !important;
-        }
-        
-        /* Typography */
-        body.light-theme .prose-invert {
-            --tw-prose-body: rgba(15, 23, 42, 0.85) !important;
-            --tw-prose-headings: #0f172a !important;
-            --tw-prose-links: #007aff !important;
-            --tw-prose-bold: #0f172a !important;
-            --tw-prose-code: rgba(15, 23, 42, 0.9) !important;
-            --tw-prose-pre-bg: rgba(255, 255, 255, 0.6) !important;
-            --tw-prose-pre-code: #0f172a !important;
-        }
-        
-        /* Markmap & Mermaid Dynamic Light Theme */
-        body.light-theme .markmap-node text { fill: #0f172a !important; font-weight: 600 !important; }
-        body.light-theme .markmap-link { stroke: #94a3b8 !important; }
-        body.light-theme .markmap-wrapper, 
-        body.light-theme .mermaid-wrapper, 
-        body.light-theme .chart-container { 
-            background-color: rgba(255, 255, 255, 0.8) !important; 
-            border-color: rgba(0, 0, 0, 0.1) !important; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important; 
-            backdrop-filter: blur(16px) !important; 
-            -webkit-backdrop-filter: blur(16px) !important; 
-        }
-        body.light-theme .markmap-svg-container, 
-        body.light-theme .mermaid-svg-container { 
-            background-color: transparent !important; 
-            background: transparent !important; 
-        }
-        body.light-theme .markmap-svg-container svg { background: transparent !important; }
-
-        /* Code Container Borders */
-        body.light-theme .code-container {
-            border-color: rgba(0, 0, 0, 0.08) !important;
-            background-color: rgba(255, 255, 255, 0.6) !important;
-        }
-        
-        body.light-theme .code-container > div {
-            background-color: rgba(255, 255, 255, 0.8) !important;
-            border-color: rgba(0, 0, 0, 0.08) !important;
-            color: #475569 !important;
-        }
-        
-        /* Sidebar Input/Select fields in Light Mode */
-        body.light-theme .bg-black\/20,
-        body.light-theme .bg-black\/30,
-        body.light-theme .bg-black\/35,
-        body.light-theme .bg-black\/40 {
-            background-color: rgba(255, 255, 255, 0.5) !important;
-            border: 1px solid rgba(0,0,0,0.08) !important;
-            color: #0f172a !important;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02) !important;
-        }
-        
-        /* Primary Button */
-        body.light-theme .from-gemini-blue\/10.via-gemini-purple\/10.to-gemini-magenta\/10 {
-            background: #007aff !important; /* Apple Blue */
-            color: #ffffff !important;
-            border: none !important;
-            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.2) !important;
-        }
-    
-        .voice-orb-active {
-            background-color: #5436ff !important;
-            color: white !important;
-            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
-            z-index: 50;
-        }
-        body.light-theme #ai-context-menu {
-            background-color: rgba(255,255,255,0.9);
-            border-color: rgba(0,0,0,0.1);
-        }
-        body.light-theme #ai-context-menu button { color: #1e293b; }
-        body.light-theme #ai-context-menu button:hover { background-color: rgba(0,0,0,0.05); }
-        body.light-theme #ai-context-menu .bg-white\/20 { background-color: rgba(0,0,0,0.1); }
-</style>
-
-
-    <!-- MACOS IOS GLASS THEME OVERRIDES -->
-    <style id="assistly-theme">
-        /* Base Background - Image + Gradient Overlay */
-        /* ==========================================================================
-   1. DARK THEME (DEFAULT / NOT LIGHT-THEME)
-   ========================================================================== */
-body:not(.light-theme) {
-    background-color: #0f1016 !important;
-    background-image: 
-        linear-gradient(rgba(10, 12, 18, 0.7), rgba(15, 17, 24, 0.8)), 
-        url('nano_asset/assets/orb.webp') !important;
-    background-size: 150% 150% !important;
-    background-position: center; /* Tanpa !important agar bisa dianimasi */
-    background-repeat: no-repeat !important;
-    color: #e2e4eb !important;
-    animation: bgDrift 120s infinite ease-in-out !important;
-}
-
-/* Animasi Pergerakan Background (Gerakan Memutar/Sirkular) */
-@keyframes bgDrift {
-    0%   { background-position: 0% 50%; }
-    25%  { background-position: 50% 0%; }
-    50%  { background-position: 100% 50%; }
-    75%  { background-position: 50% 100%; }
-    100% { background-position: 0% 50%; }
-}
-
-@keyframes floatBlob1 {
-    0% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(5vw, 5vh) scale(1.1); }
-    66% { transform: translate(-3vw, 8vh) scale(0.9); }
-    100% { transform: translate(0, 0) scale(1); }
-}
-
-@keyframes floatBlob2 {
-    0% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(-5vw, -6vh) scale(0.95); }
-    66% { transform: translate(4vw, -4vh) scale(1.05); }
-    100% { transform: translate(0, 0) scale(1); }
-}
-
-/* Ambient Glow Blobs in Background (Dark Mode) */
-body:not(.light-theme)::before {
-    content: '';
-    position: fixed;
-    top: -20%;
-    left: -10%;
-    width: 50vw;
-    height: 50vw;
-    background: radial-gradient(circle, rgba(90, 75, 250, 0.2) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-    filter: blur(60px);
-    animation: floatBlob1 25s infinite alternate ease-in-out;
-}
-
-body:not(.light-theme)::after {
-    content: '';
-    position: fixed;
-    bottom: -20%;
-    right: -10%;
-    width: 60vw;
-    height: 60vw;
-    background: radial-gradient(circle, rgba(230, 60, 200, 0.15) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-    filter: blur(60px);
-    animation: floatBlob2 30s infinite alternate ease-in-out;
-}
-
-/* ==========================================================================
-   2. LIGHT THEME
-   ========================================================================== */
-body.light-theme {
-    background-color: #f8fafcb9 !important;
-    background-image: 
-        linear-gradient(rgba(185, 86, 86, 0.65), rgba(241, 245, 249, 0.75)), 
-        url('nano_asset/assets/orb.webp') !important;
-    background-size: 150% 150% !important;
-    background-position: center; /* Tanpa !important agar bisa dianimasi */
-    background-repeat: no-repeat !important;
-    color: #1e293b !important;
-    animation: bgDrift 120s infinite ease-in-out !important;
-}
-
-/* Ambient Glow Blobs in Background (Light Mode) */
-body.light-theme::before {
-    content: '';
-    position: fixed;
-    top: -20%;
-    left: -10%;
-    width: 50vw;
-    height: 50vw;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-    filter: blur(60px);
-    animation: floatBlob1 25s infinite alternate ease-in-out;
-}
-
-body.light-theme::after {
-    content: '';
-    position: fixed;
-    bottom: -20%;
-    right: -10%;
-    width: 60vw;
-    height: 60vw;
-    background: radial-gradient(circle, rgba(236, 72, 153, 0.08) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-    filter: blur(60px);
-    animation: floatBlob2 30s infinite alternate ease-in-out;
-}
-        /* Sidebar - Translucent Dark Glass */
-        body:not(.light-theme) .sidebar {
-            background-color: rgba(15, 15, 20, 0.45) !important;
-            backdrop-filter: blur(40px) saturate(180%) !important;
-            -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
-            border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-            position: relative;
-            z-index: 10;
-        }
-        
-        /* Sidebar Elements */
-        body:not(.light-theme) .card-bg,
-        body:not(.light-theme) .border-white\/5,
-        body:not(.light-theme) .border-white\/10 {
-            border-color: rgba(255, 255, 255, 0.1) !important;
-            background-color: rgba(255, 255, 255, 0.05) !important;
-        }
-        
-        body:not(.light-theme) .sidebar button {
-            color: #a0a1b2 !important;
-        }
-        
-        body:not(.light-theme) .sidebar button:hover {
-            color: #ffffff !important;
-            background-color: rgba(255, 255, 255, 0.1) !important;
-        }
-
-        /* Main Chat Area */
-        body:not(.light-theme) main#chat-area {
-            background-color: transparent !important;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Header - Thin Translucent Frost */
-        body:not(.light-theme) header {
-            background: rgba(15, 15, 20, 0.3) !important;
-            backdrop-filter: blur(30px) saturate(180%) !important;
-            -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-        }
-
-        /* Input Box (Drop-Zone) - Frosted Glass Pill */
-        body:not(.light-theme) #drop-zone {
-            background-color: rgba(20, 20, 25, 0.5) !important;
-            backdrop-filter: blur(40px) saturate(200%) !important;
-            -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-        }
-
-        body:not(.light-theme) #drop-zone textarea,
-        body:not(.light-theme) #drop-zone input {
-            color: #ffffff !important;
-        }
-        
-        body:not(.light-theme) #drop-zone textarea::placeholder {
-            color: rgba(255, 255, 255, 0.5) !important;
-        }
-
-        /* Send Button Theme Adaptation */
-        #send-btn {
-            background-color: rgba(90, 75, 250, 0.8) !important;
-            box-shadow: 0 4px 15px rgba(90, 75, 250, 0.3) !important;
-        }
-        #send-btn:hover {
-            background-color: rgba(105, 90, 255, 0.9) !important;
-        }
-        
-        body.light-theme #send-btn {
-            background-color: #007aff !important;
-            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3) !important;
-            color: #ffffff !important;
-        }
-        body.light-theme #send-btn:hover {
-            background-color: #0062cc !important;
-        }
-        
-        body.oled-theme #send-btn {
-            background-color: #000000 !important;
-            border: 1px solid #333 !important;
-            box-shadow: none !important;
-            color: #e5e5e5 !important;
-        }
-        body.oled-theme #send-btn:hover {
-            background-color: #111111 !important;
-        }
-
-        body.hacker-theme #send-btn {
-            background-color: #021102 !important;
-            border: 1px solid #00ff00 !important;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2) !important;
-            color: #00ff00 !important;
-        }
-        body.hacker-theme #send-btn:hover {
-            background-color: #002200 !important;
-        }
-
-        /* Chat Bubbles */
-        /* User iMessage Style */
-        body:not(.light-theme) .chat-bubble-user {
-            background-color: rgba(90, 75, 250, 0.8) !important; 
-            backdrop-filter: blur(20px) !important;
-            -webkit-backdrop-filter: blur(20px) !important;
-            color: #ffffff !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            box-shadow: 0 4px 20px rgba(90, 75, 250, 0.4) !important;
-        }
-
-        /* AI Glass Bubble */
-        body:not(.light-theme) .chat-bubble-ai {
-            background-color: rgba(25, 25, 30, 0.4) !important;
-            backdrop-filter: blur(30px) saturate(180%) !important;
-            -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
-            color: #ffffff !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 1.25rem !important;
-            padding: 1.25rem !important;
-            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
-        }
-
-        /* Modals - Heavy Glass */
-        body:not(.light-theme) dialog > div, body:not(.light-theme) #ai-settings-modal > div, body:not(.light-theme) #preview-modal > div, body:not(.light-theme) #diagnosis-modal > div, body:not(.light-theme) #system-persona-modal > div {
-            background-color: rgba(25, 25, 30, 0.5) !important;
-            backdrop-filter: blur(50px) saturate(200%) !important;
-            -webkit-backdrop-filter: blur(50px) saturate(200%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-        }
-        
-        /* Secondary tools on bottom */
-        body:not(.light-theme) .bg-white\/5 {
-            background-color: rgba(255, 255, 255, 0.08) !important;
-            border-color: rgba(255, 255, 255, 0.08) !important;
-        }
-        
-        /* Typography for high contrast on glass */
-        body:not(.light-theme) .prose-invert {
-            --tw-prose-body: rgba(255, 255, 255, 0.95) !important;
-            --tw-prose-headings: #ffffff !important;
-            --tw-prose-links: #a8a0ff !important;
-            --tw-prose-bold: #ffffff !important;
-            --tw-prose-code: #ffffff !important;
-            --tw-prose-pre-bg: rgba(0, 0, 0, 0.4) !important;
-            --tw-prose-pre-code: #ffffff !important;
-        }
-        
-        /* Markmap & Mermaid Dynamic Light Theme */
-        body.light-theme .markmap-node text { fill: #0f172a !important; font-weight: 600 !important; }
-        body.light-theme .markmap-link { stroke: #94a3b8 !important; }
-        body.light-theme .markmap-wrapper, 
-        body.light-theme .mermaid-wrapper, 
-        body.light-theme .chart-container { 
-            background-color: rgba(255, 255, 255, 0.8) !important; 
-            border-color: rgba(0, 0, 0, 0.1) !important; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important; 
-            backdrop-filter: blur(16px) !important; 
-            -webkit-backdrop-filter: blur(16px) !important; 
-        }
-        body.light-theme .markmap-svg-container, 
-        body.light-theme .mermaid-svg-container { 
-            background-color: transparent !important; 
-            background: transparent !important; 
-        }
-        body.light-theme .markmap-svg-container svg { background: transparent !important; }
-
-        /* Code Container Borders */
-        body:not(.light-theme) .code-container {
-            border-color: rgba(255, 255, 255, 0.15) !important;
-            background-color: rgba(0, 0, 0, 0.4) !important;
-        }
-        
-        body:not(.light-theme) .code-container > div {
-            background-color: rgba(0, 0, 0, 0.6) !important;
-            border-color: rgba(255, 255, 255, 0.1) !important;
-            color: #b0b1c2 !important;
-        }
-    
-        .voice-orb-active {
-            background-color: #5436ff !important;
-            color: white !important;
-            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
-            z-index: 50;
-        }
-        body.light-theme #ai-context-menu {
-            background-color: rgba(255,255,255,0.9);
-            border-color: rgba(0,0,0,0.1);
-        }
-        body.light-theme #ai-context-menu button { color: #1e293b; }
-        body.light-theme #ai-context-menu button:hover { background-color: rgba(0,0,0,0.05); }
-        body.light-theme #ai-context-menu .bg-white\/20 { background-color: rgba(0,0,0,0.1); }
-</style>
-
-
-
-    <script>
-        // Mocks for lazy loaders since libraries are already loaded statically in vision_ulti.html
-        window.ensureMermaid = async () => typeof mermaid !== 'undefined';
-        window.ensureMarkmap = async () => typeof markmap !== 'undefined' && markmap.Markmap;
-        window.ensureChart = async () => typeof Chart !== 'undefined';
-        window.ensureMammoth = async () => typeof mammoth !== 'undefined';
-        window.ensureXLSX = async () => typeof XLSX !== 'undefined';
-        window.ensureZipSave = async () => typeof JSZip !== 'undefined';
-    </script>
+    </style>
 </head>
-<body class="bg-gemini-bg text-slate-100 font-sans min-h-screen flex items-center justify-center p-2 sm:p-4 overflow-hidden">
-<div id="app-wrapper" class="w-full h-full max-w-[1920px] flex overflow-hidden rounded-[2rem] shadow-[0_0_50px_rgba(0,0,0,0.7)] relative border border-white/5">
-    
-<!-- ===== MODAL PENGATURAN MODE AI ===== -->
-    <div id="ai-settings-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-md">
-        <div class="bg-[#111111] border border-white/10 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden" style="box-shadow: 0 0 60px rgba(66,133,244,0.15), 0 25px 50px rgba(0,0,0,0.5);">
+
+<body class="bg-[#1a1a1a] text-slate-100 min-h-screen flex overflow-hidden">
+
+<!-- OVERRIDE CSS: SYNC DARK & LIGHT MODE & CLAUDE FLAT UI -->
+<style>
+  /* === CLAUDE DARK THEME === */
+  /* ===== CLAUDE-AUTHENTIC THEME ===== */
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important; -webkit-font-smoothing: antialiased; }
+
+  /* === THEME BASE === */
+  body:not(.light-theme) { background: #1a1a1a !important; color: #e8e5e1 !important; }
+  body:not(.light-theme) .sidebar { background: #1e1e1e !important; border-right: 1px solid rgba(255,255,255,0.05) !important; }
+  body:not(.light-theme) header { background: rgba(26,26,26,0.92) !important; border-bottom: 1px solid rgba(255,255,255,0.04) !important; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+
+  body.light-theme { background: #faf9f7 !important; color: #1a1a1a !important; font-family: 'Inter', sans-serif !important; }
+  body.light-theme .sidebar { background: #f5f4f2 !important; border-right: 1px solid rgba(0,0,0,0.07) !important; }
+  body.light-theme header { background: rgba(250,249,247,0.92) !important; border-bottom: 1px solid rgba(0,0,0,0.06) !important; }
+
+  /* === FLOATING INPUT PANEL === */
+  .input-panel {
+    background: transparent !important;
+    pointer-events: none;
+  }
+  .input-panel #drop-zone,
+  .input-panel p {
+    pointer-events: auto;
+  }
+
+  /* === DARK THEME FLOATING INPUT === */
+  body:not(.light-theme) .input-panel {
+    background: linear-gradient(to top, rgba(26,26,26,0.85) 0%, rgba(26,26,26,0.2) 60%, transparent 100%) !important;
+  }
+  body:not(.light-theme) #drop-zone {
+    background: rgba(34, 34, 32, 0.85) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  }
+  body:not(.light-theme) #drop-zone:focus-within {
+    border-color: rgba(217,119,87,0.6) !important;
+    box-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(217,119,87,0.15) !important;
+  }
+  body:not(.light-theme) textarea { color: #e8e5e1 !important; }
+  body:not(.light-theme) textarea::placeholder { color: #8e8e8e !important; }
+
+  /* === LIGHT THEME FLOATING INPUT === */
+  body.light-theme .input-panel {
+    background: linear-gradient(to top, rgba(250,249,247,0.85) 0%, rgba(250,249,247,0.2) 60%, transparent 100%) !important;
+  }
+  body.light-theme #drop-zone {
+    background: rgba(255, 255, 255, 0.88) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(0, 0, 0, 0.09) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04) !important;
+  }
+  body.light-theme #drop-zone:focus-within {
+    border-color: #D97757 !important;
+    box-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.12), 0 0 0 3px rgba(217,119,87,0.15) !important;
+  }
+  body.light-theme textarea { color: #1a1a1a !important; }
+  body.light-theme textarea::placeholder { color: #9a9a9a !important; }
+  body.light-theme .text-slate-100, body.light-theme .text-slate-200 { color: #1a1a1a !important; }
+  body.light-theme .text-slate-300, body.light-theme .text-slate-400 { color: #5c5c5c !important; }
+  body.light-theme .bg-\[\#1e1e1e\] { background: #f5f4f2 !important; }
+  body.light-theme .border-white\/5 { border-color: rgba(0,0,0,0.06) !important; }
+  body.light-theme .hover\:bg-\[\#252525\]:hover { background: rgba(0,0,0,0.04) !important; }
+
+  /* === MESSAGE COLUMN === */
+  #messages { scroll-behavior: smooth; display: flex; flex-direction: column; align-items: center; }
+  #messages > div { width: 100% !important; max-width: 50rem !important; margin: 0 auto !important; }
+
+  /* === BUBBLE RESET — all styling handled by inner divs === */
+  .chat-bubble-user, .chat-bubble-ai,
+  body:not(.light-theme) .chat-bubble-user, body:not(.light-theme) .chat-bubble-ai,
+  body.light-theme .chat-bubble-user, body.light-theme .chat-bubble-ai {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    position: static !important;
+    max-width: 100% !important;
+  }
+
+  /* === USER BUBBLE (Claude-style: warm dark right-aligned pill) === */
+  .claude-user-bubble {
+    background: #2d2d2d;
+    border-radius: 18px 18px 4px 18px;
+    padding: 10px 16px;
+    font-size: 15px;
+    line-height: 1.65;
+    color: #e8e5e1;
+    max-width: 85%;
+    margin-left: auto;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+  body.light-theme .claude-user-bubble {
+    background: #efe9e0;
+    color: #1a1a1a;
+  }
+
+  /* === AI PROSE TEXT === */
+  .chat-bubble-ai .prose {
+    font-size: 15px !important;
+    line-height: 1.75 !important;
+    color: #e8e5e1 !important;
+  }
+  body.light-theme .chat-bubble-ai .prose { color: #1a1a1a !important; }
+
+  /* === AI ACTION BAR === */
+  .claude-action-bar {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 10px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .chat-bubble-ai:hover .claude-action-bar { opacity: 1; }
+  .claude-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.04);
+    color: #9ca3af;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+    font-family: 'Inter', sans-serif;
+  }
+  .claude-action-btn:hover { background: rgba(255,255,255,0.09); color: #e5e7eb; }
+  body.light-theme .claude-action-btn { border-color: rgba(0,0,0,0.08); background: rgba(0,0,0,0.03); color: #6b7280; }
+  body.light-theme .claude-action-btn:hover { background: rgba(0,0,0,0.07); color: #1a1a1a; }
+
+  /* === CODE BLOCK === */
+  .code-container { position: relative; margin-top: 12px; margin-bottom: 12px; border-radius: 10px; overflow: hidden; background: #0d1117 !important; border: 1px solid rgba(255,255,255,0.08); }
+  body.light-theme .code-container { background: #f6f8fa !important; border: 1px solid rgba(0,0,0,0.08); }
+  .code-container pre { background: transparent !important; margin: 0; padding: 16px; font-size: 13px; line-height: 1.6; }
+  .copy-code-btn { position: absolute; right: 8px; top: 8px; background: rgba(255,255,255,0.08); color: #fff; border: none; border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; transition: 0.15s; opacity: 0; z-index: 10; font-family: 'Inter', sans-serif; }
+  body.light-theme .copy-code-btn { background: rgba(0,0,0,0.06); color: #24292f; }
+  .code-container:hover .copy-code-btn { opacity: 1; }
+  .copy-code-btn:hover { background: rgba(255,255,255,0.14); }
+  body.light-theme .copy-code-btn:hover { background: rgba(0,0,0,0.1); }
+
+  /* Blink cursor */
+  .animate-pulse.flex.gap-2.items-center.text-slate-400.text-sm { color: transparent !important; position: relative; }
+  .animate-pulse.flex.gap-2.items-center.text-slate-400.text-sm::after { content: '█'; color: #D97757; position: absolute; left: 0; top: 0; font-size: 18px; animation: claude-blink 1s step-start infinite; }
+  @keyframes claude-blink { 50% { opacity: 0; } }
+
+  /* === SIDEBAR ITEMS === */
+  .sidebar-transition { transition: width .25s cubic-bezier(.4,0,.2,1), transform .25s cubic-bezier(.4,0,.2,1); }
+  #chat-history-list a, #chat-history-list div { display: block; padding: 6px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background .12s; letter-spacing: -0.01em; }
+  body:not(.light-theme) #chat-history-list a, body:not(.light-theme) #chat-history-list div { color: #9ca3af; }
+  body:not(.light-theme) #chat-history-list a:hover, body:not(.light-theme) #chat-history-list div:hover { background: rgba(255,255,255,.04); color: #e5e5e5; }
+  body:not(.light-theme) #chat-history-list .active { background: rgba(217,119,87,.1); color: #D97757; }
+  body.light-theme #chat-history-list a, body.light-theme #chat-history-list div { color: #5c5c5c; }
+  body.light-theme #chat-history-list a:hover, body.light-theme #chat-history-list div:hover { background: rgba(0,0,0,.04); color: #1a1a1a; }
+  body.light-theme #chat-history-list .active { background: rgba(217,119,87,.1); color: #D97757; }
+
+    #command-palette { background: rgba(10,10,10,.72); }
+    #command-palette-dialog { background: var(--diagram-surface); border-color: var(--diagram-border); }
+    .command-item[aria-selected="true"] { background: rgba(217,119,87,.16); color: #fff; }
+    #artifact-dock { background: var(--diagram-surface); border-color: var(--diagram-border); }
+    #artifact-dock iframe { background: #fff; }
+</style>
+
+<!-- ALL MODALS (custom-dialog, session, ai-settings, previewModal, ai-diagnostic) -->
+    <div id="custom-dialog" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-[#1e1f20] border border-white/10 rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-2xl card-bg">
+            <h3 id="dialog-title" class="text-sm font-bold text-slate-200">Notifikasi</h3>
+            <p id="dialog-message" class="text-xs text-slate-400 leading-relaxed"></p>
+            <div class="flex justify-end gap-2 pt-2" id="dialog-buttons">
+                <button id="dialog-cancel-btn" class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-xs font-semibold text-slate-300 transition-all">Batal</button>
+                <button id="dialog-confirm-btn" class="px-4 py-2 bg-gradient-to-tr from-gemini-blue to-gemini-purple text-white rounded-xl text-xs font-semibold transition-all">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Manajemen Sesi (Session Management Modal) -->
+    <div id="session-management-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-[#1e1f20] border border-white/10 rounded-2xl max-w-2xl w-full max-h-96 flex flex-col shadow-2xl card-bg">
             <!-- Header Modal -->
-            <div class="relative p-6 border-b border-white/10" >
+            <div class="flex items-center justify-between p-6 border-b border-white/10">
+                <h3 class="text-lg font-bold text-slate-200 flex items-center gap-2">
+                    <i class='bx bx-folder-open text-gemini-blue'></i>
+                    Sesi Tersimpan
+                </h3>
+                <button onclick="closeSessionManagementModal()" class="text-slate-400 hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- Content Area (Scrollable) -->
+            <div id="sessions-list-container" class="flex-1 overflow-y-auto p-6 space-y-3">
+                <!-- Sessions akan ditampilkan di sini -->
+                <p id="no-sessions-text" class="text-xs text-slate-400 text-center py-8">Tidak ada sesi yang tersimpan. Klik "Simpan Sesi Sekarang" untuk membuat sesi baru.</p>
+            </div>
+
+            <!-- Footer Modal -->
+            <div class="border-t border-white/10 p-4 flex justify-end gap-2">
+                <button onclick="closeSessionManagementModal()" class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-semibold text-slate-300 transition-all">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL PENGATURAN MODE AI ===== -->
+    <div id="ai-settings-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-[#131314] border border-white/10 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden" style="box-shadow: 0 0 60px rgba(66,133,244,0.15), 0 25px 50px rgba(0,0,0,0.5);">
+            <!-- Header Modal -->
+            <div class="relative p-6 border-b border-white/10" style="background: linear-gradient(135deg, rgba(66,133,244,0.08) 0%, rgba(155,114,203,0.08) 50%, rgba(217,101,112,0.08) 100%);">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-gemini-blue to-gemini-purple flex items-center justify-center shadow-lg">
@@ -1372,19 +884,6 @@ body.light-theme::after {
                             <option value="dark">Dark (Default)</option>
                             <option value="oled">OLED Pitch Black</option>
                             <option value="hacker">Hacker Green</option>
-                        </select>
-                    </div>
-                    <div class="mt-4">
-                        <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Gaya Font (Lokal)</label>
-                        <select id="ai-ui-font" onchange="changeFontFamily(this.value)" class="w-full bg-black/40 border border-white/10 focus:border-gemini-blue/50 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none transition-all">
-                            <option value="default">Sistem (Default)</option>
-                            <option value="jakarta">Plus Jakarta Sans (Sangat Elegan)</option>
-                            <option value="inter">Inter (Modern & Bersih)</option>
-                            <option value="poppins">Poppins (Geometris & Ramah)</option>
-                            <option value="outfit">Outfit (Trendi & Futuristik)</option>
-                            <option value="quicksand">Quicksand (Bulat Lembut)</option>
-                            <option value="space">Space Grotesk (Tech / Nyentrik)</option>
-                            <option value="fira">Fira Code (Hacker / Monospace)</option>
                         </select>
                     </div>
                 </div>
@@ -1450,11 +949,11 @@ body.light-theme::after {
                         </div>
                     </label>
                     <div class="space-y-3">
-                        <!-- Standard OpenAI-compatible base endpoint -->
-                        <div>
+                        <!-- Base URL disembunyikan agar otomatis mengikuti IP server/host -->
+                        <div class="hidden">
                             <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Base URL API</label>
-                            <input id="ai-openai-baseurl" type="url" placeholder="https://api.openai.com/v1" class="w-full bg-black/30 border border-white/10 focus:border-purple-400/50 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none transition-all font-mono">
-                            <p class="text-[10px] text-slate-500 mt-1">Gunakan base endpoint OpenAI-compatible, misalnya <span class="text-purple-400 font-mono">http://localhost:1234/v1</span> atau <span class="text-purple-400 font-mono">https://api.openai.com/v1</span>.</p>
+                            <input id="ai-openai-baseurl" type="text" placeholder="http://localhost:8080/exec.php?route=" class="w-full bg-black/30 border border-white/10 focus:border-purple-400/50 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none transition-all font-mono">
+                            <p class="text-[10px] text-slate-500 mt-1">Untuk server sendiri: <span class="text-purple-400 font-mono">http://localhost:1234/v1</span> (LM Studio), <span class="text-purple-400 font-mono">http://localhost:8000/v1</span> (vLLM), dll</p>
                         </div>
 
                         <!-- API Key -->
@@ -1533,8 +1032,8 @@ body.light-theme::after {
                         <i class='bx bx-window-alt text-xl text-white'></i>
                     </div>
                     <div>
-                        <h3 class="font-bold text-lg text-slate-100 tracking-tight">Pratinjau Interaktif</h3>
-                        <p class="text-xs text-slate-400 font-medium">HTML/CSS/JS yang dirender</p>
+                        <h3 class="font-bold text-lg text-slate-100 tracking-tight">Interactive Preview</h3>
+                        <p class="text-xs text-slate-400 font-medium">Rendered HTML/CSS/JS</p>
                     </div>
                 </div>
                 <button onclick="closePreviewModal()" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all">
@@ -1616,6 +1115,7 @@ body.light-theme::after {
   <button id="theme-toggle-btn" onclick="toggleTheme()"></button>
   <i      id="theme-icon"></i>
   <div    id="mobile-sidebar-backdrop" onclick="toggleSidebar()"></div>
+  <span   id="model-indicator-badge"></span>
   <span   id="ai-mode-indicator"></span>
   <span   id="char-counter"></span>
   <button id="voice-input-btn" onclick="startVoiceInput()"></button>
@@ -1626,451 +1126,200 @@ body.light-theme::after {
 </div>
 
 <!-- ===== SIDEBAR: CLAUDE MINIMAL ===== -->
-
-<!-- SIDEBAR -->
-
-    <aside class="sidebar w-72 bg-gemini-sidebar shrink-0 h-screen hidden md:flex flex-col justify-between pb-6 border-r border-white/5 z-40 sidebar-transition">
-        <!-- Judul & Status -->
-        <div class="p-6 border-b border-white/5">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-2">
-                    <!-- Sparkle Gradient Icon -->
-                    <svg class="w-6 h-6 text-gemini-blue animate-pulse" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C12 2 12.5 7.5 15 10C17.5 12.5 22 12 22 12C22 12 16.5 12.5 14 15C11.5 17.5 12 22 12 22C12 22 11.5 16.5 9 14C6.5 11.5 2 12 2 12C2 12 7.5 11.5 10 9C12.5 6.5 12 2 12 2Z" fill="url(#geminiGrad)" />
-                        <defs>
-                            <linearGradient id="geminiGrad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
-                                <stop offset="0%" stop-color="#4285f4" />
-                                <stop offset="50%" stop-color="#9b72cb" />
-                                <stop offset="100%" stop-color="#d96570" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <h1 class="text-base font-semibold tracking-tight text-slate-200">Gemini Nano</h1>
-                </div>
-                <div class="flex items-center gap-2">
-                    <!-- Tombol Sembunyikan Sidebar Internal Desktop -->
-                    <button onclick="toggleSidebar()" class="hidden md:flex p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all" title="Sembunyikan Menu">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
-                    </button>
-                    <div class="flex items-center gap-1.5 bg-black/35 px-2.5 py-1 rounded-full border border-white/5">
-                        <span id="status" class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                        <span class="text-[9px] font-bold text-slate-400 tracking-wider uppercase">Lokal</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tombol Sesi Baru -->
-            <button onclick="resetChat()" class="w-full flex items-center justify-center gap-2 min-h-[44px] py-3 px-4 mb-3 bg-gradient-to-r from-gemini-blue/10 via-gemini-purple/10 to-gemini-magenta/10 hover:from-gemini-blue/20 hover:via-gemini-purple/20 hover:to-gemini-magenta/20 border accent-text rounded-2xl text-xs font-semibold text-slate-200 transition-all shadow-md">
-                <svg class="w-4 h-4 accent-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                Obrolan Baru
-            </button>
-
-            <div id="model-badge" class="text-[10px] px-3 py-1.5 rounded-xl bg-white/5 text-slate-400 font-mono inline-block w-full text-center border border-white/5">
-                Mengecek status on-device...
-            </div>
-        </div>
-
-        <!-- Alat & Setelan -->
-        <div class="p-6 space-y-6 flex-1 overflow-y-auto">
-            <!-- Pencarian Riwayat Obrolan -->
-            <div class="space-y-2">
-                <label class="block text-[10px] text-slate-400 font-bold tracking-wider uppercase">Cari Obrolan</label>
-                <div class="relative">
-                    <input type="text" id="chat-search" oninput="filterMessages()" placeholder="Cari pesan..." class="w-full bg-black/20 border border-white/5 rounded-xl px-4 py-2 text-xs text-slate-200 focus:outline-none focus:border-gemini-blue focus:ring-1 focus:ring-gemini-blue/30 transition-all">
-                    <button onclick="clearMessageSearch()" class="absolute right-3.5 top-2.5 text-slate-400 hover:text-white text-xs">✕</button>
-                </div>
-            </div>
-
-            <!-- Accordion Prompt Library -->
-            <details class="group card-bg bg-white/5 rounded-2xl border-2 cursor-pointer transition-all mb-4">
-                <summary class="flex items-center justify-between p-4 list-none text-xs font-semibold text-slate-300 select-none">
-                    <span class="flex items-center gap-1.5"><i class='bx bx-book text-sm text-gemini-blue'></i> Prompt Library</span>
-                    <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                </summary>
-                <div class="px-4 pb-4 space-y-4 border-t border-white/5 pt-4 cursor-default">
-                    <div class="space-y-2">
-                        <label class="block text-[10px] text-slate-400 font-bold tracking-wider uppercase">Pilih Persona</label>
-                        <select id="persona-select" onchange="applySelectedPersona()" class="w-full bg-black/20 border border-white/5 min-h-[44px] rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-gemini-blue transition-all">
-                            <option value="default">Default Assistant</option>
-                            <option value="education_expert">Pakar Inovasi Pendidikan</option>
-                            <option value="teacher_pro">Guru Profesional & Praktisi Kelas</option>
-                            <option value="edu_consultant">Konsultan Pendidikan & Analis Mutu</option>
-                            <option value="developer">Web Developer</option>
-                            <option value="translator">Penerjemah Profesional</option>
-                            <option value="edutech_expert">Pakar EduTech & Sistem Sekolah</option>
-                            <option value="data_analyst">Analis Data & Database Administrator</option>
-                            <option value="automation_dev">Spesialis Otomatisasi & API</option>
-                            <option value="mobile_optimizer">Pengembang Mobile-First UI</option>
-                            <option value="seo_copywriter">SEO Copywriter & Konten Kreator</option>
-                            <option value="cybersecurity_expert">Spesialis Keamanan Siber</option>
-                            <option value="ai_integrator">Integritas API & Solusi AI</option>
-                            <option value="devops_engineer">DevOps & Cloud Engineer</option>
-                            <option value="technical_writer">Penulis Dokumentasi Teknis</option>
-                            <option value="creative_animator">Pakar Animasi & CSS Motion</option>
-                            <option value="business_analyst">Analis Bisnis & Kebutuhan Sistem</option>
-                            <option value="qa_tester">QA & Pengujian Kode Otomatis</option>
-                            <option value="game_dev_js">Pengembang Game HTML5/JS</option>
-                            <option value="ecommerce_specialist">Spesialis E-Commerce & Transaksi</option>
-                            <option value="accessibility_auditor">Konsultan Aksesibilitas (a11y)</option>
-                            <option value="agritech_expert">Pakar Pertanian Digital (AgriTech)</option>
-                            <option value="plantation_manager">Konsultan Manajemen Perkebunan</option>
-                            <option value="digital_sociologist">Sosiolog Digital & Analis Sosial</option>
-                            <option value="cultural_curator">Kurator Budaya & Kearifan Lokal</option>
-                            <option value="clinical_psychologist">Psikolog Klinis & Konselor</option>
-                        </select>
-                    </div>
-                </div>
-            </details>
-
-            <!-- Accordion Fitur Tambahan -->
-            <details class="group card-bg bg-white/5 rounded-2xl border-2 cursor-pointer transition-all">
-                <summary class="flex items-center justify-between p-4 list-none text-xs font-semibold text-slate-300 select-none">
-                    <span class="flex items-center gap-1.5"><i class='bx bx-slider-alt text-sm text-gemini-purple'></i> Fitur Tambahan</span>
-                    <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                </summary>
-
-                <div class="px-4 pb-4 space-y-4 border-t border-white/5 pt-4 cursor-default">
-                    <!-- Konfigurasi Suara (TTS) -->
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-300">Text-to-Speech</span>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="tts-toggle" onchange="toggleTTS(this)" class="sr-only peer">
-                                <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-gemini-blue peer-checked:to-gemini-purple"></div>
-                            </label>
-                        </div>
-                        <select id="tts-language" onchange="updateTTSLanguage()" class="w-full bg-black/20 border border-white/5 min-h-[44px] rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-gemini-blue transition-all">
-                            <option value="id-ID" selected>Bahasa Indonesia (id-ID)</option>
-                            <option value="en-US">English (en-US)</option>
-                            <option value="ja-JP">日本語 (ja-JP)</option>
-                        </select>
-                    </div>
-
-                    <hr class="border-white/5">
-
-                    <!-- Template Cepat Kimia (KaTeX) -->
-                    <div class="space-y-2">
-                        <span class="text-xs font-semibold text-slate-300 flex items-center gap-1.5 mb-2">
-                            <i class='bx bx-flask text-sm'></i> Template Kimia (KaTeX)
-                        </span>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="insertChemistryTemplate('equilibrium')" class="text-[10px] min-h-[44px] py-2 px-2.5 bg-black/20 hover:bg-gemini-blue/10 border border-white/5 rounded-xl text-slate-300 text-left transition-colors flex items-center gap-1.5"><i class='bx bx-transfer-alt'></i> Reaksi Setimbang</button>
-                            <button onclick="insertChemistryTemplate('water')" class="text-[10px] min-h-[44px] py-2 px-2.5 bg-black/20 hover:bg-gemini-blue/10 border border-white/5 rounded-xl text-slate-300 text-left transition-colors flex items-center gap-1.5"><i class='bx bx-droplet'></i> H₂O Air</button>
-                            <button onclick="insertChemistryTemplate('ionization')" class="text-[10px] min-h-[44px] py-2 px-2.5 bg-black/20 hover:bg-gemini-blue/10 border border-white/5 rounded-xl text-slate-300 text-left transition-colors flex items-center gap-1.5"><i class='bx bx-atom'></i> NaCl Ion</button>
-                            <button onclick="insertChemistryTemplate('reaction')" class="text-[10px] min-h-[44px] py-2 px-2.5 bg-black/20 hover:bg-gemini-blue/10 border border-white/5 rounded-xl text-slate-300 text-left transition-colors flex items-center gap-1.5"><i class='bx bx-flask'></i> Sintesis</button>
-                        </div>
-                    </div>
-
-                    <hr class="border-white/5">
-
-                    <!-- Panduan Chrome Flags -->
-                    <div class="space-y-2">
-                        <span class="text-xs font-semibold text-gemini-blue flex items-center gap-1.5">
-                            <i class='bx bx-cog text-sm'></i> Persyaratan Gambar
-                        </span>
-                        <div class="space-y-1 font-mono text-[9px] text-slate-300 bg-black/30 p-2 rounded-lg">
-                            <div class="break-all text-gemini-purple flex items-center gap-1"><i class='bx bx-book-content text-[10px]'></i><span>#optimization-guide-on-device-model</span></div>
-                            <div class="break-all text-gemini-purple flex items-center gap-1"><i class='bx bx-book-content text-[10px]'></i><span>#prompt-api-for-gemini-nano</span></div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Assistly Pro Plan Banner -->
-                <div class="mt-6 mx-4 p-4 rounded-2xl bg-gradient-to-b from-black/40 to-black/60 border border-white/10 relative overflow-hidden">
-                    <div class="absolute -top-10 -right-10 w-24 h-24 bg-[#5436ff]/20 rounded-full blur-xl"></div>
-                    <h3 class="text-sm font-bold text-white flex items-center gap-2 mb-2"><i class='bx bxs-color-fill text-[#5436ff]'></i> Assistly Pro Plan</h3>
-                    <p class="text-[10px] text-slate-400 mb-3 leading-relaxed">Complete freedom.<br>Maximum performance.</p>
-                    <button class="w-full py-2 rounded-xl bg-gradient-to-r from-[#5436ff] to-[#8b5cf6] text-white text-xs font-semibold shadow-lg shadow-[#5436ff]/30 transition-all hover:scale-[1.02]">
-                        Upgrade to Pro
-                    </button>
-                </div>
-                
-                <!-- User Profile -->
-                <div class="mt-4 mx-4 mb-4 p-3 rounded-2xl bg-black/20 border border-white/5 flex items-center justify-between hover:bg-black/40 transition-all cursor-pointer">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-[#5436ff] flex items-center justify-center text-white font-bold text-sm">SK</div>
-                        <div>
-                            <p class="text-xs font-bold text-slate-200">Subuh K.</p>
-                            <p class="text-[10px] text-slate-500">Free Plan</p>
-                        </div>
-                    </div>
-                    <i class='bx bx-log-out text-slate-500 hover:text-white'></i>
-                </div>
-
-            </details>
-            <!-- Accordion Knowledge Base -->
-            <details id="kb-accordion" class="group card-bg bg-white/5 rounded-2xl border-2 cursor-pointer transition-all mb-4">
-                <summary class="flex items-center justify-between p-4 list-none text-xs font-semibold text-slate-300 select-none">
-                    <span class="flex items-center gap-1.5"><i class='bx bx-data text-sm text-emerald-400'></i> Knowledge Base</span>
-                    <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                </summary>
-                <div class="px-4 pb-4 space-y-3 border-t border-white/5 pt-4 cursor-default">
-                    <!-- Tombol Unggah -->
-                    <button onclick="document.getElementById('kb-file-input').click()" class="w-full py-2.5 px-3 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-[10px] font-bold text-emerald-400 transition-all flex items-center justify-center gap-2">
-                        <i class='bx bx-cloud-upload text-sm'></i> Tambah Dokumen ke KB
-                    </button>
-                    <input type="file" id="kb-file-input" class="hidden" accept=".txt,.md,.pdf,.docx,.doc" onchange="handleKBFileUpload(event)">
-                    
-                    <!-- Progress Indikator -->
-                    <div id="kb-progress-container" class="hidden space-y-1 bg-black/30 p-2 rounded-lg border border-white/5">
-                        <div class="flex justify-between text-[9px] text-slate-400">
-                            <span id="kb-progress-text">Memproses vektor...</span>
-                            <span id="kb-progress-percentage">0%</span>
-                        </div>
-                        <div class="w-full bg-black rounded-full h-1">
-                            <div id="kb-progress-bar" class="bg-emerald-400 h-1 rounded-full" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Daftar File -->
-                    <div id="kb-files-list" class="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar pt-2">
-                        <!-- List di-render via JS -->
-                        <div class="text-[10px] text-slate-500 text-center italic py-2">KB masih kosong</div>
-                    </div>
-                </div>
-            </details>
-
-            <!-- Pengaturan Mode AI -->
-            <div class="card-bg bg-white/5 rounded-2xl p-4 border-2">
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                        <i class='bx bx-brain text-sm text-gemini-purple'></i>
-                        Mode AI
-                    </span>
-                    <button onclick="openAISettingsModal()" id="ai-mode-settings-btn"
-                        class="text-[10px] font-bold px-2.5 py-1 bg-gradient-to-r from-gemini-blue/20 to-gemini-purple/20 hover:from-gemini-blue/30 hover:to-gemini-purple/30 border border-gemini-blue/30 rounded-xl text-gemini-blue transition-all flex items-center gap-1">
-                        <i class='bx bx-cog text-xs'></i> Atur
-                    </button>
-                </div>
-                <div id="ai-mode-indicator" class="text-[10px] text-slate-400 font-mono bg-black/20 px-3 py-2 rounded-xl border border-white/5">
-                    Memuat...
-                </div>
-            </div>
-
-            <!-- Manajemen Riwayat & Sesi -->
-            <div class="space-y-1 pt-2">
-                <button onclick="openSessionManagementModal()" class="w-full text-left min-h-[44px] px-3.5 py-2 text-xs text-gemini-blue hover:bg-gemini-blue/10 rounded-xl transition-colors flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    Kelola Sesi Tersimpan
-                </button>
-                <button onclick="saveCurrentSession()" class="w-full text-left min-h-[44px] px-3.5 py-2 text-xs text-emerald-400 hover:bg-emerald-500/10 rounded-xl transition-colors flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
-                    Simpan Sesi Sekarang
-                </button>
-                <button onclick="clearHistory()" class="w-full text-left min-h-[44px] px-3.5 py-2 text-xs text-red-400 hover:bg-red-500/10 rounded-xl transition-colors flex items-center gap-2">
-                    <svg class="w-4 h-4 text-red-400/85" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    Hapus Riwayat Pesan
-                </button>
-                <button onclick="openDiagnosticModal()" class="w-full text-left min-h-[44px] px-3.5 py-2 text-xs text-amber-400 hover:bg-amber-500/10 rounded-xl transition-colors flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
-                    Diagnosa Chrome AI
-                </button>
-                <button onclick="exportHistoryToDocx()" class="w-full text-left min-h-[44px] px-3.5 py-2 text-xs text-slate-300 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-2">
-                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Ekspor ke DOCX
-                </button>
-                <button onclick="exportHistoryToPDF()" class="w-full text-left min-h-[44px] px-3.5 py-2 text-xs text-slate-300 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-2">
-                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Ekspor ke PDF
-                </button>
-                <button onclick="importSessionsJSON()" class="w-full text-left min-h-[44px] px-3.5 py-2 text-xs text-slate-300 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-2">
-                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                    Impor Sesi (JSON)
-                </button>
-                <input type="file" id="import-sessions-input" accept=".json" onchange="handleImportSessions(event)" class="hidden">
-            </div>
-        </div>
-
-        <!-- Tema & Info -->
-        <div class="px-6 pt-3 pb-6 border-t border-white/5 flex items-center justify-between">
-    <button id="theme-toggle-btn"
-        onclick="toggleTheme()"
-        class="p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-all"
-        title="Beralih tema">
-        <span id="theme-icon">
-            <svg xmlns="http://www.w3.org/2000/svg"
-                 width="18"
-                 height="18"
-                 viewBox="0 0 24 24"
-                 fill="none"
-                 stroke="currentColor"
-                 stroke-width="2">
-                <path d="M12 3a6 6 0 0 0 9 9A9 9 0 1 1 12 3z"/>
-            </svg>
-        </span>
-    </button>
-    <span class="text-[10px] text-slate-500 font-mono uppercase tracking-wider">kurniawan</span>
-</div>
-    </aside>
-
-    <!-- AREA UTAMA PERCAKAPAN -->
-    <div class="flex-1 flex flex-row min-w-0 h-screen relative overflow-hidden">
-        <main id="chat-area" class="flex-1 flex flex-col min-w-0 relative h-screen transition-all duration-300">
-        <!-- Top Bar Utama -->
-        <header class="h-16 border-b flex items-center justify-between px-6 z-20 backdrop-blur-md">
-            <div class="flex items-center gap-3">
-                <!-- Tombol Menu Universal (Desktop & Mobile) -->
-                <button onclick="toggleSidebar()" class="p-2 text-slate-300 hover:bg-white/5 rounded-xl transition-all" title="Toggle Sidebar">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                </button>
-                <div class="flex items-center gap-2">
-                    <span class="text-sm font-semibold accent-text">Asisten Lokal</span>
-                    <span class="text-[9px] bg-gemini-blue/10 text-gemini-blue border border-gemini-blue/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">Nano</span>
-                    <span id="context-viewer-badge" class="hidden text-[9px] bg-slate-800 text-slate-300 border border-white/10 px-2 py-0.5 rounded-full font-mono tracking-widest ml-2" title="Kapasitas Memori Konteks">Memori: 0/16</span>
-                </div>
-            </div>
-            <div class="flex items-center gap-2">
-                <button onclick="showPinnedMessages()"
-        class="text-xs font-semibold px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 rounded-xl transition-all text-purple-400 flex items-center gap-1.5"
-        title="Lihat Pesan Disematkan">
-    <i class='bx bx-pin'></i>
-    <span class="hidden sm:inline">Disematkan</span>
-</button>
-                <button onclick="exportChatToPDF()"
-        class="text-xs font-semibold px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-xl transition-all text-emerald-400 flex items-center gap-1.5"
-        title="Simpan Percakapan ke PDF">
-    <i class='bx bx-download'></i>
-    <span class="hidden sm:inline">Export</span>
-</button>
-                <!-- Tombol Sesi Baru Header (Pintasan Cepat) -->
-                <button onclick="resetChat()"
-        class="text-xs font-semibold px-3 py-1.5 bg-gemini-blue/10 hover:bg-gemini-blue/20 border border-gemini-blue/20 rounded-xl transition-all text-gemini-blue flex items-center gap-1.5"
-        title="Mulai Sesi Baru">
-
-    <i class='bx bx-plus-circle'></i>
-    <span>Baru</span>
-
-</button>
-              <button onclick="regenerateLast()"
-        class="card-bg text-xs font-semibold px-3 py-1.5 bg-white/5 hover:bg-white/10 border-2 rounded-xl transition-all text-slate-200 flex items-center gap-1.5"
-        title="Kirim ulang prompt terakhir">
-
-    <i class='bx bx-refresh'></i>
-    <span>Regen</span>
-
-</button>
-            </div>
-        </header>
-
-        <!-- Wadah Daftar Pesan (Mengisi Penuh Hingga Batas Bawah Layar) -->
-        <div id="messages" class="flex-1 overflow-y-auto px-4 pt-6 pb-44 md:px-6 md:pt-8 md:pb-48 space-y-6">
-            <!-- Placeholder Awal Modern ala Gemini -->
-            <div id="initial-placeholder" class="max-w-2xl mx-auto text-left py-20 space-y-12">
-                <div class="space-y-2">
-                    <h2 class="text-4xl md:text-5xl font-bold sparkle-text py-1 leading-tight tracking-tight">Halo, Asisten AI Anda siap.</h2>
-                    <p class="text-lg text-slate-400 font-light">Kirim berkas dokumen (.pdf, .docx, .xls, .xlsx, .txt, .md), tabel, gambar, atau tanya tentang apa saja secara lokal hari ini.</p>
-                </div>
-
-               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-    <button onclick="applyQuickPrompt('Tuliskan rumus kuadratik matematika dan jelaskan.')"
-            class="card-bg text-left p-5 bg-[#1e1f20]/50 hover:bg-[#1e1f20] border-2 hover:border-white/10 rounded-2xl transition-all group flex flex-col justify-between h-36">
-        <span class="text-slate-300 text-sm group-hover:text-white leading-relaxed">
-            <i class='bx bx-math text-lg text-gemini-blue mr-1'></i>
-            Rumus Matematika Kuadratik & analisis bentuk persamaannya.
-        </span>
-        <span class="text-xs text-gemini-blue font-bold tracking-wider uppercase pt-2">Matematika &rarr;</span>
-    </button>
-
-    <button onclick="applyQuickPrompt('Tulis persamaan reaksi fotosintesis lengkap dengan fasanya.')"
-            class="card-bg text-left p-5 bg-[#1e1f20]/50 hover:bg-[#1e1f20] border-2 hover:border-white/10 rounded-2xl transition-all group flex flex-col justify-between h-36">
-        <span class="text-slate-300 text-sm group-hover:text-white leading-relaxed">
-            <i class='bx bx-atom text-lg text-gemini-purple mr-1'></i>
-            Persamaan Kimia Fotosintesis lengkap beserta fasa zat.
-        </span>
-        <span class="text-xs text-gemini-purple font-bold tracking-wider uppercase pt-2">Sains &rarr;</span>
-    </button>
-</div>
-            </div>
-        </div>
-
-        <!-- Tombol Melayang Gulir ke Bawah -->
-        <button id="scroll-to-bottom-btn" onclick="scrollToBottom()" class="hidden absolute bottom-40 md:bottom-40 right-8 p-3 bg-gradient-to-tr from-gemini-blue to-gemini-purple hover:scale-105 text-white rounded-full shadow-lg transition-all z-10">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-6l-7 7-7-7"/></svg>
-        </button>
-
-        <!-- Area Input Percakapan Melayang (Frosted Glass di Lapisan Depan) -->
-        <div class="input-panel absolute bottom-0 left-0 right-0 pb-6 md:pb-5 px-4 md:px-6 z-10">
-            <div class="max-w-3xl mx-auto space-y-2">
-                <!-- Area pratinjau gambar/dokumen terunggah -->
-                <div id="image-preview-container" class="hidden flex max-w-full overflow-x-auto custom-scrollbar items-center gap-3 p-2.5 bg-gemini-sidebar/80 backdrop-blur-md rounded-2xl border border-white/10 w-fit shadow-xl"></div>
-
-                <!-- ===== INPUT PANEL: CLAUDE MINIMALIS ===== -->
-                                <!-- Suggestion Chips (Moved from inside drop-zone) -->
-                <div class="flex items-center gap-2 mb-3 px-2 w-full max-w-4xl mx-auto">
-                    <button onclick="runSpecialist('summarize')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition-all bg-black/20 backdrop-blur-md">
-                        <i class='bx bx-list-ul'></i> Ringkasan
-                    </button>
-                    <button onclick="runSpecialist('rewrite')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition-all bg-black/20 backdrop-blur-md">
-                        <i class='bx bx-edit-alt'></i> Perbaiki
-                    </button>
-                    <div id="char-counter" class="ml-auto text-xs text-slate-500 font-mono"></div>
-                </div>
-
-                <div id="drop-zone" class="relative bg-black/40 border border-white/10 rounded-[2rem] transition-all duration-300 shadow-2xl focus-within:border-white/30 focus-within:bg-black/60 flex items-end p-2 mx-auto w-full max-w-4xl backdrop-blur-xl">
-                    <!-- File Preview Container (Hidden by default) -->
-                    <div id="image-preview-container" class="absolute bottom-full left-0 mb-4 hidden flex items-center gap-3 p-3 bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl">
-                        <div class="relative group">
-                            <img id="image-preview-img" class="h-14 w-14 object-cover rounded-xl border border-white/10 hidden">
-                            <div id="doc-preview-icon" class="h-14 w-14 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-slate-400 hidden"><i class='bx bx-file text-2xl'></i></div>
-                            <button id="image-remove" onclick="removeFile()" class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hidden shadow-lg"><i class='bx bx-x'></i></button>
-                        </div>
-                        <div>
-                            <p id="image-preview-name" class="text-sm font-semibold text-slate-200 max-w-[200px] truncate"></p>
-                            <p id="image-preview-size" class="text-xs text-slate-500 mt-0.5"></p>
-                        </div>
-                    </div>
-
-                    <!-- Attachment Icon -->
-                    <button onclick="triggerFileUpload()" title="Lampirkan berkas" class="shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all ml-1 mb-0.5">
-                        <i class='bx bx-paperclip text-xl'></i>
-                    </button>
-                    <input type="file" id="file-input" accept="image/*, .pdf, .docx, .xls, .xlsx, .txt, .md, .json, .csv" class="hidden" onchange="handleFileSelect(event)">
-
-                    <!-- Textarea -->
-                    <textarea
-                        id="prompt"
-                        oninput="handleTextareaInput(this)"
-                        placeholder="Start typing..."
-                        rows="1"
-                        class="flex-1 rounded-full bg-transparent resize-none outline-none text-[15px] text-white placeholder-slate-500 px-3 py-2 max-h-32 min-h-[40px] block custom-scrollbar leading-relaxed">
-                    </textarea>
-
-                    <!-- Voice Icon -->
-                    <button id="voice-input-btn" onclick="toggleVoiceInput()" title="Input suara" class="shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all mb-0.5">
-                        <i class='bx bx-microphone text-xl'></i>
-                    </button>
-
-                    <!-- Send Button (Kite) -->
-                    <button id="send-btn" onclick="sendMessage()" class="shrink-0 w-10 h-10 text-white rounded-full flex items-center justify-center transition-all shadow-lg ml-1 mb-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <i class='bx bxs-paper-plane text-lg ml-[-2px] mt-[2px]'></i>
-                    </button>
-                    <button id="stop-btn" onclick="abortGeneration()" title="Berhenti Generate" class="hidden shrink-0 w-10 h-10 rounded-full text-red-400 bg-red-500/20 hover:bg-red-500/30 flex items-center justify-center transition-all border border-red-500/30 ml-1 mb-0.5">
-                        <i class='bx bx-stop text-xl'></i>
-                    </button>
-                </div>
-    <p class="text-center text-xs text-slate-500 mt-4">AI dapat membuat kesalahan. Periksa kembali jawaban penting.</p>
+<aside id="sidebar" class="sidebar w-60 bg-[#1e1e1e] shrink-0 h-screen flex flex-col border-r border-white/5 z-40 sidebar-transition">
+  <!-- Logo -->
+  <div class="flex items-center gap-2.5 px-4 py-5">
+    <span class="text-[#D97757] text-xl font-bold select-none">&#10033;</span>
+    <span class="font-semibold text-slate-200 text-sm tracking-tight">Claude Local AI</span>
+    <div class="ml-auto flex items-center gap-2">
+      <div id="status" class="w-2 h-2 rounded-full bg-slate-600 shrink-0" title="Status AI"></div>
+      <button onclick="toggleSidebar()" class="p-1 rounded-lg hover:bg-white/5 text-slate-600 hover:text-slate-300 transition-all">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+    </div>
   </div>
 
-        <!-- ARTIFACT PANEL -->
-        <aside id="artifact-panel" class="w-0 transition-all duration-300 bg-[#0a0a0a] border-l border-white/10 hidden flex-col relative z-40 overflow-hidden shadow-2xl">
-            <!-- Header -->
-            <div class="h-14 border-b border-white/5 flex items-center justify-between px-4 bg-white/5 backdrop-blur-md">
-                <div class="flex items-center gap-2">
-                    <i class='bx bx-code-block text-gemini-purple text-xl'></i>
-                    <span id="artifact-title" class="text-sm font-semibold text-slate-200">Artifact</span>
-                </div>
-                <div class="flex items-center gap-1">
-                    <button id="artifact-copy-btn" class="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all" title="Salin Konten"><i class='bx bx-copy'></i></button>
-                    <button onclick="closeArtifact()" class="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all" title="Tutup Panel"><i class='bx bx-x text-xl'></i></button>
-                </div>
-            </div>
-            <!-- Content -->
-            <div id="artifact-content" class="flex-1 overflow-auto p-6 flex flex-col relative">
-                <!-- Rendered artifact goes here -->
-            </div>
-        </aside>
-    </div> <!-- Close flex row -->
-<!-- Layout-level helper -->
+  <!-- New Chat -->
+  <div class="px-3 pb-2">
+    <button onclick="resetChat()" class="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white text-sm transition-all">
+      <svg class="w-4 h-4 text-[#D97757]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Obrolan Baru
+    </button>
+  </div>
 
+    <!-- Project scope -->
+    <div class="px-3 pb-2">
+        <div class="flex items-center gap-2 mb-1.5 px-1">
+            <i class='bx bx-briefcase-alt-2 text-sm text-[#D97757]'></i>
+            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Project</span>
+            <button onclick="createProject()" title="Buat project" class="ml-auto text-slate-500 hover:text-[#D97757]"><i class='bx bx-plus text-sm'></i></button>
+        </div>
+        <select id="project-selector" onchange="selectProject(this.value)" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-300 outline-none">
+            <option value="default">Personal workspace</option>
+        </select>
+    </div>
+
+  <!-- Accordion Knowledge Base -->
+  <div class="px-3 pb-2">
+    <details id="kb-accordion" class="group bg-white/5 border border-white/5 rounded-xl transition-all cursor-pointer">
+      <summary class="flex items-center justify-between p-3 list-none text-xs font-semibold text-slate-400 select-none">
+        <span class="flex items-center gap-2"><i class='bx bx-data text-sm text-[#D97757]'></i> Knowledge Base</span>
+        <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-180 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+      </summary>
+      <div class="px-3 pb-3 space-y-2 border-t border-white/5 pt-2.5 cursor-default">
+        <!-- Tombol Unggah -->
+        <button onclick="document.getElementById('kb-file-input').click()" class="w-full py-2 px-3 bg-[#D97757]/10 hover:bg-[#D97757]/20 border border-[#D97757]/20 rounded-lg text-[10px] font-bold text-[#D97757] transition-all flex items-center justify-center gap-1.5">
+          <i class='bx bx-cloud-upload text-sm'></i> Tambah Dokumen KB
+        </button>
+        <input type="file" id="kb-file-input" class="hidden" accept=".txt,.md,.pdf,.docx,.doc" onchange="handleKBFileUpload(event)">
+        
+        <!-- Progress Indikator -->
+        <div id="kb-progress-container" class="hidden space-y-1 bg-black/30 p-2 rounded-lg border border-white/5">
+          <div class="flex justify-between text-[9px] text-slate-400">
+            <span id="kb-progress-text">Memproses...</span>
+            <span id="kb-progress-percentage">0%</span>
+          </div>
+          <div class="w-full bg-black rounded-full h-1">
+            <div id="kb-progress-bar" class="bg-[#D97757] h-1 rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+        
+        <!-- Daftar File -->
+        <div id="kb-files-list" class="space-y-1 max-h-32 overflow-y-auto custom-scrollbar pt-1">
+          <div class="text-[10px] text-slate-600 text-center italic py-1">KB masih kosong</div>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="mx-4 border-t border-white/5 mb-2"></div>
+  <div class="px-4 mb-1.5">
+    <span class="text-[10px] font-bold text-slate-700 uppercase tracking-widest">Riwayat</span>
+  </div>
+
+  <!-- History (filled by JS) -->
+  <div id="chat-history-list" class="flex-1 overflow-y-auto px-2 space-y-0.5 pb-4"></div>
+
+  <!-- Bottom icons -->
+  <div class="px-3 py-3 border-t border-white/5">
+    <div class="flex items-center justify-around">
+      <button onclick="openSessionManagementModal()" title="Sesi & Tab" class="p-2 rounded-xl hover:bg-white/5 text-slate-600 hover:text-[#D97757] transition-all"><i class='bx bx-folder-open text-lg'></i></button>
+      <button onclick="exportAllSessions()" title="Simpan Riwayat (Ekspor)" class="p-2 rounded-xl hover:bg-white/5 text-slate-600 hover:text-[#D97757] transition-all"><i class='bx bx-save text-lg'></i></button>
+      <button onclick="importSessionsJSON()" title="Muat Riwayat (Impor)" class="p-2 rounded-xl hover:bg-white/5 text-slate-600 hover:text-[#D97757] transition-all"><i class='bx bx-upload text-lg'></i></button>
+      <button onclick="openAISettingsModal()" title="Pengaturan AI" class="p-2 rounded-xl hover:bg-white/5 text-slate-600 hover:text-[#D97757] transition-all"><i class='bx bx-cog text-lg'></i></button>
+    </div>
+  </div>
+</aside>
+
+<!-- ===== MAIN ===== -->
+<div class="flex-1 flex flex-col h-screen overflow-hidden">
+
+  <!-- Header -->
+  <header class="h-14 border-b border-white/5 flex items-center justify-between px-5 z-20 bg-[#1a1a1a]/80 backdrop-blur-md shrink-0">
+    <div class="flex items-center gap-3">
+      <button onclick="toggleSidebar()" class="p-2 rounded-xl hover:bg-white/5 text-slate-500 hover:text-white transition-all">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
+      <span class="text-[#D97757] font-bold text-lg select-none">&#10033;</span>
+      <span class="text-sm font-semibold text-slate-300">Claude Local AI</span>
+      <span id="model-badge" class="text-[9px] bg-[#D97757]/10 text-[#D97757] border border-[#D97757]/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">Nano</span>
+    </div>
+    <div class="flex items-center gap-2">
+            <button onclick="openCommandPalette()" title="Command palette (Cmd/Ctrl+K)" class="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-white/5 border border-white/5 text-slate-500 hover:text-white transition-all"><i class='bx bx-command text-sm'></i><span class="text-[10px]">Cmd K</span></button>
+      <button onclick="startVoiceInput()" title="Suara" class="p-2 rounded-xl hover:bg-white/5 text-slate-500 hover:text-white transition-all"><i class='bx bx-microphone text-lg'></i></button>
+      <button onclick="toggleTheme()" title="Tema" class="p-2 rounded-xl hover:bg-white/5 text-slate-500 hover:text-white transition-all"><i class='bx bx-moon text-lg'></i></button>
+      <button onclick="resetChat()" class="text-xs font-semibold px-3 py-1.5 bg-[#D97757]/10 hover:bg-[#D97757]/20 border border-[#D97757]/20 rounded-xl transition-all text-[#D97757] flex items-center gap-1.5">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Baru
+      </button>
+    </div>
+  </header>
+
+  <!-- Messages -->
+  <div id="messages" class="flex-1 overflow-y-auto px-4 pt-8 pb-36 relative">
+    <!-- Welcome -->
+    <div id="initial-placeholder" class="flex flex-col items-center justify-center min-h-full text-center pb-10">
+      <div class="text-6xl mb-5 text-[#D97757] select-none">&#10033;</div>
+      <h2 class="text-2xl font-medium text-white mb-2">Selamat datang, Subuh Kurniawan</h2>
+      <p class="text-slate-500 text-sm max-w-sm mb-8">Tanyakan apa saja. AI lokal berjalan penuh di Chrome Anda tanpa internet.</p>
+      <div class="grid grid-cols-2 gap-3 w-full max-w-lg text-left">
+        <button onclick="fillPrompt('Bantu saya menulis esai tentang kecerdasan buatan')" class="p-4 bg-[#1e1e1e] hover:bg-[#252525] border border-white/5 hover:border-[#D97757]/30 rounded-2xl transition-all">
+          <p class="text-xs font-semibold text-[#D97757] mb-1">&#9997; Menulis</p><p class="text-xs text-slate-500">Bantu saya menulis esai tentang AI</p>
+        </button>
+        <button onclick="fillPrompt('Jelaskan cara kerja transformer neural network')" class="p-4 bg-[#1e1e1e] hover:bg-[#252525] border border-white/5 hover:border-[#D97757]/30 rounded-2xl transition-all">
+          <p class="text-xs font-semibold text-[#D97757] mb-1">&#129504; Sains</p><p class="text-xs text-slate-500">Jelaskan cara kerja neural network</p>
+        </button>
+        <button onclick="fillPrompt('Buatkan kode Python untuk sorting algorithm')" class="p-4 bg-[#1e1e1e] hover:bg-[#252525] border border-white/5 hover:border-[#D97757]/30 rounded-2xl transition-all">
+          <p class="text-xs font-semibold text-[#D97757] mb-1">&#128187; Kode</p><p class="text-xs text-slate-500">Buatkan kode Python untuk sorting</p>
+        </button>
+        <button onclick="fillPrompt('Analisis dokumen ini dan buat ringkasannya')" class="p-4 bg-[#1e1e1e] hover:bg-[#252525] border border-white/5 hover:border-[#D97757]/30 rounded-2xl transition-all">
+          <p class="text-xs font-semibold text-[#D97757] mb-1">&#128196; Analisis</p><p class="text-xs text-slate-500">Analisis dan ringkas dokumen</p>
+        </button>
+      </div>
+    </div>
+    <!-- Scroll button -->
+    <button id="scroll-to-bottom-btn" onclick="scrollToBottom()" class="hidden fixed bottom-36 right-8 p-3 bg-[#D97757] hover:bg-[#C4956A] text-white rounded-full shadow-xl z-10 transition-all">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+    </button>
+  </div>
+
+  <!-- Input Panel -->
+  <div class="input-panel px-4 pb-2 shrink-0 w-full max-w-7xl mx-auto">
+    <div id="drop-zone" class="relative rounded-[24px] border border-white/10 shadow-2xl transition-all overflow-hidden">
+      <!-- File preview -->
+      <div id="image-preview-container" class="hidden flex items-center gap-3 p-4 pb-0">
+        <div class="relative group">
+          <img id="image-preview-img" class="h-16 w-16 object-cover rounded-xl border border-white/10 hidden">
+          <div id="doc-preview-icon" class="h-16 w-16 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-slate-400 hidden"><i class='bx bx-file text-3xl'></i></div>
+          <button id="image-remove" onclick="removeSelectedFile()" class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hidden shadow-lg">&#x2715;</button>
+        </div>
+        <div>
+          <p id="image-preview-name" class="text-sm font-semibold text-slate-200 max-w-[250px] truncate"></p>
+          <p id="image-preview-size" class="text-xs text-slate-500 mt-0.5"></p>
+        </div>
+      </div>
+      <!-- Textarea -->
+      <textarea id="prompt" rows="1" placeholder="Write a message..."
+        class="w-full bg-transparent px-5 pt-4 pb-2 text-slate-100 placeholder-slate-400 text-[15px] resize-none focus:outline-none max-h-52 overflow-y-auto"
+        oninput="handleTextareaInput(this);"></textarea>
+      <!-- Bottom bar -->
+      <div class="flex items-center justify-between px-3.5 pb-3.5 pt-1.5">
+        <div class="flex items-center gap-2">
+          <input type="file" id="image-upload" accept="image/png,image/jpeg,image/webp,.pdf,.docx,.xlsx,.pptx,.txt,.csv,.zip" class="hidden" onchange="handleFileUpload(event)">
+          <input type="file" id="file-input"   accept="image/png,image/jpeg,image/webp,.pdf,.docx,.xlsx,.pptx,.txt,.csv,.zip" class="hidden" onchange="handleFileUpload(event)">
+          <!-- Plus Button -->
+          <button onclick="document.getElementById('image-upload').click()" title="Lampirkan File/Gambar" class="w-8 h-8 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-slate-300 flex items-center justify-center transition-all cursor-pointer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <!-- Model indicator badge -->
+          <button onclick="openAISettingsModal()" title="Pilih Model AI" class="px-3 py-1 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-xs font-medium text-slate-300 flex items-center gap-1.5 cursor-pointer transition-all">
+            <span id="model-indicator-badge">Nano</span>
+            <i class='bx bx-chevron-down text-sm'></i>
+          </button>
+          <!-- Voice -->
+          <button onclick="startVoiceInput()" title="Input Suara" class="w-8 h-8 rounded-full hover:bg-white/10 text-slate-400 hover:text-slate-200 flex items-center justify-center transition-all">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+          <!-- Settings -->
+          <button onclick="openAISettingsModal()" title="Pengaturan AI" class="w-8 h-8 rounded-full hover:bg-white/10 text-slate-400 hover:text-slate-200 flex items-center justify-center transition-all">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V14"/><path d="M4 10V3"/><path d="M12 21V12"/><path d="M12 8V3"/><path d="M20 21V16"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></svg>
+          </button>
+          <!-- Send Button (Claude Terracotta Accent) -->
+          <button id="send-button" onclick="sendMessage()" class="w-8 h-8 rounded-xl text-white bg-[#D97757] hover:bg-[#C4956A] active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all shadow-md ml-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M12 5l-7 7M12 5l7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <p class="text-center text-xs text-slate-500 mt-4">Claude in Chrome can make mistakes. Please double-check responses.</p>
+  </div>
+</div>
+
+<!-- Layout-level helper -->
 <script>
 function fillPrompt(t){var e=document.getElementById('prompt');e.value=t;e.dispatchEvent(new Event('input'));e.focus();}
 // Alias agar tidak error jika dipanggil dari tempat lain
@@ -2088,16 +1337,14 @@ function exportAllSessions(){if(typeof exportHistoryToDocx==='function')exportHi
 function importSessions(event){if(typeof handleImportSessions==='function')handleImportSessions(event);}
 </script>
 
+    <script src="nano_asset/assets/js/transformers.min.js"></script>
     <script>
-        if (location.protocol === 'http:' || location.protocol === 'https:') {
-            import('./nano_asset/assets/js/transformers.min.js').then(transformers => {
-                window.transformers = transformers;
-                window.transformers.env.allowLocalModels = true;
-                window.transformers.env.allowRemoteModels = false;
-                window.transformers.env.localModelPath = './nano_asset/models/';
-                window.transformersPipeline = window.transformers.pipeline;
-                console.log("Transformers.js lokal siap");
-            }).catch(error => console.warn('Transformers.js lokal tidak tersedia:', error.message));
+        if (window.transformers) {
+            window.transformers.env.allowLocalModels = true;
+            window.transformers.env.allowRemoteModels = false;
+            window.transformers.env.localModelPath = './nano_asset/models/';
+            window.transformersPipeline = window.transformers.pipeline;
+            console.log("Transformers.js lokal siap");
         }
     </script>
 
@@ -2117,21 +1364,6 @@ function importSessions(event){if(typeof handleImportSessions==='function')handl
         let ttsLanguage = 'id-ID';
 
         // TEMA DAN PENGATURAN TAMPILAN
-        function changeFontFamily(font) {
-            document.body.classList.remove('font-inter', 'font-poppins', 'font-fira', 'font-jakarta', 'font-outfit', 'font-quicksand', 'font-space');
-            if (font && font !== 'default') {
-                document.body.classList.add('font-' + font);
-            }
-            localStorage.setItem('app-font', font);
-        }
-
-        function initFont() {
-            const savedFont = localStorage.getItem('app-font') || 'default';
-            const fontSelect = document.getElementById('ai-ui-font');
-            if (fontSelect) fontSelect.value = savedFont;
-            changeFontFamily(savedFont);
-        }
-
         function initTheme() {
             const savedTheme = localStorage.getItem('theme') || 'dark';
             applyTheme(savedTheme);
@@ -2144,18 +1376,14 @@ function importSessions(event){if(typeof handleImportSessions==='function')handl
             localStorage.setItem('theme', newTheme);
         }
 function handleTextareaInput(textarea) {
-    // OPTIMASI: debounce auto-resize agar tidak reflow tiap keystroke
-    clearTimeout(window.__taDeb);
-    window.__taDeb = setTimeout(() => {
-        // 1. Jalankan fungsi counter karakter bawaan Anda
-        if (typeof updateCharCounter === "function") {
-            updateCharCounter(textarea);
-        }
+    // 1. Jalankan fungsi counter karakter bawaan Anda
+    if (typeof updateCharCounter === "function") {
+        updateCharCounter(textarea);
+    }
 
-        // 2. Animasi tinggi otomatis (Auto-Resize)
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
-    }, 60);
+    // 2. Animasi tinggi otomatis (Auto-Resize)
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
 }
         // Modifikasi styling Highlight.js dinamis saat ganti tema
        function applyTheme(theme) {
@@ -2261,8 +1489,8 @@ function handleTextareaInput(textarea) {
             ollamaModel: 'llama3',
             openaiKey: '',
             openaiModel: 'litert-lm',
-            openaiBaseUrl: 'https://api.openai.com/v1',
-            systemPrompt: 'Anda adalah Yaya Tata, asisten AI cerdas berbahasa Indonesia. ATURAN FORMAT WAJIB: jika prompt mengandung kata mindmap, main map, mind map, peta pikiran, atau pemetaan pikiran, jawab dengan SATU blok kode ```markmap berisi struktur Markdown dan jangan gunakan format lain. Jika prompt mengandung flowchart, flow chart, diagram alur, atau bagan alir, jawab dengan SATU blok kode ```mermaid berisi sintaks Mermaid dan jangan gunakan ASCII art. Jika prompt mengandung chart, grafik, plot, atau diagram data, jawab dengan SATU blok kode ```chart berisi JSON Chart.js murni tanpa komentar. Jika prompt meminta kode, gunakan fenced code block dengan bahasa yang sesuai. Jangan mengganti tag format tersebut.',
+            openaiBaseUrl: window.location.origin + '/exec.php?route=',
+            systemPrompt: 'Anda adalah Yaya Tata, asisten AI cerdas berbahasa Indonesia. ATURAN WAJIB: 1) Jika diminta grafik/chart, WAJIB berikan konfigurasi JSON murni tanpa komentar di dalam blok kode dengan format ```chart\\n(isi JSON)\\n``` (JANGAN gunakan ```json). 2) Jika diminta flowchart/diagram alur, WAJIB gunakan sintaks Mermaid di dalam blok kode ```mermaid\\n(isi mermaid)\\n```. 3) Jika diminta mindmap/pemetaan pikiran, WAJIB gunakan format Markmap dengan daftar markdown di dalam blok kode ```markmap\\n(isi markdown headers/list)\\n```.',
             maxNumTokens: 4096,   // Opsi A: batas KV-cache token LiteRT-LM
             uiTheme: 'dark'
         };
@@ -2291,7 +1519,6 @@ function handleTextareaInput(textarea) {
         request.onsuccess = e => {
             db = e.target.result;
             initTheme();
-            initFont();
             loadAISettings().then(() => {
                 initChat();
                 initProjectManager();
@@ -2309,9 +1536,8 @@ function handleTextareaInput(textarea) {
                     req.onsuccess = (e) => {
                         if (e.target.result) {
                             aiSettings = { ...aiSettings, ...e.target.result.value };
-                            if (!aiSettings.openaiBaseUrl || aiSettings.openaiBaseUrl.includes('/route=')) {
-                                aiSettings.openaiBaseUrl = 'https://api.openai.com/v1';
-                            }
+                            // Selalu paksa openaiBaseUrl menggunakan URL dinamis host saat ini
+                            aiSettings.openaiBaseUrl = window.location.origin + '/exec.php?route=';
                         }
                         resolve();
                     };
@@ -2462,12 +1688,7 @@ function handleTextareaInput(textarea) {
             aiSettings.ollamaModel = document.getElementById('ai-ollama-model')?.value?.trim() || aiSettings.ollamaModel;
             aiSettings.openaiKey = document.getElementById('ai-openai-key')?.value?.trim() || '';
             aiSettings.openaiModel = document.getElementById('ai-openai-model')?.value?.trim() || aiSettings.openaiModel;
-            const customOpenAIBaseUrl = getOpenAIBaseUrl(document.getElementById('ai-openai-baseurl')?.value || aiSettings.openaiBaseUrl);
-            if (customOpenAIBaseUrl.includes('/route=')) {
-                alert('Gunakan base endpoint OpenAI-compatible langsung, bukan proxy route.');
-                return;
-            }
-            aiSettings.openaiBaseUrl = customOpenAIBaseUrl || 'https://api.openai.com/v1';
+            aiSettings.openaiBaseUrl = document.getElementById('ai-openai-baseurl')?.value?.trim() || aiSettings.openaiBaseUrl;
             aiSettings.systemPrompt = document.getElementById('ai-system-prompt')?.value?.trim() || aiSettings.systemPrompt;
             aiSettings.uiTheme = document.getElementById('ai-ui-theme')?.value || aiSettings.uiTheme;
             // Opsi A: simpan max tokens
@@ -2559,6 +1780,26 @@ function handleTextareaInput(textarea) {
                 const base64Data = fileObj.raw.split(',')[1] || fileObj.raw;
                 messages[0].images = [base64Data];
             }
+
+        /**
+         * Potong isi dokumen agar tidak melebihi batas token model.
+         * Model LiteRT-LM biasanya memiliki batas 4096 token.
+         * [OPSI A] Buat model spec untuk LiteRT-LM dengan format: 'model_id,,max_tokens'
+         * Format: modelId[,backend][,max_tokens] — kosongkan backend agar auto-detect.
+         */
+        function getOpenAIModelSpec() {
+            const base = aiSettings.openaiModel || 'litert-lm';
+            const maxTok = aiSettings.maxNumTokens || 4096;
+            // Hanya tambahkan token spec jika ini LiteRT-LM lokal (bukan OpenAI/cloud)
+            const isLocal = (aiSettings.openaiBaseUrl || '').includes('localhost') ||
+                            (aiSettings.openaiBaseUrl || '').includes('127.0.0.1') ||
+                            (aiSettings.openaiBaseUrl || '').includes('/exec.php');
+            if (isLocal && maxTok !== 4096) {
+                // Format: 'modelId,,8192' (backend kosong = auto-detect)
+                return `${base},,${maxTok}`;
+            }
+            return base;
+        }
 
         /**
          * [OPSI B] RAG Chunking sederhana: potong dokumen menjadi chunk-chunk kecil
@@ -2667,24 +1908,7 @@ function handleTextareaInput(textarea) {
             }
         }
 
-        /**
-         * Build the model identifier expected by local LiteRT-LM endpoints.
-         */
-        function getOpenAIModelSpec() {
-            const base = aiSettings.openaiModel || 'litert-lm';
-            const maxTok = aiSettings.maxNumTokens || 4096;
-            const isLocal = (aiSettings.openaiBaseUrl || '').includes('localhost') ||
-                            (aiSettings.openaiBaseUrl || '').includes('127.0.0.1');
-            return isLocal && maxTok !== 4096 ? `${base},,${maxTok}` : base;
-        }
-
-        function getOpenAIBaseUrl(value = aiSettings.openaiBaseUrl) {
-            let baseUrl = String(value || '').trim().replace(/\/+$/, '');
-            baseUrl = baseUrl.replace(/\/(chat\/completions|models)$/i, '');
-            return baseUrl;
-        }
-
-        // === Kirim ke OpenAI-compatible endpoint ===
+        // === Kirim ke OpenAI ===
         async function* sendToOpenAI(prompt, signal, fileObj = null, history = []) {
             let userContent = prompt;
 
@@ -2703,11 +1927,7 @@ function handleTextareaInput(textarea) {
                 { role: 'user', content: userContent }
             ];
 
-            const baseUrl = getOpenAIBaseUrl();
-            if (!baseUrl || baseUrl.includes('/route=')) {
-                throw new Error('Base URL OpenAI-compatible belum diatur. Gunakan endpoint seperti https://api.openai.com/v1.');
-            }
-            const response = await fetch(`${baseUrl}/chat/completions`, {
+            const response = await fetch(`${aiSettings.openaiBaseUrl}/chat/completions`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2857,7 +2077,7 @@ function handleTextareaInput(textarea) {
 
             renderer.code = function(tokenOrCode, infostring) {
                 const isToken = typeof tokenOrCode === 'object';
-                let code = isToken ? (tokenOrCode.text || '') : (tokenOrCode || '');
+                const code = isToken ? (tokenOrCode.text || '') : (tokenOrCode || '');
                 const langRaw = isToken ? tokenOrCode.lang : infostring;
                 const lang = (langRaw || '').trim().toLowerCase();
 
@@ -2873,46 +2093,13 @@ function handleTextareaInput(textarea) {
 
     // 1b. Penanganan khusus untuk Markmap / Mindmap
     if (lang === 'markmap' || (lang === 'mindmap' && !code.trim().startsWith('mindmap'))) {
-        const markmapCode = normalizeMarkmapCode(String(code || '').trim());
+        const markmapCode = String(code || '').trim();
         if (window.isCurrentlyStreaming) {
             return `<div class="code-container my-4 overflow-hidden rounded-2xl border border-white/5 shadow-lg bg-black/40"><div class="flex items-center justify-between px-5 py-3 bg-[#131314] text-[10px] text-slate-400 border-b border-white/5"><span class="font-bold uppercase tracking-wider font-mono">markmap</span></div><pre class="!mt-0 !rounded-t-none bg-black/30 p-5 overflow-x-auto text-[13px] text-slate-200 leading-relaxed"><code class="hljs markmap">${escapeHtml(markmapCode)}</code></pre></div>`;
         }
         const safeCode = encodeURIComponent(markmapCode);
-        const artifactPayload = encodeURIComponent(`<div class="markmap-container" data-markmap-code="${safeCode}" data-markmap-rendered="false"></div>`);
-        return `<div class="relative group my-4">
-                    <button onclick="openArtifact('Mindmap', decodeURIComponent('${artifactPayload}'), decodeURIComponent('${safeCode}'))" class="absolute top-2 right-12 z-20 p-1.5 bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-xs font-semibold backdrop-blur-md border border-purple-500/30"><i class='bx bx-window-open'></i> Panel</button>
-                    <div class="markmap-container" data-markmap-code="${safeCode}" data-markmap-rendered="false"></div>
-                </div>`;
+        return `<div class="markmap-container" data-markmap-code="${safeCode}" data-markmap-rendered="false"></div>`;
     }
-
-    function extractBalancedObject(source) {
-        const text = String(source || '');
-        const start = text.indexOf('{');
-        if (start < 0) return '';
-        let depth = 0;
-        let quote = '';
-        let escaped = false;
-        for (let index = start; index < text.length; index += 1) {
-            const char = text[index];
-            if (quote) {
-                if (escaped) escaped = false;
-                else if (char === '\\') escaped = true;
-                else if (char === quote) quote = '';
-                continue;
-            }
-            if (char === '"' || char === "'") {
-                quote = char;
-                continue;
-            }
-            if (char === '{') depth += 1;
-            if (char === '}') {
-                depth -= 1;
-                if (depth === 0) return text.slice(start, index + 1);
-            }
-        }
-        return '';
-    }
-    window.extractBalancedObject = extractBalancedObject;
 
     // Penanganan Chart.js (deteksi otomatis meski AI menggunakan tag ```json atau kosong)
     let isChart = false;
@@ -2923,12 +2110,15 @@ function handleTextareaInput(textarea) {
             let extractedCode = code;
 
             // 1. Jika AI membuat script JS penuh (new Chart(...)), ekstrak konfigurasi di dalamnya
-            const scriptMatch = extractedCode.match(/new\s+Chart\s*\(\s*[^,]+,\s*(\{[\s\S]*)/);
+            const scriptMatch = extractedCode.match(/new\s+Chart\s*\(\s*[^,]+,\s*(\{[\s\S]+\})\s*\)/);
             if (scriptMatch) {
-                extractedCode = extractBalancedObject(scriptMatch[1]);
+                extractedCode = scriptMatch[1];
             } else {
-                // 2. Ambil hanya objek pertama yang kurung kurawalnya berimbang.
-                extractedCode = extractBalancedObject(extractedCode) || extractedCode;
+                // 2. Jika ada teks pengantar, ekstrak blok JSON terbesarnya saja
+                const objMatch = extractedCode.match(/\{[\s\S]*\}/);
+                if (objMatch) {
+                    extractedCode = objMatch[0];
+                }
             }
 
             // 3. Evaluasi fleksibel layaknya JS (Aman dari unquoted keys, single quotes, atau trailing commas)
@@ -2959,9 +2149,14 @@ function handleTextareaInput(textarea) {
                 
                 code = JSON.stringify(parsed);
                 isChart = true;
+            } else if (isExplicitChart) {
+                isChart = true;
             }
         } catch(e) {
-            console.warn('Konfigurasi chart tidak valid:', e.message);
+            // Jika dievaluasi gagal, namun tag-nya eksplisit chart, paksakan render chart
+            if (isExplicitChart) {
+                isChart = true;
+            }
         }
     }
 
@@ -3026,11 +2221,10 @@ function handleTextareaInput(textarea) {
 marked.setOptions({ renderer: renderer });
 
 window.renderMermaidBlocks = async function(root = document) {
-    // OPTIMASI: mermaid 3.2MB dimuat hanya saat ada blok yang perlu dirender
+    if (typeof mermaid === 'undefined') return;
+
     const mermaidDivs = root.querySelectorAll('.mermaid[data-mermaid-rendered="false"]');
     if (!mermaidDivs.length) return;
-    try { await window.ensureMermaid(); } catch (e) { console.warn('mermaid lazy-load gagal:', e); return; }
-    if (typeof mermaid === 'undefined') return;
 
     for (const div of mermaidDivs) {
         // Deklarasi 'code' di luar try agar bisa diakses di catch block
@@ -3390,44 +2584,18 @@ function autoFixMermaid(code) {
 
 window.autoFixMermaid = autoFixMermaid;
 
-function normalizeMarkmapCode(source) {
-    const lines = String(source || '').replace(/\r/g, '').split('\n');
-    const normalized = [];
-    for (const line of lines) {
-        const match = line.match(/^(\s*)(?:[-*]\s+)?(box|judul|title|isi|content)\s*:\s*(.*)$/i);
-        if (!match) {
-            normalized.push(line);
-            continue;
-        }
-        const indent = match[1];
-        const key = match[2].toLowerCase();
-        const value = match[3].trim();
-        if ((key === 'judul' || key === 'title') && value) {
-            normalized.push(`${indent}## ${value}`);
-        } else if (key === 'box' && value) {
-            normalized.push(`${indent}- ${value}`);
-        } else if (value && key !== 'isi' && key !== 'content') {
-            normalized.push(`${indent}- ${value}`);
-        }
-    }
-    return normalized.join('\n').replace(/\n{3,}/g, '\n\n').trim();
-}
-
-window.normalizeMarkmapCode = normalizeMarkmapCode;
-
 window.renderMarkmapBlocks = async function(root = document) {
+    if (typeof markmap === 'undefined' || !markmap.Transformer || !markmap.Markmap) return;
+
     const markmapDivs = root.querySelectorAll('.markmap-container[data-markmap-rendered="false"]');
     if (!markmapDivs.length) return;
-    // OPTIMASI: d3 + markmap-lib/view (~1MB) dimuat hanya saat ada blok markmap
-    try { await window.ensureMarkmap(); } catch (e) { console.warn('markmap lazy-load gagal:', e); return; }
-    if (typeof markmap === 'undefined' || !markmap.Transformer || !markmap.Markmap) return;
 
     const { Transformer, Markmap } = markmap;
     const transformer = new Transformer();
 
     for (const div of markmapDivs) {
         try {
-            const rawCode = normalizeMarkmapCode(div.dataset.markmapCode ? decodeURIComponent(div.dataset.markmapCode) : div.textContent || '');
+            const rawCode = div.dataset.markmapCode ? decodeURIComponent(div.dataset.markmapCode) : div.textContent || '';
             if (!rawCode.trim()) continue;
 
             const wrapper = document.createElement('div');
@@ -3506,6 +2674,14 @@ window.renderMarkmapBlocks = async function(root = document) {
     }
 };
 
+// Fungsi updateContent yang sudah dikonsolidasi ke initializeSmartComponents
+async function updateContent(markdownText) {
+    const outputElement = document.getElementById('your-content-id');
+    if (!outputElement) return;
+    outputElement.innerHTML = marked.parse(markdownText);
+    await window.initializeSmartComponents(outputElement);
+}
+
         window.initializeSmartComponents = async function(container = document) {
             if (!container) return;
             // 1a. Render Mermaid Blocks
@@ -3517,27 +2693,17 @@ window.renderMarkmapBlocks = async function(root = document) {
                 await window.renderMarkmapBlocks(container);
             }
             // 2. Render Chart.js — destroy instance lama terlebih dahulu untuk cegah memory leak
-            const charts = container.querySelectorAll('canvas.ai-chart[data-config]:not([data-chart-rendered="true"])');
-            if (charts.length) {
-                try { await window.ensureChart(); } catch (e) { console.warn('chart lazy-load gagal:', e); }
-            }
+            const charts = container.querySelectorAll('canvas.ai-chart[data-config]');
             charts.forEach((canvas) => {
                 // Skip jika canvas ini sudah dirender sebelumnya (guard double-render)
                 if (canvas.dataset.chartRendered === 'true') return;
                 try {
-                    if (typeof Chart === 'undefined') { console.warn('Chart.js belum termuat'); return; }
                     // Hancurkan instance Chart.js lama jika ada
                     const existingChart = typeof Chart !== 'undefined' && Chart.getChart(canvas);
                     if (existingChart) existingChart.destroy();
 
-                    const rawConfig = decodeURIComponent(canvas.getAttribute('data-config') || '');
-                    const cleanConfig = (window.extractBalancedObject?.(rawConfig) || rawConfig.trim());
-                    let config;
-                    try {
-                        config = JSON.parse(cleanConfig);
-                    } catch (jsonError) {
-                        config = new Function(`return (${cleanConfig})`)();
-                    }
+                    const rawConfig = decodeURIComponent(canvas.getAttribute('data-config'));
+                    const config = JSON.parse(rawConfig);
                     if (!config.options) config.options = {};
                     const diagramStyle = getComputedStyle(document.body);
                     const diagramText = diagramStyle.getPropertyValue('--diagram-text').trim();
@@ -3710,8 +2876,8 @@ window.renderMarkmapBlocks = async function(root = document) {
                 ? 'w-full flex justify-end py-2'
                 : 'w-full flex items-start gap-3 py-3';
 
-            // ── AI Icon ──────────────────────────────
-            const claudeAIIcon = `<div class="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-tr from-gemini-blue via-gemini-purple to-gemini-magenta flex items-center justify-center shadow-md select-none mt-1"><svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L9.2 9.2L2 12L9.2 14.8L12 22L14.8 14.8L22 12L14.8 9.2L12 2Z"/></svg></div>`;
+            // ── Claude ✱ AI icon ──────────────────────────────
+            const claudeAIIcon = `<div class="flex-shrink-0 w-7 h-7 rounded-[7px] bg-[#D97757] flex items-center justify-center text-white font-bold select-none" style="font-size:17px;margin-top:1px;">✱</div>`;
 
             // ── Action bar ────────────────────────────────────
             const actionBar = `
@@ -3719,37 +2885,26 @@ window.renderMarkmapBlocks = async function(root = document) {
                     <button onclick="copyToClipboard(\`${escapeHtmlForJsString(text)}\`, this)" class="claude-action-btn">
                         <i class='bx bx-copy'></i><span>Salin</span>
                     </button>
-                    ${isUser ? `<button onclick="editMessage('${escapeHtmlForJsString(text)}')" class="claude-action-btn">
-                                <i class='bx bx-edit-alt'></i><span>Edit</span>
-                            </button>` : `<button onclick="translateMessage(this, '${escapeHtmlForJsString(text)}')" class="claude-action-btn translate-btn">
+                    ${!isUser ? `<button onclick="translateMessage(this, '${escapeHtmlForJsString(text)}')" class="claude-action-btn translate-btn">
                         <i class='bx bx-world'></i><span>Terjemahkan</span>
-                            </button>
-                            <button onclick="rateMessage(this, 'up')" class="claude-action-btn feedback-btn" title="Jawaban membantu">
-                                <i class='bx bx-like'></i>
-                            </button>
-                            <button onclick="rateMessage(this, 'down')" class="claude-action-btn feedback-btn" title="Jawaban tidak membantu">
-                                <i class='bx bx-dislike'></i>
-                            </button>`}
+                    </button>` : ''}
                 </div>`;
 
             if (isUser) {
                 // User: right-aligned bubble, no avatar
                 msgDiv.innerHTML = `
-                    <div class="flex flex-col items-end gap-1 max-w-[85%] relative group">
+                    <div class="flex flex-col items-end gap-1 chat-bubble-user w-full max-w-[90%]">
                         ${mediaMarkup}
-                        <div class="chat-bubble-user px-4 py-2.5 rounded-2xl rounded-tr-sm text-[15px] leading-relaxed break-words shadow-sm">${escapeHtml(text)}</div>
-                        <button onclick="editPrompt(this)" data-prompt="${encodeURIComponent(text)}" class="absolute -left-10 top-2 p-2 bg-black/40 hover:bg-black/60 text-slate-300 hover:text-white rounded-full opacity-0 group-hover:opacity-100 transition-all text-xs" title="Edit Prompt"><i class='bx bx-edit-alt'></i></button>
+                        <div class="claude-user-bubble w-full">${escapeHtml(text)}</div>
                     </div>`;
             } else {
-                // AI: avatar icon + prose
+                // AI: ✱ icon + flat prose
                 msgDiv.innerHTML = `
                     ${claudeAIIcon}
-                    <div class="flex-1 min-w-0 flex flex-col chat-bubble-ai pt-1">
+                    <div class="flex-1 min-w-0 flex flex-col chat-bubble-ai">
                         ${mediaMarkup}
-                        <div class="prose prose-invert prose-sm leading-relaxed max-w-none break-words w-full overflow-x-auto custom-scrollbar" style="font-size:15px;line-height:1.75;">${renderMarkdown(text)}</div>
-                        <div class="mt-2 -ml-2">
-                            ${actionBar}
-                        </div>
+                        <div class="prose prose-invert prose-sm leading-relaxed max-w-none break-words w-full overflow-x-auto custom-scrollbar" style="font-size:15px;line-height:1.75;color:#e8e5e1;">${renderMarkdown(text)}</div>
+                        ${actionBar}
                     </div>`;
             }
 
@@ -3761,43 +2916,8 @@ window.renderMarkmapBlocks = async function(root = document) {
             }
         }
 
-        let activeGenerationController = null;
-
-        function setGenerationState(isGenerating) {
-            const button = document.getElementById('send-button');
-            if (!button) return;
-            button.onclick = isGenerating ? stopGeneration : sendMessage;
-            button.title = isGenerating ? 'Hentikan respons' : 'Kirim pesan';
-            button.innerHTML = isGenerating
-                ? `<i class='bx bx-stop text-base'></i>`
-                : `<i class='bx bx-up-arrow-alt text-lg'></i>`;
-        }
-
-        function stopGeneration() {
-            if (activeGenerationController) activeGenerationController.abort();
-            setGenerationState(false);
-        }
-
-        function getFormatLockInstruction(text) {
-            const normalized = String(text || '').toLowerCase().replace(/[\u2010-\u2015_]+/g, ' ');
-            const instructions = [];
-            if (/\b(mind\s*map|mindmap|main\s*map|peta\s*pikiran|pemetaan\s*pikiran)\b/.test(normalized)) {
-                instructions.push('FORMAT LOCK: Jawab HANYA dengan satu blok kode ```markmap. Gunakan heading/list Markdown murni untuk struktur mindmap. Jangan gunakan label box:, judul:, title:, isi:, atau content:. Jangan menambahkan pembuka, penutup, atau format lain.');
-            }
-            if (/\b(flow\s*chart|flowchart|diagram\s*alur|bagan\s*alir)\b/.test(normalized)) {
-                instructions.push('FORMAT LOCK: Jawab HANYA dengan satu blok kode ```mermaid. Gunakan sintaks flowchart Mermaid yang valid. Jangan gunakan ASCII art atau narasi di luar blok.');
-            }
-            if (/\b(chart|grafik|plot|diagram\s*data)\b/.test(normalized)) {
-                instructions.push('FORMAT LOCK: Jawab HANYA dengan satu blok kode ```chart yang berisi JSON Chart.js murni. Jangan gunakan ```json, komentar, HTML, atau narasi di luar blok.');
-            }
-            if (/\b(kode|coding|program|script|fungsi|function)\b/.test(normalized)) {
-                instructions.push('FORMAT LOCK: Berikan kode dalam fenced code block dengan bahasa pemrograman yang sesuai dan jelaskan singkat setelah blok jika diperlukan.');
-            }
-            return instructions.length ? `\n\n[ATURAN FORMAT OTOMATIS]\n${instructions.join('\n')}\n[AKHIR ATURAN FORMAT]\n` : '';
-        }
-
-        async function sendMessageWithPayload(text, fileObj = null, isRegenerating = false, signal = null) {
-            let augmentedText = `${text}${getFormatLockInstruction(text)}`;
+        async function sendMessageWithPayload(text, fileObj = null, isRegenerating = false) {
+            let augmentedText = text;
             let ragCitations = null;
             try {
                 if (typeof searchKnowledgeBase === 'function') {
@@ -3832,11 +2952,11 @@ window.renderMarkmapBlocks = async function(root = document) {
 
             // Routing berdasarkan mode AI yang dipilih
             if (aiSettings.mode === 'ollama') {
-                await sendMessageViaOllama(augmentedText, fileObj, isRegenerating, text, fileMetadatas, signal);
+                await sendMessageViaOllama(augmentedText, fileObj, isRegenerating, text, fileMetadatas);
                 return;
             }
             if (aiSettings.mode === 'openai') {
-                await sendMessageViaOpenAI(augmentedText, fileObj, isRegenerating, text, fileMetadatas, signal);
+                await sendMessageViaOpenAI(augmentedText, fileObj, isRegenerating, text, fileMetadatas);
                 return;
             }
 
@@ -3857,7 +2977,15 @@ window.renderMarkmapBlocks = async function(root = document) {
             let finalPromptChrome = augmentedText;
             if (text.trim().toLowerCase().startsWith('/search ')) {
                 const query = text.trim().substring(8).trim();
-                finalPromptChrome = `Pencarian web belum dikonfigurasi. Jawab berdasarkan pengetahuan lokal yang tersedia dan jelaskan keterbatasan ini. Pertanyaan pengguna: ${query}`;
+                try {
+                    const searchUrl = window.location.origin + '/exec.php?route=search&q=' + encodeURIComponent(query);
+                    const res = await fetch(searchUrl);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const snippets = data.results && data.results.length > 0 ? data.results.join('\\n\\n') : 'Tidak ada hasil.';
+                        finalPromptChrome = `[Informasi dari Web Search untuk kueri "${query}"]:\\n${snippets}\\n\\nBerdasarkan informasi di atas, tolong jawab pertanyaan ini: ${query}`;
+                    }
+                } catch(e) { console.warn(e); }
             }
 const messagesContainer = document.getElementById("messages");
 
@@ -4049,7 +3177,6 @@ try {
     if (chatSession.promptStreaming) {
 
         for await (const chunk of promptAPI) {
-            if (signal?.aborted) throw new DOMException('Generasi dihentikan', 'AbortError');
 
             try {
 
@@ -4104,9 +3231,8 @@ try {
 
     console.error("Gagal mendapatkan respons AI:", err);
 
-    res = err.name === 'AbortError'
-        ? '(Respons dihentikan)'
-        : `❌ Gagal memproses permintaan: ${err.message || 'Sistem galat.'}`;
+    res =
+        `❌ Gagal memproses permintaan: ${err.message || 'Sistem galat.'}`;
 
     document.getElementById(resId).innerHTML =
         `<span class="text-red-400 font-semibold">${res}</span>`;
@@ -4133,8 +3259,6 @@ try {
     }
 
     initializeResponseCopyButton(resId, res);
-    activeGenerationController = null;
-    setGenerationState(false);
 
     // Render komponen cerdas (Chart & Mermaid) via fungsi terpusat
     setTimeout(async () => {
@@ -4145,7 +3269,7 @@ try {
 }
         }
 
-        async function sendMessageViaOllama(text, fileObj = null, isRegenerating = false, originalText = null, fileMetadatas = null, signal = null) {
+        async function sendMessageViaOllama(text, fileObj = null, isRegenerating = false, originalText = null, fileMetadatas = null) {
             const history = await getChatHistoryFromDB(10);
             let finalPrompt = applyKaTeXPrompt(text);
 
@@ -4175,7 +3299,15 @@ try {
             // WEB SEARCH UNTUK OLLAMA
             if (text.trim().toLowerCase().startsWith('/search ')) {
                 const query = text.trim().substring(8).trim();
-                finalPrompt = `Pencarian web belum dikonfigurasi. Jawab berdasarkan pengetahuan lokal yang tersedia dan jelaskan keterbatasan ini. Pertanyaan pengguna: ${query}`;
+                try {
+                    const searchUrl = window.location.origin + '/exec.php?route=search&q=' + encodeURIComponent(query);
+                    const res = await fetch(searchUrl);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const snippets = data.results && data.results.length > 0 ? data.results.join('\\n\\n') : 'Tidak ada hasil.';
+                        finalPrompt = `[Informasi dari Web Search untuk kueri "${query}"]:\\n${snippets}\\n\\nBerdasarkan informasi di atas, tolong jawab pertanyaan ini: ${query}`;
+                    }
+                } catch(e) {}
             }
 
             const resId = 'ai_' + Date.now();
@@ -4189,7 +3321,7 @@ try {
 
             let res = '';
             try {
-                for await (const chunk of sendToOllama(finalPrompt, signal, fileObj, history)) {
+                for await (const chunk of sendToOllama(finalPrompt, null, fileObj, history)) {
                     res += chunk;
                     await renderMarkdownAndMermaid(document.getElementById(resId), res, true);
                     scrollToBottom();
@@ -4198,7 +3330,7 @@ try {
                 if (ttsEnabled && res.length > 0) speakText(res);
                 saveMessageToHistory('assistant', res, null);
             } catch(err) {
-                res = err.name === 'AbortError' ? '(Respons dihentikan)' : `❌ Ollama Error: ${err.message}`;
+                res = `❌ Ollama Error: ${err.message}`;
                 document.getElementById(resId).innerHTML = `<span class="text-red-400 font-semibold">${res}</span>`;
             } finally {
                 finishLoadingBubble(resId, timeInterval, indicatorInterval, res);
@@ -4206,7 +3338,7 @@ try {
         }
 
         // ===== OPENAI MESSAGE HANDLER =====
-        async function sendMessageViaOpenAI(text, fileObj = null, isRegenerating = false, originalText = null, fileMetadatas = null, signal = null) {
+        async function sendMessageViaOpenAI(text, fileObj = null, isRegenerating = false, originalText = null, fileMetadatas = null) {
             const history = await getChatHistoryFromDB(10);
             let finalPrompt = applyKaTeXPrompt(text);
             if (fileObj && fileObj.type === 'document') {
@@ -4232,7 +3364,15 @@ try {
             // WEB SEARCH UNTUK OPENAI
             if (text.trim().toLowerCase().startsWith('/search ')) {
                 const query = text.trim().substring(8).trim();
-                finalPrompt = `Pencarian web belum dikonfigurasi. Jawab berdasarkan pengetahuan lokal yang tersedia dan jelaskan keterbatasan ini. Pertanyaan pengguna: ${query}`;
+                try {
+                    const searchUrl = window.location.origin + '/exec.php?route=search&q=' + encodeURIComponent(query);
+                    const res = await fetch(searchUrl);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const snippets = data.results && data.results.length > 0 ? data.results.join('\\n\\n') : 'Tidak ada hasil.';
+                        finalPrompt = `[Informasi dari Web Search untuk kueri "${query}"]:\\n${snippets}\\n\\nBerdasarkan informasi di atas, tolong jawab pertanyaan ini: ${query}`;
+                    }
+                } catch(e) {}
             }
 
             const resId = 'ai_' + Date.now();
@@ -4246,7 +3386,7 @@ try {
 
             let res = '';
             try {
-                for await (const chunk of sendToOpenAI(finalPrompt, signal, fileObj, history)) {
+                for await (const chunk of sendToOpenAI(finalPrompt, null, fileObj, history)) {
                     res += chunk;
                     await renderMarkdownAndMermaid(document.getElementById(resId), res, true);
                     scrollToBottom();
@@ -4255,7 +3395,7 @@ try {
                 if (ttsEnabled && res.length > 0) speakText(res);
                 saveMessageToHistory('assistant', res, null);
             } catch(err) {
-                res = err.name === 'AbortError' ? '(Respons dihentikan)' : `❌ OpenAI Error: ${err.message}`;
+                res = `❌ OpenAI Error: ${err.message}`;
                 document.getElementById(resId).innerHTML = `<span class="text-red-400 font-semibold">${res}</span>`;
             } finally {
                 finishLoadingBubble(resId, timeInterval, indicatorInterval, res);
@@ -4449,156 +3589,31 @@ try {
             // Parse markdown
             let html = marked.parse(processedText);
 
-            // Restore math blocks (Realtime Rendering)
+            // Restore math blocks
             Object.keys(mathBlocks).forEach(mathId => {
                 const item = mathBlocks[mathId];
-                try {
-                    // Try to render with KaTeX even during streaming
-                    const rendered = katex.renderToString(item.equation, {
-                        displayMode: item.display,
-                        throwOnError: true, // Throw error for incomplete syntax during typing
-                        strict: false,
-                        trust: true
-                    });
-                    html = html.split(mathId).join(rendered);
-                } catch (err) {
-                    // If rendering fails (e.g. equation is still being typed), show raw text
+                if (window.isCurrentlyStreaming) {
                     const fallback = item.display ? `$$${item.equation}$$` : `$${item.equation}$`;
                     html = html.split(mathId).join(fallback);
+                } else {
+                    try {
+                        const rendered = katex.renderToString(item.equation, {
+                            displayMode: item.display,
+                            throwOnError: false,
+                            strict: false,
+                            trust: true
+                        });
+                        html = html.split(mathId).join(rendered);
+                    } catch (err) {
+                        console.error("Gagal merender KaTeX:", item.equation, err);
+                        const fallback = item.display ? `$$${item.equation}$$` : `$${item.equation}$`;
+                        html = html.split(mathId).join(fallback);
+                    }
                 }
             });
 
             return html;
         }
-
-        
-        // --- TAHAP 2 FEATURES ---
-        // 1. Edit Prompt
-        window.editPrompt = function(btn) {
-            const text = decodeURIComponent(btn.dataset.prompt);
-            const editor = document.getElementById('prompt');
-            editor.value = text;
-            editor.focus();
-            autoResizeTextarea(editor);
-        };
-
-        // 2. Drag & Drop Glassmorphism
-        let dragCounter = 0;
-        window.addEventListener('dragenter', (e) => {
-            e.preventDefault();
-            dragCounter++;
-            const overlay = document.getElementById('drag-overlay');
-            overlay.classList.remove('hidden');
-            overlay.classList.add('flex');
-            setTimeout(() => overlay.classList.remove('opacity-0'), 10);
-        });
-        window.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dragCounter--;
-            if (dragCounter === 0) {
-                const overlay = document.getElementById('drag-overlay');
-                overlay.classList.add('opacity-0');
-                setTimeout(() => {
-                    overlay.classList.add('hidden');
-                    overlay.classList.remove('flex');
-                }, 300);
-            }
-        });
-        window.addEventListener('dragover', (e) => e.preventDefault());
-        window.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dragCounter = 0;
-            const overlay = document.getElementById('drag-overlay');
-            overlay.classList.add('opacity-0');
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-                overlay.classList.remove('flex');
-            }, 300);
-            
-            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                if (typeof processSelectedFile === 'function') {
-                    processSelectedFile(e.dataTransfer.files[0]);
-                }
-            }
-        });
-
-        // 3. AI Context Menu
-        document.addEventListener('mouseup', function(e) {
-            const selection = window.getSelection();
-            const text = selection.toString().trim();
-            const tooltip = document.getElementById('ai-context-menu');
-            
-            if (text.length > 0 && e.target.closest('#messages')) {
-                const range = selection.getRangeAt(0);
-                const rect = range.getBoundingClientRect();
-                
-                tooltip.style.left = Math.max(10, (rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2))) + 'px';
-                tooltip.style.top = Math.max(10, (rect.top + window.scrollY - tooltip.offsetHeight - 10)) + 'px';
-                tooltip.classList.remove('hidden');
-                tooltip.dataset.selectedText = text;
-            } else if (!e.target.closest('#ai-context-menu')) {
-                tooltip.classList.add('hidden');
-            }
-        });
-
-        window.contextAction = function(action) {
-            const tooltip = document.getElementById('ai-context-menu');
-            const text = tooltip.dataset.selectedText;
-            if (!text) return;
-            tooltip.classList.add('hidden');
-            const editor = document.getElementById('prompt');
-            if (action === 'jelaskan') {
-                editor.value = "Tolong jelaskan ini secara lebih rinci:\n\n\"" + text + "\"";
-            } else if (action === 'ringkas') {
-                editor.value = "Buatkan ringkasan singkat dari teks berikut:\n\n\"" + text + "\"";
-            } else if (action === 'kodekan') {
-                editor.value = "Tuliskan kode untuk mengimplementasikan atau memperbaiki ini:\n\n\"" + text + "\"";
-            }
-            editor.focus();
-            autoResizeTextarea(editor);
-        };
-
-        // 4. Voice Orb Dinamis
-        let audioContext, analyser, microphone, voiceVisualizerId;
-        window.startVoiceOrb = function() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
-            navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(stream => {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioContext.createAnalyser();
-                microphone = audioContext.createMediaStreamSource(stream);
-                microphone.connect(analyser);
-                analyser.fftSize = 256;
-                const bufferLength = analyser.frequencyBinCount;
-                const dataArray = new Uint8Array(bufferLength);
-                
-                const btn = document.getElementById('voice-input-btn');
-                btn.classList.add('voice-orb-active');
-                
-                function pulse() {
-                    if (!window.isVoiceRecording) return;
-                    analyser.getByteFrequencyData(dataArray);
-                    let sum = 0;
-                    for(let i=0; i<bufferLength; i++) { sum += dataArray[i]; }
-                    let average = sum / bufferLength;
-                    let scale = 1 + (average / 150);
-                    let glow = average * 0.5;
-                    btn.style.transform = `scale(${scale})`;
-                    btn.style.boxShadow = `0 0 ${glow}px ${glow/2}px rgba(84, 54, 255, 0.8)`;
-                    voiceVisualizerId = requestAnimationFrame(pulse);
-                }
-                pulse();
-            }).catch(err => console.error("Mic orb err:", err));
-        };
-        
-        window.stopVoiceOrb = function() {
-            cancelAnimationFrame(voiceVisualizerId);
-            if (audioContext) audioContext.close();
-            const btn = document.getElementById('voice-input-btn');
-            btn.classList.remove('voice-orb-active');
-            btn.style.transform = 'scale(1)';
-            btn.style.boxShadow = 'none';
-        };
-        // ------------------------------------
 
         // FUNGSI EKSEKUSI KODE LOCAL (WebAssembly)
         async function runCodeInBrowser(code, isPython, btn) {
@@ -4670,44 +3685,10 @@ try {
 
         window.isCurrentlyStreaming = false;
 
-        function normalizeChartResponse(text) {
-            const content = String(text || '');
-            if (/```chart\b/i.test(content) || !/(data\s+grafik|visualisasi\s+grafik|grafik\s+tren|jumlah\s+penjualan)/i.test(content)) {
-                return content;
-            }
-            const lines = content.split(/\r?\n/);
-            for (let index = 0; index < lines.length - 2; index += 1) {
-                if (!/^\s*\|/.test(lines[index]) || !/^\s*\|?\s*:?-{2,}/.test(lines[index + 1])) continue;
-                const splitRow = row => row.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map(cell => cell.trim());
-                const headers = splitRow(lines[index]);
-                const rows = [];
-                let cursor = index + 2;
-                while (cursor < lines.length && /^\s*\|/.test(lines[cursor])) {
-                    const cells = splitRow(lines[cursor]);
-                    if (cells.length >= 2) rows.push(cells);
-                    cursor += 1;
-                }
-                if (!headers.length || rows.length < 2) continue;
-                const labels = rows.map(row => row[0]);
-                const datasets = headers.slice(1).map((header, columnIndex) => ({
-                    label: header || `Data ${columnIndex + 1}`,
-                    data: rows.map(row => {
-                        const raw = String(row[columnIndex + 1] || '0').replace(/[^0-9,.-]/g, '').replace(/\.(?=\d{3}(?:\D|$))/g, '').replace(',', '.');
-                        const value = Number(raw);
-                        return Number.isFinite(value) ? value : 0;
-                    })
-                }));
-                if (!datasets.some(dataset => dataset.data.some(value => value !== 0))) continue;
-                const chartBlock = `\n\n\`\`\`chart\n${JSON.stringify({ type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false } }, null, 2)}\n\`\`\`\n`;
-                return `${lines.slice(0, index).join('\n')}${chartBlock}${lines.slice(cursor).join('\n')}`;
-            }
-            return content;
-        }
-
         window.renderMarkdownAndMermaid = async function(target, text, skipMermaid = false) {
             if (!target) return '';
             window.isCurrentlyStreaming = skipMermaid;
-            target.innerHTML = renderMarkdown(skipMermaid ? text : normalizeChartResponse(text));
+            target.innerHTML = renderMarkdown(text);
             if (!skipMermaid) {
                 await window.renderMermaidBlocks(target);
             }
@@ -4783,16 +3764,12 @@ try {
         }
 
         function filterMessages() {
-            // OPTIMASI: debounce pencarian agar tidak scan DOM tiap keystroke
-            clearTimeout(window.__fmDeb);
-            window.__fmDeb = setTimeout(() => {
-                const query = document.getElementById('chat-search').value.toLowerCase().trim();
-                document.querySelectorAll('#messages > div').forEach(item => {
-                    if (item.id === "initial-placeholder") return;
-                    const text = item.innerText.toLowerCase();
-                    item.style.display = query && !text.includes(query) ? 'none' : '';
-                });
-            }, 150);
+            const query = document.getElementById('chat-search').value.toLowerCase().trim();
+            document.querySelectorAll('#messages > div').forEach(item => {
+                if (item.id === "initial-placeholder") return;
+                const text = item.innerText.toLowerCase();
+                item.style.display = query && !text.includes(query) ? 'none' : '';
+            });
         }
 
         // Clipboard Helper
@@ -4941,24 +3918,6 @@ try {
         function clearMessageSearch() {
             document.getElementById('chat-search').value = '';
             filterMessages();
-        }
-
-        function editMessage(text) {
-            const promptEl = document.getElementById('prompt');
-            if (!promptEl) return;
-            promptEl.value = text;
-            handleTextareaInput(promptEl);
-            promptEl.focus();
-            promptEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-
-        function rateMessage(button, rating) {
-            const actionBar = button.closest('.claude-action-bar');
-            if (!actionBar) return;
-            actionBar.querySelectorAll('.feedback-btn').forEach(item => item.classList.remove('text-[#D97757]'));
-            button.classList.add('text-[#D97757]');
-            button.setAttribute('aria-label', rating === 'up' ? 'Jawaban ditandai membantu' : 'Jawaban ditandai tidak membantu');
-            localStorage.setItem(`claude-feedback-${Date.now()}`, rating);
         }
 
         function updateTTSLanguage() {
@@ -5468,9 +4427,8 @@ try {
                 document.getElementById('image-preview').classList.add('hidden');
                 document.getElementById('doc-preview-icon').classList.remove('hidden');
 
-                reader.onload = async function(loadEvent) {
+                reader.onload = function(loadEvent) {
                     const arrayBuffer = loadEvent.target.result;
-                    try { await window.ensureMammoth(); } catch (e) { alert("Gagal memuat Mammoth.js: " + e.message); removeSelectedFile(); return; }
                     mammoth.extractRawText({ arrayBuffer: arrayBuffer })
                         .then(function(result) {
                             const extractedText = result.value;
@@ -5504,9 +4462,8 @@ try {
                 document.getElementById('image-preview').classList.add('hidden');
                 document.getElementById('doc-preview-icon').classList.remove('hidden');
 
-                reader.onload = async function(loadEvent) {
+                reader.onload = function(loadEvent) {
                     try {
-                        await window.ensureXLSX();
                         const data = new Uint8Array(loadEvent.target.result);
                         const workbook = XLSX.read(data, { type: 'array' });
                         let extractedText = "";
@@ -5596,7 +4553,6 @@ try {
                 accumulatedTranscript = '';
                 document.getElementById('voice-input-btn').classList.add('animate-pulse', 'text-gemini-blue');
                 promptEl.placeholder = '🎤 Mendengarkan... (Bahasa Indonesia)';
-                if (typeof startVoiceOrb === 'function') startVoiceOrb();
             };
 
             voiceRecognition.onresult = (event) => {
@@ -5643,14 +4599,12 @@ try {
 
                 isVoiceRecording = false;
                 document.getElementById('voice-input-btn').classList.remove('animate-pulse', 'text-gemini-blue');
-                if (typeof stopVoiceOrb === 'function') stopVoiceOrb();
                 promptEl.placeholder = 'Tanya apa saja, atau drop file... (Shift+Enter untuk baris baru)';
             };
 
             voiceRecognition.onend = () => {
                 isVoiceRecording = false;
                 document.getElementById('voice-input-btn').classList.remove('animate-pulse', 'text-gemini-blue');
-                if (typeof stopVoiceOrb === 'function') stopVoiceOrb();
                 promptEl.placeholder = 'Tanya apa saja, atau drop dokumen & gambar di sini...';
 
                 // Auto submit jika ada teks
@@ -5745,10 +4699,7 @@ try {
             if (!text && !selectedFile) return;
 
             lastPromptText = text;
-            activeGenerationController?.abort();
-            activeGenerationController = new AbortController();
-            setGenerationState(true);
-            sendMessageWithPayload(text, selectedFile, false, activeGenerationController.signal);
+            sendMessageWithPayload(text, selectedFile);
 
             // Setel ulang UI input
             promptEl.value = "";
@@ -5800,14 +4751,8 @@ try {
                 const transaction = db.transaction("history", "readwrite");
                 const store = transaction.objectStore("history");
                 store.clear().onsuccess = async () => {
-                    // Bersihkan Tampilan (Hapus semua pesan kecuali placeholder)
-                    const messagesContainer = document.getElementById('messages');
-                    const children = Array.from(messagesContainer.children);
-                    children.forEach(child => {
-                        if (child.id !== 'initial-placeholder') {
-                            child.remove();
-                        }
-                    });
+                    // Bersihkan Tampilan
+                    document.getElementById('messages').innerHTML = '';
 
                     // Munculkan Placeholder
                     const placeholder = document.getElementById('initial-placeholder');
@@ -5887,39 +4832,6 @@ try {
             };
         }
 
-        
-        // ===== FUNGSI EXPORT KE PDF =====
-        window.exportHistoryToPDF = function() {
-            if (typeof html2pdf === 'undefined') {
-                alert('Library html2pdf belum dimuat.');
-                return;
-            }
-            const messagesDiv = document.getElementById('messages');
-            if (!messagesDiv || messagesDiv.innerText.trim() === '') {
-                alert('Tidak ada obrolan untuk diekspor.');
-                return;
-            }
-            
-            // Siapkan elemen khusus untuk di-render
-            const clone = messagesDiv.cloneNode(true);
-            clone.querySelectorAll('button').forEach(b => b.remove());
-            clone.style.padding = '20px';
-            clone.style.backgroundColor = document.body.classList.contains('light-theme') ? '#ffffff' : '#1a1a1a';
-            clone.style.color = document.body.classList.contains('light-theme') ? '#000000' : '#ffffff';
-            
-            const opt = {
-                margin:       10,
-                filename:     `Chat_AI_${new Date().toISOString().slice(0,10)}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            
-            html2pdf().set(opt).from(clone).save();
-        };
-        
-        window.exportChatToPDF = window.exportHistoryToPDF;
-
         // ===== FUNGSI EXPORT KE DOCX (Menggunakan JSZip) =====
         async function exportHistoryToDocx() {
             if (!db) {
@@ -5927,9 +4839,8 @@ try {
                 return;
             }
 
-            try { await window.ensureZipSave(); } catch (e) { alert('Gagal memuat library DOCX: ' + e.message); return; }
             if (typeof JSZip === 'undefined') {
-                alert('Library JSZip belum dimuat. Silakan coba lagi.');
+                alert('Library JSZip belum dimuat. Silakan refresh halaman dan coba lagi.');
                 return;
             }
 
@@ -6376,7 +5287,7 @@ try {
             const dropWrap  = document.getElementById('openai-model-dropdown-wrap');
             const select    = document.getElementById('ai-openai-model-select');
 
-            const baseUrl = getOpenAIBaseUrl(baseUrlEl?.value || 'https://api.openai.com/v1');
+            const baseUrl = (baseUrlEl?.value?.trim() || 'https://api.openai.com/v1').replace(/\/$/, '');
             const apiKey  = keyEl?.value?.trim() || '';
 
             // Loading state
@@ -6391,7 +5302,7 @@ try {
             }
 
             // Deteksi apakah dibuka via file:// (lebih rentan CORS)
-            const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?(?:\/|$)/i.test(baseUrl);
+            const isLocalhost = baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1') || baseUrl.includes('0.0.0.0');
 
             try {
                 // HACK: Kita hapus header 'Accept' untuk menghindari CORS OPTIONS preflight.
@@ -6799,27 +5710,22 @@ try {
 
         // ================= KNOWLEDGE BASE (KB) & RAG =================
 
-        // OPTIMASI Tier-2: toast generik non-blocking pengganti alert() (freeze di file://)
-        function showAppToast(message, kind) {
-            const bg = kind === 'error'
-                ? 'linear-gradient(135deg, #dc2626, #991b1b)'
-                : kind === 'warn'
-                    ? 'linear-gradient(135deg, #d97706, #92400e)'
-                    : 'linear-gradient(135deg, #059669, #047857)';
+        function showKBToast(message) {
             let toast = document.getElementById('kb-toast');
             if (!toast) {
                 toast = document.createElement('div');
                 toast.id = 'kb-toast';
+                toast.style.cssText = `
+                    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+                    background: linear-gradient(135deg, #059669, #047857);
+                    color: white; padding: 8px 16px; border-radius: 20px;
+                    font-size: 12px; font-weight: 600; z-index: 9999;
+                    box-shadow: 0 4px 20px rgba(5,150,105,0.4);
+                    opacity: 0; transition: all 0.3s ease; pointer-events: none;
+                    white-space: nowrap;
+                `;
                 document.body.appendChild(toast);
             }
-            toast.style.cssText =
-                'position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);' +
-                'background: ' + bg + ';' +
-                'color: white; padding: 8px 16px; border-radius: 20px;' +
-                'font-size: 12px; font-weight: 600; z-index: 9999;' +
-                'box-shadow: 0 4px 20px rgba(0,0,0,0.4);' +
-                'opacity: 0; transition: all 0.3s ease; pointer-events: none;' +
-                'white-space: nowrap; max-width: 90vw; overflow: hidden; text-overflow: ellipsis;';
             toast.textContent = message;
             // Animasi masuk
             requestAnimationFrame(() => {
@@ -6832,10 +5738,6 @@ try {
                 toast.style.opacity = '0';
                 toast.style.transform = 'translateX(-50%) translateY(20px)';
             }, 3000);
-        }
-        // Kompat: penama lama tetap jalan
-        function showKBToast(message) {
-            showAppToast(message, 'success');
         }
 
         let featureExtractor = null;
@@ -6994,7 +5896,6 @@ try {
                     }
                 } else if (file.name.endsWith('.docx')) {
                     const arrayBuffer = await file.arrayBuffer();
-                    await window.ensureMammoth();
                     const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
                     text = result.value;
                 } else {
@@ -7105,24 +6006,5 @@ try {
     </script>
     <!-- Id Tag Unik untuk pergantian dinamis tema highlight.js -->
     <link id="hljs-theme" rel="stylesheet" href="nano_asset/assets/css/github-dark.min.css">
-</div>
-
-    <!-- Drag & Drop Glassmorphism Overlay -->
-    <div id="drag-overlay" class="fixed inset-0 z-[100] hidden bg-black/40 backdrop-blur-md flex-col items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
-        <div class="bg-white/10 p-8 rounded-full border border-white/20 mb-4 animate-bounce shadow-2xl">
-            <i class='bx bx-cloud-upload text-6xl text-white'></i>
-        </div>
-        <h2 class="text-2xl font-bold text-white shadow-sm">Jatuhkan Berkas Di Sini</h2>
-        <p class="text-white/80 mt-2">Gambar, PDF, CSV, Teks, Excel, Word didukung secara lokal.</p>
-    </div>
-
-    <!-- AI Context Menu -->
-    <div id="ai-context-menu" class="hidden absolute z-50 bg-black/70 backdrop-blur-xl border border-white/20 shadow-2xl rounded-xl flex items-center gap-1 p-1">
-        <button onclick="contextAction('jelaskan')" class="text-[11px] font-semibold text-slate-200 hover:text-white hover:bg-white/10 px-3 py-1.5 rounded-lg transition-all flex items-center"><i class='bx bx-info-circle mr-1'></i>Jelaskan</button>
-        <div class="w-px h-4 bg-white/20 mx-1"></div>
-        <button onclick="contextAction('ringkas')" class="text-[11px] font-semibold text-slate-200 hover:text-white hover:bg-white/10 px-3 py-1.5 rounded-lg transition-all flex items-center"><i class='bx bx-list-ol mr-1'></i>Ringkas</button>
-        <div class="w-px h-4 bg-white/20 mx-1"></div>
-        <button onclick="contextAction('kodekan')" class="text-[11px] font-semibold text-slate-200 hover:text-white hover:bg-white/10 px-3 py-1.5 rounded-lg transition-all flex items-center"><i class='bx bx-code-alt mr-1'></i>Kodekan</button>
-    </div>
 </body>
 </html>

@@ -40,39 +40,6 @@ body.hacker-theme .bg-gradient-to-tr { background: #00aa00 !important; }
             --diagram-muted: #475569;
             --diagram-grid: rgba(0,0,0,0.1);
         }
-
-        /* Blinking Cursor */
-        @keyframes ai-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-        .ai-cursor { 
-            display: inline-block; 
-            width: 8px; 
-            height: 1em; 
-            background: currentColor; 
-            vertical-align: text-bottom; 
-            margin-left: 4px; 
-            animation: ai-blink 0.85s step-end infinite;
-        }
-
-        /* Artifact Panel Styles */
-        body.light-theme #artifact-panel { background-color: #f8fafc; border-color: rgba(0,0,0,0.1); }
-        #artifact-panel.open { width: 50vw; display: flex; }
-        @media (max-width: 768px) {
-            #artifact-panel.open { width: 100vw; position: absolute; inset: 0; }
-        }
-
-        .voice-orb-active {
-            background-color: #5436ff !important;
-            color: white !important;
-            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
-            z-index: 50;
-        }
-        body.light-theme #ai-context-menu {
-            background-color: rgba(255,255,255,0.9);
-            border-color: rgba(0,0,0,0.1);
-        }
-        body.light-theme #ai-context-menu button { color: #1e293b; }
-        body.light-theme #ai-context-menu button:hover { background-color: rgba(0,0,0,0.05); }
-        body.light-theme #ai-context-menu .bg-white\/20 { background-color: rgba(0,0,0,0.1); }
 </style>
 
 <script src="nano_asset/assets/js/mammoth.browser.min.js"></script>
@@ -133,24 +100,6 @@ body.hacker-theme .bg-gradient-to-tr { background: #00aa00 !important; }
         }
     </script>
     <style>
-        /* Local Fonts Definition */
-        @font-face { font-family: 'Inter'; src: url('nano_asset/assets/fonts/inter-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-        @font-face { font-family: 'Poppins'; src: url('nano_asset/assets/fonts/poppins-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-        @font-face { font-family: 'Fira Code'; src: url('nano_asset/assets/fonts/fira-code-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-        @font-face { font-family: 'Plus Jakarta Sans'; src: url('nano_asset/assets/fonts/jakarta-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-        @font-face { font-family: 'Outfit'; src: url('nano_asset/assets/fonts/outfit-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-        @font-face { font-family: 'Quicksand'; src: url('nano_asset/assets/fonts/quicksand-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-        @font-face { font-family: 'Space Grotesk'; src: url('nano_asset/assets/fonts/space-grotesk-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-
-        /* Font Utility Classes */
-        body.font-inter { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important; }
-        body.font-poppins { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif !important; }
-        body.font-fira { font-family: 'Fira Code', ui-monospace, SFMono-Regular, monospace !important; }
-        body.font-jakarta { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important; }
-        body.font-outfit { font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif !important; }
-        body.font-quicksand { font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, sans-serif !important; }
-        body.font-space { font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif !important; }
-
         body {
             font-family: ui-sans-serif, system-ui, sans-serif;
             transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -689,25 +638,16 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
 .animate-fade-in-up {
     animation: fadeInUp 0.4s ease-out forwards;
 }
-    
-        .voice-orb-active {
-            background-color: #5436ff !important;
-            color: white !important;
-            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
-            z-index: 50;
-        }
-        body.light-theme #ai-context-menu {
-            background-color: rgba(255,255,255,0.9);
-            border-color: rgba(0,0,0,0.1);
-        }
-        body.light-theme #ai-context-menu button { color: #1e293b; }
-        body.light-theme #ai-context-menu button:hover { background-color: rgba(0,0,0,0.05); }
-        body.light-theme #ai-context-menu .bg-white\/20 { background-color: rgba(0,0,0,0.1); }
-</style>
+    </style>
 
     <!-- PREMIUM LIGHT THEME OVERRIDES -->
     <!-- MACOS IOS GLASS LIGHT THEME OVERRIDES -->
     <style id="premium-light-theme">
+        /* Base Background - Bright Gradient Mesh */
+        body.light-theme {
+            background: linear-gradient(135deg, #f8f9fa 0%, #eef2f5 50%, #e2e8f0 100%) !important;
+            color: #0f172a !important;
+        }
 
         /* Ambient Glow Blobs in Background */
         body.light-theme::before {
@@ -791,30 +731,6 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
             -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
             border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
         }
-        
-        /* Pewarnaan Header Tombol - Mode Terang (Lebih Gelap & Terbaca) */
-        body.light-theme header h1 { color: #1d4ed8 !important; } /* blue-700 */
-        body.light-theme header span.text-gemini-purple { color: #7e22ce !important; background-color: rgba(126, 34, 206, 0.1) !important; border-color: rgba(126, 34, 206, 0.2) !important; } /* purple-700 */
-        body.light-theme header button.text-purple-400 { color: #7e22ce !important; background-color: rgba(126, 34, 206, 0.1) !important; border-color: rgba(126, 34, 206, 0.2) !important; }
-        body.light-theme header button.text-purple-400:hover { background-color: rgba(126, 34, 206, 0.15) !important; }
-        body.light-theme header button.text-emerald-400 { color: #047857 !important; background-color: rgba(4, 120, 87, 0.1) !important; border-color: rgba(4, 120, 87, 0.2) !important; }
-        body.light-theme header button.text-emerald-400:hover { background-color: rgba(4, 120, 87, 0.15) !important; }
-        body.light-theme header button.text-gemini-blue { color: #1d4ed8 !important; background-color: rgba(29, 78, 216, 0.1) !important; border-color: rgba(29, 78, 216, 0.2) !important; }
-        body.light-theme header button.text-gemini-blue:hover { background-color: rgba(29, 78, 216, 0.15) !important; }
-        body.light-theme header button.text-slate-300 { color: #334155 !important; background-color: rgba(51, 65, 85, 0.1) !important; border-color: rgba(51, 65, 85, 0.2) !important; }
-        body.light-theme header button.text-slate-300:hover { background-color: rgba(51, 65, 85, 0.15) !important; }
-        
-        /* Pewarnaan Header Tombol - Mode Gelap (Lebih Terang & Jelas) */
-        body:not(.light-theme) header h1 { color: #60a5fa !important; text-shadow: 0 0 10px rgba(96,165,250,0.3); } /* blue-400 */
-        body:not(.light-theme) header span.text-gemini-purple { color: #c084fc !important; background-color: rgba(192, 132, 252, 0.15) !important; border-color: rgba(192, 132, 252, 0.3) !important; } /* purple-400 */
-        body:not(.light-theme) header button.text-purple-400 { color: #c084fc !important; background-color: rgba(192, 132, 252, 0.15) !important; border-color: rgba(192, 132, 252, 0.3) !important; }
-        body:not(.light-theme) header button.text-purple-400:hover { background-color: rgba(192, 132, 252, 0.25) !important; }
-        body:not(.light-theme) header button.text-emerald-400 { color: #34d399 !important; background-color: rgba(52, 211, 153, 0.15) !important; border-color: rgba(52, 211, 153, 0.3) !important; }
-        body:not(.light-theme) header button.text-emerald-400:hover { background-color: rgba(52, 211, 153, 0.25) !important; }
-        body:not(.light-theme) header button.text-gemini-blue { color: #60a5fa !important; background-color: rgba(96, 165, 250, 0.15) !important; border-color: rgba(96, 165, 250, 0.3) !important; }
-        body:not(.light-theme) header button.text-gemini-blue:hover { background-color: rgba(96, 165, 250, 0.25) !important; }
-        body:not(.light-theme) header button.text-slate-300 { color: #f8fafc !important; background-color: rgba(248, 250, 252, 0.1) !important; border-color: rgba(248, 250, 252, 0.2) !important; }
-        body:not(.light-theme) header button.text-slate-300:hover { background-color: rgba(248, 250, 252, 0.15) !important; }
 
         /* Input Box (Drop-Zone) - Prominent Bright Glass Pill */
         body.light-theme #drop-zone {
@@ -868,43 +784,12 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
         }
 
         /* Modals - Heavy Bright Glass */
-        body.light-theme dialog > div, body.light-theme #preview-modal > div, body.light-theme #diagnosis-modal > div, body.light-theme #system-persona-modal > div {
+        body.light-theme dialog > div, body.light-theme #ai-settings-modal > div, body.light-theme #preview-modal > div, body.light-theme #diagnosis-modal > div, body.light-theme #system-persona-modal > div {
             background-color: rgba(255, 255, 255, 0.7) !important;
             backdrop-filter: blur(40px) saturate(200%) !important;
             -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
             border: 1px solid rgba(0, 0, 0, 0.1) !important;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
-        }
-
-        /* FORCE DARK MODE PADA AI SETTINGS MODAL MESKIPUN DI TEMA TERANG */
-        body.light-theme #ai-settings-modal > div {
-            background-color: #111111 !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-        }
-        
-        body.light-theme #ai-settings-modal .text-white { color: #ffffff !important; }
-        body.light-theme #ai-settings-modal .text-slate-100 { color: #f1f5f9 !important; }
-        body.light-theme #ai-settings-modal .text-slate-200 { color: #e2e8f0 !important; }
-        body.light-theme #ai-settings-modal .text-slate-300 { color: #cbd5e1 !important; }
-        body.light-theme #ai-settings-modal .text-slate-400 { color: #94a3b8 !important; }
-        body.light-theme #ai-settings-modal .text-slate-500 { color: #64748b !important; }
-        
-        body.light-theme #ai-settings-modal .bg-white\/5 { background-color: rgba(255, 255, 255, 0.05) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
-        body.light-theme #ai-settings-modal .bg-black\/30 { background-color: rgba(0, 0, 0, 0.3) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
-        body.light-theme #ai-settings-modal .bg-black\/40 { background-color: rgba(0, 0, 0, 0.4) !important; border-color: rgba(255, 255, 255, 0.1) !important; }
-        body.light-theme #ai-settings-modal .border-white\/10 { border-color: rgba(255, 255, 255, 0.1) !important; }
-        
-        body.light-theme #ai-settings-modal .bg-emerald-500\/10 { background-color: rgba(16, 185, 129, 0.1) !important; border-color: rgba(16, 185, 129, 0.2) !important; }
-        body.light-theme #ai-settings-modal .text-emerald-400 { color: #34d399 !important; }
-        body.light-theme #ai-settings-modal .text-emerald-500 { color: #10b981 !important; }
-        
-        body.light-theme #ai-settings-modal input, 
-        body.light-theme #ai-settings-modal select, 
-        body.light-theme #ai-settings-modal textarea {
-            color: #e2e8f0 !important;
-            background-color: rgba(0, 0, 0, 0.3) !important;
-            border-color: rgba(255, 255, 255, 0.1) !important;
         }
         
         /* Secondary tools on bottom */
@@ -973,140 +858,50 @@ table tbody tr:nth-child(4n+4) td:first-child::before {
             border: none !important;
             box-shadow: 0 4px 15px rgba(0, 122, 255, 0.2) !important;
         }
-    
-        .voice-orb-active {
-            background-color: #5436ff !important;
-            color: white !important;
-            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
-            z-index: 50;
-        }
-        body.light-theme #ai-context-menu {
-            background-color: rgba(255,255,255,0.9);
-            border-color: rgba(0,0,0,0.1);
-        }
-        body.light-theme #ai-context-menu button { color: #1e293b; }
-        body.light-theme #ai-context-menu button:hover { background-color: rgba(0,0,0,0.05); }
-        body.light-theme #ai-context-menu .bg-white\/20 { background-color: rgba(0,0,0,0.1); }
-</style>
+    </style>
 
 
     <!-- MACOS IOS GLASS THEME OVERRIDES -->
     <style id="assistly-theme">
         /* Base Background - Image + Gradient Overlay */
-        /* ==========================================================================
-   1. DARK THEME (DEFAULT / NOT LIGHT-THEME)
-   ========================================================================== */
-body:not(.light-theme) {
-    background-color: #0f1016 !important;
-    background-image: 
-        linear-gradient(rgba(10, 12, 18, 0.7), rgba(15, 17, 24, 0.8)), 
-        url('nano_asset/assets/orb.webp') !important;
-    background-size: 150% 150% !important;
-    background-position: center; /* Tanpa !important agar bisa dianimasi */
-    background-repeat: no-repeat !important;
-    color: #e2e4eb !important;
-    animation: bgDrift 120s infinite ease-in-out !important;
-}
+        body:not(.light-theme) {
+            background-color: #0f1016 !important;
+            background-image: linear-gradient(rgba(10, 12, 18, 0.7), rgba(15, 17, 24, 0.8)), url('nano_asset/assets/img/dark_bg.jpg') !important;
+            background-size: cover !important;
+            background-position: center !important;
+            background-attachment: fixed !important;
+            color: #e2e4eb !important;
+        }
 
-/* Animasi Pergerakan Background (Gerakan Memutar/Sirkular) */
-@keyframes bgDrift {
-    0%   { background-position: 0% 50%; }
-    25%  { background-position: 50% 0%; }
-    50%  { background-position: 100% 50%; }
-    75%  { background-position: 50% 100%; }
-    100% { background-position: 0% 50%; }
-}
+        /* Ambient Glow Blobs in Background */
+        body:not(.light-theme)::before {
+            content: '';
+            position: fixed;
+            top: -20%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, rgba(90, 75, 250, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(60px);
+        }
+        
+        body:not(.light-theme)::after {
+            content: '';
+            position: fixed;
+            bottom: -20%;
+            right: -10%;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(230, 60, 200, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(60px);
+        }
 
-@keyframes floatBlob1 {
-    0% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(5vw, 5vh) scale(1.1); }
-    66% { transform: translate(-3vw, 8vh) scale(0.9); }
-    100% { transform: translate(0, 0) scale(1); }
-}
-
-@keyframes floatBlob2 {
-    0% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(-5vw, -6vh) scale(0.95); }
-    66% { transform: translate(4vw, -4vh) scale(1.05); }
-    100% { transform: translate(0, 0) scale(1); }
-}
-
-/* Ambient Glow Blobs in Background (Dark Mode) */
-body:not(.light-theme)::before {
-    content: '';
-    position: fixed;
-    top: -20%;
-    left: -10%;
-    width: 50vw;
-    height: 50vw;
-    background: radial-gradient(circle, rgba(90, 75, 250, 0.2) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-    filter: blur(60px);
-    animation: floatBlob1 25s infinite alternate ease-in-out;
-}
-
-body:not(.light-theme)::after {
-    content: '';
-    position: fixed;
-    bottom: -20%;
-    right: -10%;
-    width: 60vw;
-    height: 60vw;
-    background: radial-gradient(circle, rgba(230, 60, 200, 0.15) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-    filter: blur(60px);
-    animation: floatBlob2 30s infinite alternate ease-in-out;
-}
-
-/* ==========================================================================
-   2. LIGHT THEME
-   ========================================================================== */
-body.light-theme {
-    background-color: #f8fafcb9 !important;
-    background-image: 
-        linear-gradient(rgba(185, 86, 86, 0.65), rgba(241, 245, 249, 0.75)), 
-        url('nano_asset/assets/orb.webp') !important;
-    background-size: 150% 150% !important;
-    background-position: center; /* Tanpa !important agar bisa dianimasi */
-    background-repeat: no-repeat !important;
-    color: #1e293b !important;
-    animation: bgDrift 120s infinite ease-in-out !important;
-}
-
-/* Ambient Glow Blobs in Background (Light Mode) */
-body.light-theme::before {
-    content: '';
-    position: fixed;
-    top: -20%;
-    left: -10%;
-    width: 50vw;
-    height: 50vw;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-    filter: blur(60px);
-    animation: floatBlob1 25s infinite alternate ease-in-out;
-}
-
-body.light-theme::after {
-    content: '';
-    position: fixed;
-    bottom: -20%;
-    right: -10%;
-    width: 60vw;
-    height: 60vw;
-    background: radial-gradient(circle, rgba(236, 72, 153, 0.08) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-    filter: blur(60px);
-    animation: floatBlob2 30s infinite alternate ease-in-out;
-}
         /* Sidebar - Translucent Dark Glass */
         body:not(.light-theme) .sidebar {
             background-color: rgba(15, 15, 20, 0.45) !important;
@@ -1165,44 +960,6 @@ body.light-theme::after {
         
         body:not(.light-theme) #drop-zone textarea::placeholder {
             color: rgba(255, 255, 255, 0.5) !important;
-        }
-
-        /* Send Button Theme Adaptation */
-        #send-btn {
-            background-color: rgba(90, 75, 250, 0.8) !important;
-            box-shadow: 0 4px 15px rgba(90, 75, 250, 0.3) !important;
-        }
-        #send-btn:hover {
-            background-color: rgba(105, 90, 255, 0.9) !important;
-        }
-        
-        body.light-theme #send-btn {
-            background-color: #007aff !important;
-            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3) !important;
-            color: #ffffff !important;
-        }
-        body.light-theme #send-btn:hover {
-            background-color: #0062cc !important;
-        }
-        
-        body.oled-theme #send-btn {
-            background-color: #000000 !important;
-            border: 1px solid #333 !important;
-            box-shadow: none !important;
-            color: #e5e5e5 !important;
-        }
-        body.oled-theme #send-btn:hover {
-            background-color: #111111 !important;
-        }
-
-        body.hacker-theme #send-btn {
-            background-color: #021102 !important;
-            border: 1px solid #00ff00 !important;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2) !important;
-            color: #00ff00 !important;
-        }
-        body.hacker-theme #send-btn:hover {
-            background-color: #002200 !important;
         }
 
         /* Chat Bubbles */
@@ -1284,21 +1041,7 @@ body.light-theme::after {
             border-color: rgba(255, 255, 255, 0.1) !important;
             color: #b0b1c2 !important;
         }
-    
-        .voice-orb-active {
-            background-color: #5436ff !important;
-            color: white !important;
-            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
-            z-index: 50;
-        }
-        body.light-theme #ai-context-menu {
-            background-color: rgba(255,255,255,0.9);
-            border-color: rgba(0,0,0,0.1);
-        }
-        body.light-theme #ai-context-menu button { color: #1e293b; }
-        body.light-theme #ai-context-menu button:hover { background-color: rgba(0,0,0,0.05); }
-        body.light-theme #ai-context-menu .bg-white\/20 { background-color: rgba(0,0,0,0.1); }
-</style>
+    </style>
 
 
 
@@ -1309,15 +1052,14 @@ body.light-theme::after {
         window.ensureChart = async () => typeof Chart !== 'undefined';
         window.ensureMammoth = async () => typeof mammoth !== 'undefined';
         window.ensureXLSX = async () => typeof XLSX !== 'undefined';
-        window.ensureZipSave = async () => typeof JSZip !== 'undefined';
     </script>
 </head>
 <body class="bg-gemini-bg text-slate-100 font-sans min-h-screen flex items-center justify-center p-2 sm:p-4 overflow-hidden">
-<div id="app-wrapper" class="w-full h-full max-w-[1920px] flex overflow-hidden rounded-[2rem] shadow-[0_0_50px_rgba(0,0,0,0.7)] relative border border-white/5">
+<div id="app-wrapper" class="w-full h-full max-w-[1920px] flex overflow-hidden rounded-[2.5rem] shadow-[0_0_50px_rgba(0,0,0,0.8)] relative border border-white/5">
     
 <!-- ===== MODAL PENGATURAN MODE AI ===== -->
     <div id="ai-settings-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-md">
-        <div class="bg-[#111111] border border-white/10 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden" style="box-shadow: 0 0 60px rgba(66,133,244,0.15), 0 25px 50px rgba(0,0,0,0.5);">
+        <div class=" border border-white/10 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden" style="box-shadow: 0 0 60px rgba(66,133,244,0.15), 0 25px 50px rgba(0,0,0,0.5);">
             <!-- Header Modal -->
             <div class="relative p-6 border-b border-white/10" >
                 <div class="flex items-center justify-between">
@@ -1372,19 +1114,6 @@ body.light-theme::after {
                             <option value="dark">Dark (Default)</option>
                             <option value="oled">OLED Pitch Black</option>
                             <option value="hacker">Hacker Green</option>
-                        </select>
-                    </div>
-                    <div class="mt-4">
-                        <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Gaya Font (Lokal)</label>
-                        <select id="ai-ui-font" onchange="changeFontFamily(this.value)" class="w-full bg-black/40 border border-white/10 focus:border-gemini-blue/50 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none transition-all">
-                            <option value="default">Sistem (Default)</option>
-                            <option value="jakarta">Plus Jakarta Sans (Sangat Elegan)</option>
-                            <option value="inter">Inter (Modern & Bersih)</option>
-                            <option value="poppins">Poppins (Geometris & Ramah)</option>
-                            <option value="outfit">Outfit (Trendi & Futuristik)</option>
-                            <option value="quicksand">Quicksand (Bulat Lembut)</option>
-                            <option value="space">Space Grotesk (Tech / Nyentrik)</option>
-                            <option value="fira">Fira Code (Hacker / Monospace)</option>
                         </select>
                     </div>
                 </div>
@@ -1629,7 +1358,7 @@ body.light-theme::after {
 
 <!-- SIDEBAR -->
 
-    <aside class="sidebar w-72 bg-gemini-sidebar shrink-0 h-screen hidden md:flex flex-col justify-between pb-6 border-r border-white/5 z-40 sidebar-transition">
+    <aside class="sidebar w-72 bg-gemini-sidebar shrink-0 h-screen hidden md:flex flex-col border-r border-white/5 z-40 sidebar-transition">
         <!-- Judul & Status -->
         <div class="p-6 border-b border-white/5">
             <div class="flex items-center justify-between mb-4">
@@ -1881,25 +1610,27 @@ body.light-theme::after {
         </div>
 
         <!-- Tema & Info -->
-        <div class="px-6 pt-3 pb-6 border-t border-white/5 flex items-center justify-between">
-    <button id="theme-toggle-btn"
+        <div class="p-6 border-t border-white/5 flex items-center justify-between">
+           <button id="theme-toggle-btn"
         onclick="toggleTheme()"
         class="p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-all"
         title="Beralih tema">
-        <span id="theme-icon">
-            <svg xmlns="http://www.w3.org/2000/svg"
-                 width="18"
-                 height="18"
-                 viewBox="0 0 24 24"
-                 fill="none"
-                 stroke="currentColor"
-                 stroke-width="2">
-                <path d="M12 3a6 6 0 0 0 9 9A9 9 0 1 1 12 3z"/>
-            </svg>
-        </span>
-    </button>
-    <span class="text-[10px] text-slate-500 font-mono uppercase tracking-wider">kurniawan</span>
-</div>
+
+    <span id="theme-icon">
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="18"
+             height="18"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2">
+            <path d="M12 3a6 6 0 0 0 9 9A9 9 0 1 1 12 3z"/>
+        </svg>
+    </span>
+
+</button>
+            <span class="text-[10px] text-slate-500 font-mono uppercase tracking-wider">v1.5.0 Multimodal + Suite</span>
+        </div>
     </aside>
 
     <!-- AREA UTAMA PERCAKAPAN -->
@@ -2031,7 +1762,7 @@ body.light-theme::after {
                         oninput="handleTextareaInput(this)"
                         placeholder="Start typing..."
                         rows="1"
-                        class="flex-1 rounded-full bg-transparent resize-none outline-none text-[15px] text-white placeholder-slate-500 px-3 py-2 max-h-32 min-h-[40px] block custom-scrollbar leading-relaxed">
+                        class="flex-1 bg-transparent resize-none outline-none text-[15px] text-white placeholder-slate-500 px-3 py-2 max-h-32 min-h-[40px] block custom-scrollbar leading-relaxed">
                     </textarea>
 
                     <!-- Voice Icon -->
@@ -2040,7 +1771,7 @@ body.light-theme::after {
                     </button>
 
                     <!-- Send Button (Kite) -->
-                    <button id="send-btn" onclick="sendMessage()" class="shrink-0 w-10 h-10 text-white rounded-full flex items-center justify-center transition-all shadow-lg ml-1 mb-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button id="send-btn" onclick="sendMessage()" class="shrink-0 w-10 h-10 rounded-full text-white bg-[#5436ff] hover:bg-[#6f55ff] flex items-center justify-center transition-all shadow-lg shadow-[#5436ff]/30 ml-1 mb-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
                         <i class='bx bxs-paper-plane text-lg ml-[-2px] mt-[2px]'></i>
                     </button>
                     <button id="stop-btn" onclick="abortGeneration()" title="Berhenti Generate" class="hidden shrink-0 w-10 h-10 rounded-full text-red-400 bg-red-500/20 hover:bg-red-500/30 flex items-center justify-center transition-all border border-red-500/30 ml-1 mb-0.5">
@@ -2049,28 +1780,9 @@ body.light-theme::after {
                 </div>
     <p class="text-center text-xs text-slate-500 mt-4">AI dapat membuat kesalahan. Periksa kembali jawaban penting.</p>
   </div>
+</div>
 
-        <!-- ARTIFACT PANEL -->
-        <aside id="artifact-panel" class="w-0 transition-all duration-300 bg-[#0a0a0a] border-l border-white/10 hidden flex-col relative z-40 overflow-hidden shadow-2xl">
-            <!-- Header -->
-            <div class="h-14 border-b border-white/5 flex items-center justify-between px-4 bg-white/5 backdrop-blur-md">
-                <div class="flex items-center gap-2">
-                    <i class='bx bx-code-block text-gemini-purple text-xl'></i>
-                    <span id="artifact-title" class="text-sm font-semibold text-slate-200">Artifact</span>
-                </div>
-                <div class="flex items-center gap-1">
-                    <button id="artifact-copy-btn" class="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all" title="Salin Konten"><i class='bx bx-copy'></i></button>
-                    <button onclick="closeArtifact()" class="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all" title="Tutup Panel"><i class='bx bx-x text-xl'></i></button>
-                </div>
-            </div>
-            <!-- Content -->
-            <div id="artifact-content" class="flex-1 overflow-auto p-6 flex flex-col relative">
-                <!-- Rendered artifact goes here -->
-            </div>
-        </aside>
-    </div> <!-- Close flex row -->
 <!-- Layout-level helper -->
-
 <script>
 function fillPrompt(t){var e=document.getElementById('prompt');e.value=t;e.dispatchEvent(new Event('input'));e.focus();}
 // Alias agar tidak error jika dipanggil dari tempat lain
@@ -2117,21 +1829,6 @@ function importSessions(event){if(typeof handleImportSessions==='function')handl
         let ttsLanguage = 'id-ID';
 
         // TEMA DAN PENGATURAN TAMPILAN
-        function changeFontFamily(font) {
-            document.body.classList.remove('font-inter', 'font-poppins', 'font-fira', 'font-jakarta', 'font-outfit', 'font-quicksand', 'font-space');
-            if (font && font !== 'default') {
-                document.body.classList.add('font-' + font);
-            }
-            localStorage.setItem('app-font', font);
-        }
-
-        function initFont() {
-            const savedFont = localStorage.getItem('app-font') || 'default';
-            const fontSelect = document.getElementById('ai-ui-font');
-            if (fontSelect) fontSelect.value = savedFont;
-            changeFontFamily(savedFont);
-        }
-
         function initTheme() {
             const savedTheme = localStorage.getItem('theme') || 'dark';
             applyTheme(savedTheme);
@@ -2291,7 +1988,6 @@ function handleTextareaInput(textarea) {
         request.onsuccess = e => {
             db = e.target.result;
             initTheme();
-            initFont();
             loadAISettings().then(() => {
                 initChat();
                 initProjectManager();
@@ -2878,11 +2574,7 @@ function handleTextareaInput(textarea) {
             return `<div class="code-container my-4 overflow-hidden rounded-2xl border border-white/5 shadow-lg bg-black/40"><div class="flex items-center justify-between px-5 py-3 bg-[#131314] text-[10px] text-slate-400 border-b border-white/5"><span class="font-bold uppercase tracking-wider font-mono">markmap</span></div><pre class="!mt-0 !rounded-t-none bg-black/30 p-5 overflow-x-auto text-[13px] text-slate-200 leading-relaxed"><code class="hljs markmap">${escapeHtml(markmapCode)}</code></pre></div>`;
         }
         const safeCode = encodeURIComponent(markmapCode);
-        const artifactPayload = encodeURIComponent(`<div class="markmap-container" data-markmap-code="${safeCode}" data-markmap-rendered="false"></div>`);
-        return `<div class="relative group my-4">
-                    <button onclick="openArtifact('Mindmap', decodeURIComponent('${artifactPayload}'), decodeURIComponent('${safeCode}'))" class="absolute top-2 right-12 z-20 p-1.5 bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-xs font-semibold backdrop-blur-md border border-purple-500/30"><i class='bx bx-window-open'></i> Panel</button>
-                    <div class="markmap-container" data-markmap-code="${safeCode}" data-markmap-rendered="false"></div>
-                </div>`;
+        return `<div class="markmap-container" data-markmap-code="${safeCode}" data-markmap-rendered="false"></div>`;
     }
 
     function extractBalancedObject(source) {
@@ -3735,10 +3427,9 @@ window.renderMarkmapBlocks = async function(root = document) {
             if (isUser) {
                 // User: right-aligned bubble, no avatar
                 msgDiv.innerHTML = `
-                    <div class="flex flex-col items-end gap-1 max-w-[85%] relative group">
+                    <div class="flex flex-col items-end gap-1 max-w-[85%]">
                         ${mediaMarkup}
                         <div class="chat-bubble-user px-4 py-2.5 rounded-2xl rounded-tr-sm text-[15px] leading-relaxed break-words shadow-sm">${escapeHtml(text)}</div>
-                        <button onclick="editPrompt(this)" data-prompt="${encodeURIComponent(text)}" class="absolute -left-10 top-2 p-2 bg-black/40 hover:bg-black/60 text-slate-300 hover:text-white rounded-full opacity-0 group-hover:opacity-100 transition-all text-xs" title="Edit Prompt"><i class='bx bx-edit-alt'></i></button>
                     </div>`;
             } else {
                 // AI: avatar icon + prose
@@ -4470,135 +4161,6 @@ try {
 
             return html;
         }
-
-        
-        // --- TAHAP 2 FEATURES ---
-        // 1. Edit Prompt
-        window.editPrompt = function(btn) {
-            const text = decodeURIComponent(btn.dataset.prompt);
-            const editor = document.getElementById('prompt');
-            editor.value = text;
-            editor.focus();
-            autoResizeTextarea(editor);
-        };
-
-        // 2. Drag & Drop Glassmorphism
-        let dragCounter = 0;
-        window.addEventListener('dragenter', (e) => {
-            e.preventDefault();
-            dragCounter++;
-            const overlay = document.getElementById('drag-overlay');
-            overlay.classList.remove('hidden');
-            overlay.classList.add('flex');
-            setTimeout(() => overlay.classList.remove('opacity-0'), 10);
-        });
-        window.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dragCounter--;
-            if (dragCounter === 0) {
-                const overlay = document.getElementById('drag-overlay');
-                overlay.classList.add('opacity-0');
-                setTimeout(() => {
-                    overlay.classList.add('hidden');
-                    overlay.classList.remove('flex');
-                }, 300);
-            }
-        });
-        window.addEventListener('dragover', (e) => e.preventDefault());
-        window.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dragCounter = 0;
-            const overlay = document.getElementById('drag-overlay');
-            overlay.classList.add('opacity-0');
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-                overlay.classList.remove('flex');
-            }, 300);
-            
-            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                if (typeof processSelectedFile === 'function') {
-                    processSelectedFile(e.dataTransfer.files[0]);
-                }
-            }
-        });
-
-        // 3. AI Context Menu
-        document.addEventListener('mouseup', function(e) {
-            const selection = window.getSelection();
-            const text = selection.toString().trim();
-            const tooltip = document.getElementById('ai-context-menu');
-            
-            if (text.length > 0 && e.target.closest('#messages')) {
-                const range = selection.getRangeAt(0);
-                const rect = range.getBoundingClientRect();
-                
-                tooltip.style.left = Math.max(10, (rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2))) + 'px';
-                tooltip.style.top = Math.max(10, (rect.top + window.scrollY - tooltip.offsetHeight - 10)) + 'px';
-                tooltip.classList.remove('hidden');
-                tooltip.dataset.selectedText = text;
-            } else if (!e.target.closest('#ai-context-menu')) {
-                tooltip.classList.add('hidden');
-            }
-        });
-
-        window.contextAction = function(action) {
-            const tooltip = document.getElementById('ai-context-menu');
-            const text = tooltip.dataset.selectedText;
-            if (!text) return;
-            tooltip.classList.add('hidden');
-            const editor = document.getElementById('prompt');
-            if (action === 'jelaskan') {
-                editor.value = "Tolong jelaskan ini secara lebih rinci:\n\n\"" + text + "\"";
-            } else if (action === 'ringkas') {
-                editor.value = "Buatkan ringkasan singkat dari teks berikut:\n\n\"" + text + "\"";
-            } else if (action === 'kodekan') {
-                editor.value = "Tuliskan kode untuk mengimplementasikan atau memperbaiki ini:\n\n\"" + text + "\"";
-            }
-            editor.focus();
-            autoResizeTextarea(editor);
-        };
-
-        // 4. Voice Orb Dinamis
-        let audioContext, analyser, microphone, voiceVisualizerId;
-        window.startVoiceOrb = function() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
-            navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(stream => {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioContext.createAnalyser();
-                microphone = audioContext.createMediaStreamSource(stream);
-                microphone.connect(analyser);
-                analyser.fftSize = 256;
-                const bufferLength = analyser.frequencyBinCount;
-                const dataArray = new Uint8Array(bufferLength);
-                
-                const btn = document.getElementById('voice-input-btn');
-                btn.classList.add('voice-orb-active');
-                
-                function pulse() {
-                    if (!window.isVoiceRecording) return;
-                    analyser.getByteFrequencyData(dataArray);
-                    let sum = 0;
-                    for(let i=0; i<bufferLength; i++) { sum += dataArray[i]; }
-                    let average = sum / bufferLength;
-                    let scale = 1 + (average / 150);
-                    let glow = average * 0.5;
-                    btn.style.transform = `scale(${scale})`;
-                    btn.style.boxShadow = `0 0 ${glow}px ${glow/2}px rgba(84, 54, 255, 0.8)`;
-                    voiceVisualizerId = requestAnimationFrame(pulse);
-                }
-                pulse();
-            }).catch(err => console.error("Mic orb err:", err));
-        };
-        
-        window.stopVoiceOrb = function() {
-            cancelAnimationFrame(voiceVisualizerId);
-            if (audioContext) audioContext.close();
-            const btn = document.getElementById('voice-input-btn');
-            btn.classList.remove('voice-orb-active');
-            btn.style.transform = 'scale(1)';
-            btn.style.boxShadow = 'none';
-        };
-        // ------------------------------------
 
         // FUNGSI EKSEKUSI KODE LOCAL (WebAssembly)
         async function runCodeInBrowser(code, isPython, btn) {
@@ -5596,7 +5158,6 @@ try {
                 accumulatedTranscript = '';
                 document.getElementById('voice-input-btn').classList.add('animate-pulse', 'text-gemini-blue');
                 promptEl.placeholder = '🎤 Mendengarkan... (Bahasa Indonesia)';
-                if (typeof startVoiceOrb === 'function') startVoiceOrb();
             };
 
             voiceRecognition.onresult = (event) => {
@@ -5643,14 +5204,12 @@ try {
 
                 isVoiceRecording = false;
                 document.getElementById('voice-input-btn').classList.remove('animate-pulse', 'text-gemini-blue');
-                if (typeof stopVoiceOrb === 'function') stopVoiceOrb();
                 promptEl.placeholder = 'Tanya apa saja, atau drop file... (Shift+Enter untuk baris baru)';
             };
 
             voiceRecognition.onend = () => {
                 isVoiceRecording = false;
                 document.getElementById('voice-input-btn').classList.remove('animate-pulse', 'text-gemini-blue');
-                if (typeof stopVoiceOrb === 'function') stopVoiceOrb();
                 promptEl.placeholder = 'Tanya apa saja, atau drop dokumen & gambar di sini...';
 
                 // Auto submit jika ada teks
@@ -5886,39 +5445,6 @@ try {
                 setTimeout(() => { button.innerHTML = originalHTML; }, 2000);
             };
         }
-
-        
-        // ===== FUNGSI EXPORT KE PDF =====
-        window.exportHistoryToPDF = function() {
-            if (typeof html2pdf === 'undefined') {
-                alert('Library html2pdf belum dimuat.');
-                return;
-            }
-            const messagesDiv = document.getElementById('messages');
-            if (!messagesDiv || messagesDiv.innerText.trim() === '') {
-                alert('Tidak ada obrolan untuk diekspor.');
-                return;
-            }
-            
-            // Siapkan elemen khusus untuk di-render
-            const clone = messagesDiv.cloneNode(true);
-            clone.querySelectorAll('button').forEach(b => b.remove());
-            clone.style.padding = '20px';
-            clone.style.backgroundColor = document.body.classList.contains('light-theme') ? '#ffffff' : '#1a1a1a';
-            clone.style.color = document.body.classList.contains('light-theme') ? '#000000' : '#ffffff';
-            
-            const opt = {
-                margin:       10,
-                filename:     `Chat_AI_${new Date().toISOString().slice(0,10)}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            
-            html2pdf().set(opt).from(clone).save();
-        };
-        
-        window.exportChatToPDF = window.exportHistoryToPDF;
 
         // ===== FUNGSI EXPORT KE DOCX (Menggunakan JSZip) =====
         async function exportHistoryToDocx() {
@@ -7106,23 +6632,5 @@ try {
     <!-- Id Tag Unik untuk pergantian dinamis tema highlight.js -->
     <link id="hljs-theme" rel="stylesheet" href="nano_asset/assets/css/github-dark.min.css">
 </div>
-
-    <!-- Drag & Drop Glassmorphism Overlay -->
-    <div id="drag-overlay" class="fixed inset-0 z-[100] hidden bg-black/40 backdrop-blur-md flex-col items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
-        <div class="bg-white/10 p-8 rounded-full border border-white/20 mb-4 animate-bounce shadow-2xl">
-            <i class='bx bx-cloud-upload text-6xl text-white'></i>
-        </div>
-        <h2 class="text-2xl font-bold text-white shadow-sm">Jatuhkan Berkas Di Sini</h2>
-        <p class="text-white/80 mt-2">Gambar, PDF, CSV, Teks, Excel, Word didukung secara lokal.</p>
-    </div>
-
-    <!-- AI Context Menu -->
-    <div id="ai-context-menu" class="hidden absolute z-50 bg-black/70 backdrop-blur-xl border border-white/20 shadow-2xl rounded-xl flex items-center gap-1 p-1">
-        <button onclick="contextAction('jelaskan')" class="text-[11px] font-semibold text-slate-200 hover:text-white hover:bg-white/10 px-3 py-1.5 rounded-lg transition-all flex items-center"><i class='bx bx-info-circle mr-1'></i>Jelaskan</button>
-        <div class="w-px h-4 bg-white/20 mx-1"></div>
-        <button onclick="contextAction('ringkas')" class="text-[11px] font-semibold text-slate-200 hover:text-white hover:bg-white/10 px-3 py-1.5 rounded-lg transition-all flex items-center"><i class='bx bx-list-ol mr-1'></i>Ringkas</button>
-        <div class="w-px h-4 bg-white/20 mx-1"></div>
-        <button onclick="contextAction('kodekan')" class="text-[11px] font-semibold text-slate-200 hover:text-white hover:bg-white/10 px-3 py-1.5 rounded-lg transition-all flex items-center"><i class='bx bx-code-alt mr-1'></i>Kodekan</button>
-    </div>
 </body>
 </html>

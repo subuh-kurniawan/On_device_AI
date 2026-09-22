@@ -23,15 +23,25 @@ python3 -m http.server 8080 &
 # Menunggu sejenak agar server siap
 sleep 2
 
-# Mengecek apakah Chrome terinstall
-CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-if [ ! -f "$CHROME_PATH" ]; then
-    echo "[ERROR] Google Chrome tidak ditemukan di folder Applications."
+# Mengecek Chrome Dev, lalu fallback ke Chrome Stable/Canary
+CHROME_PATH=""
+for candidate in \
+    "/Applications/Google Chrome Dev.app/Contents/MacOS/Google Chrome Dev" \
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+    "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"; do
+    if [ -x "$candidate" ]; then
+        CHROME_PATH="$candidate"
+        break
+    fi
+done
+
+if [ -z "$CHROME_PATH" ]; then
+    echo "[ERROR] Google Chrome Dev/Stable/Canary tidak ditemukan di folder Applications."
     exit 1
 fi
 
 # Meluncurkan Chrome dengan flags AI On-Device
-echo "[INFO] Meluncurkan Google Chrome dengan konfigurasi AI Flags..."
+echo "[INFO] Meluncurkan Chrome: $CHROME_PATH"
 "$CHROME_PATH" --enable-features=OptimizationGuideOnDeviceModel,PromptAPIForGeminiNano "http://localhost:8080" &
 
 echo "[SUCCESS] Selesai!"
