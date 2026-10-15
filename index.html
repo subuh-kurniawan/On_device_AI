@@ -55,9 +55,16 @@
             background: rgba(103, 232, 249, .1);
             box-shadow: 0 0 32px rgba(103, 232, 249, .12);
         }
+        .top-nav { display: flex; align-items: center; gap: 22px; }
         .top-link { color: var(--muted); font-size: 13px; text-decoration: none; }
         .top-link:hover { color: var(--text); }
-        .hero { padding: clamp(48px, 9vw, 104px) 0 58px; }
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.08fr) minmax(280px, .72fr);
+            align-items: center;
+            gap: clamp(32px, 7vw, 88px);
+            padding: clamp(42px, 7vw, 82px) 0 58px;
+        }
         .eyebrow {
             display: inline-flex;
             align-items: center;
@@ -72,9 +79,9 @@
         }
         .eyebrow-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 14px var(--green); }
         h1 {
-            max-width: 780px;
+            max-width: 740px;
             margin: 22px 0 16px;
-            font-size: clamp(42px, 7vw, 76px);
+            font-size: clamp(42px, 6.5vw, 72px);
             line-height: 1.04;
             letter-spacing: -.06em;
         }
@@ -106,6 +113,113 @@
         .button-primary:hover { border-color: transparent; background: linear-gradient(105deg, #a5f3fc, #ddd6fe); }
         .trust-row { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 34px; color: var(--muted); font-size: 12px; }
         .trust-row span::before { margin-right: 7px; color: var(--green); content: "✓"; }
+        .developer-card {
+            position: relative;
+            min-height: 390px;
+            margin: 0;
+            overflow: hidden;
+            border: 1px solid rgba(180, 198, 235, .2);
+            border-radius: 28px;
+            background: #38c5ca;
+            box-shadow: 0 28px 80px rgba(0, 0, 0, .3), 0 0 70px rgba(103, 232, 249, .12);
+            isolation: isolate;
+        }
+        .developer-card::after {
+            position: absolute;
+            z-index: -1;
+            inset: 42% 0 0;
+            background: linear-gradient(transparent, rgba(5, 12, 26, .88));
+            content: "";
+        }
+        .developer-card img { position: absolute; z-index: -2; width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+        .developer-label {
+            position: absolute;
+            top: 18px;
+            left: 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, .22);
+            border-radius: 999px;
+            color: #fff;
+            background: rgba(8, 18, 34, .56);
+            backdrop-filter: blur(12px);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .1em;
+        }
+        .developer-label::before { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); content: ""; }
+        .developer-caption { position: absolute; right: 22px; bottom: 20px; left: 22px; }
+        .developer-caption strong { display: block; font-size: 20px; letter-spacing: -.03em; }
+        .developer-caption span { color: rgba(238, 243, 255, .78); font-size: 12px; }
+        .developer-orbit {
+            position: absolute;
+            right: -38px;
+            bottom: 76px;
+            width: 110px;
+            height: 110px;
+            border: 1px solid rgba(255, 255, 255, .5);
+            border-radius: 50%;
+            box-shadow: 0 0 0 12px rgba(255, 255, 255, .07), 0 0 0 26px rgba(255, 255, 255, .04);
+            pointer-events: none;
+        }
+
+        .requirements-section { padding: 6px 0 38px; scroll-margin-top: 20px; }
+        .requirements-panel {
+            padding: clamp(22px, 4vw, 36px);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: linear-gradient(145deg, rgba(22, 34, 58, .88), rgba(13, 21, 39, .84));
+            box-shadow: 0 22px 70px rgba(0, 0, 0, .16);
+        }
+        .requirements-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+        .requirements-heading h2 { margin: 0; font-size: clamp(23px, 4vw, 30px); letter-spacing: -.04em; }
+        .requirements-heading p { max-width: 680px; margin: 7px 0 0; color: var(--muted); font-size: 14px; }
+        .requirements-badge {
+            flex: 0 0 auto;
+            padding: 7px 11px;
+            border: 1px solid rgba(103, 232, 249, .25);
+            border-radius: 999px;
+            color: var(--cyan);
+            background: rgba(103, 232, 249, .07);
+            font-size: 11px;
+            font-weight: 650;
+        }
+        .requirements-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        .requirement-card { padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255, 255, 255, .025); }
+        .requirement-card h3 { margin: 0 0 6px; font-size: 14px; }
+        .requirement-card p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+        .requirement-card code, .activation-steps code {
+            padding: 2px 6px;
+            border: 1px solid rgba(180, 198, 235, .16);
+            border-radius: 6px;
+            color: #c9bdff;
+            background: rgba(5, 11, 24, .54);
+            font: 11px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace;
+        }
+        .activation-guide { margin-top: 18px; padding-top: 20px; border-top: 1px solid var(--line); }
+        .activation-guide h3 { margin: 0; font-size: 16px; }
+        .activation-intro { margin: 5px 0 13px; color: var(--muted); font-size: 12px; }
+        .activation-steps { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; counter-reset: activation; }
+        .activation-steps li { position: relative; min-height: 36px; padding: 7px 10px 7px 42px; border-radius: 11px; color: #c6d2e8; background: rgba(255, 255, 255, .025); font-size: 12px; counter-increment: activation; }
+        .activation-steps li::before {
+            position: absolute;
+            top: 6px;
+            left: 9px;
+            display: grid;
+            width: 22px;
+            height: 22px;
+            place-items: center;
+            border-radius: 8px;
+            color: var(--cyan);
+            background: rgba(103, 232, 249, .1);
+            content: counter(activation);
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .requirements-note { margin: 14px 0 0; color: var(--muted); font-size: 11px; }
+        .requirements-note a { color: var(--cyan); text-underline-offset: 3px; }
 
         .apps-section { padding: 34px 0 76px; }
         .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
@@ -150,6 +264,42 @@
             background: linear-gradient(145deg, rgba(23, 35, 59, .9), rgba(13, 21, 39, .84));
             text-decoration: none;
             transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+        }
+        .app-preview {
+            position: relative;
+            display: block;
+            width: calc(100% + 40px);
+            aspect-ratio: 16 / 9;
+            margin: -20px -20px 0;
+            overflow: hidden;
+            border-bottom: 1px solid var(--line);
+            background: #10192c;
+        }
+        .app-preview img { width: 100%; height: 100%; object-fit: cover; object-position: center top; transition: transform .35s ease; }
+        .app-card:hover .app-preview img { transform: scale(1.035); }
+        .app-preview--live { pointer-events: none; }
+        .app-preview--live iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 400%;
+            height: 900px;
+            border: 0;
+            transform: scale(.25);
+            transform-origin: top left;
+        }
+        .app-preview-label {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            padding: 4px 8px;
+            border: 1px solid rgba(255, 255, 255, .18);
+            border-radius: 999px;
+            color: #eef3ff;
+            background: rgba(8, 15, 30, .76);
+            font-size: 9px;
+            letter-spacing: .06em;
+            text-transform: uppercase;
         }
         .app-card::after {
             position: absolute;
@@ -198,21 +348,96 @@
         .info-strip p { margin: 0; color: var(--muted); font-size: 12px; }
         footer { padding: 22px 0 30px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
         footer .shell { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+        .chat-fab {
+            position: fixed;
+            z-index: 20;
+            right: max(24px, env(safe-area-inset-right));
+            bottom: max(24px, env(safe-area-inset-bottom));
+            display: inline-flex;
+            min-height: 54px;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 0 19px;
+            border: 1px solid rgba(255, 255, 255, .24);
+            border-radius: 999px;
+            color: #111426;
+            background: linear-gradient(110deg, var(--cyan), #c4b5fd);
+            box-shadow: 0 12px 34px rgba(0, 0, 0, .35), 0 0 32px rgba(103, 232, 249, .2);
+            cursor: pointer;
+            font-weight: 750;
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+        .chat-fab:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0, 0, 0, .4), 0 0 38px rgba(103, 232, 249, .26); }
+        .chat-fab svg { width: 20px; height: 20px; }
+        .chat-dialog {
+            width: 80vw;
+            height: 80dvh;
+            min-width: min(320px, calc(100vw - 24px));
+            min-height: min(360px, calc(100dvh - 24px));
+            max-width: 96vw;
+            max-height: 96dvh;
+            padding: 0;
+            overflow: hidden;
+            resize: both;
+            border: 1px solid rgba(180, 198, 235, .22);
+            border-radius: 16px;
+            color: var(--text);
+            background: #0d1527;
+            box-shadow: 0 28px 100px rgba(0, 0, 0, .5);
+        }
+        .chat-dialog::backdrop { background: rgba(3, 8, 18, .72); backdrop-filter: blur(7px); }
+        .chat-modal-content { display: flex; width: 100%; height: 100%; min-height: 0; flex-direction: column; }
+        .chat-modal-header { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+        .chat-modal-title { display: flex; align-items: center; gap: 10px; }
+        .chat-modal-icon { display: grid; width: 32px; height: 32px; place-items: center; border: 1px solid var(--line); border-radius: 10px; color: var(--cyan); }
+        .chat-modal-icon svg { width: 17px; height: 17px; }
+        .chat-modal-title h2 { margin: 0; font-size: 14px; letter-spacing: -.02em; }
+        .chat-modal-title p { margin: 1px 0 0; color: var(--muted); font-size: 10px; }
+        .chat-close {
+            display: grid;
+            width: 32px;
+            height: 32px;
+            flex: 0 0 auto;
+            place-items: center;
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            color: var(--muted);
+            background: rgba(255, 255, 255, .04);
+            cursor: pointer;
+            font-size: 20px;
+        }
+        .chat-close:hover { color: var(--text); border-color: rgba(167, 139, 250, .45); }
+        .chat-mount { display: flex; min-height: 0; flex: 1; overflow: hidden; }
+        .chat-mount iframe { width: 100%; min-height: 0; flex: 1; border: 0; background: #0d1527; }
         :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
 
         @media (max-width: 850px) {
+            .hero { grid-template-columns: minmax(0, 1fr) minmax(240px, .72fr); gap: 28px; }
             .app-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .section-heading { align-items: stretch; flex-direction: column; }
+            .requirements-heading { flex-direction: column; gap: 12px; }
             .search-box { width: 100%; }
+        }
+        @media (max-width: 680px) {
+            .hero { grid-template-columns: 1fr; gap: 32px; }
+            .developer-card { width: min(100%, 420px); min-height: 340px; justify-self: center; }
         }
         @media (max-width: 560px) {
             .shell { width: min(100% - 28px, 1120px); }
             .topbar { padding: 17px 0; }
+            .top-nav { gap: 12px; }
+            .top-link { font-size: 11px; }
             .hero { padding-top: 48px; }
             .app-grid { grid-template-columns: 1fr; }
             .app-card { min-height: 184px; }
+            .app-preview { width: calc(100% + 40px); }
+            .requirements-grid { grid-template-columns: 1fr; }
             .info-strip { grid-template-columns: 1fr; }
             .trust-row { gap: 8px 14px; }
+            .chat-fab { right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); width: 56px; min-height: 56px; padding: 0; }
+            .chat-fab-label { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
+            .chat-dialog { width: 90vw; height: 90dvh; min-width: 0; min-height: 0; max-width: 96vw; max-height: 96dvh; margin: auto; resize: both; border-radius: 16px; }
         }
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
@@ -225,22 +450,75 @@
             <span class="brand-mark" aria-hidden="true">✳</span>
             <span>AI Lokal <span style="color:var(--muted);font-weight:500">/ Playground</span></span>
         </a>
-        <a class="top-link" href="#aplikasi">Jelajahi aplikasi <span aria-hidden="true">↘</span></a>
+        <nav class="top-nav" aria-label="Navigasi utama">
+            <a class="top-link" href="#persyaratan">Persyaratan browser</a>
+            <a class="top-link" href="#aplikasi">Jelajahi aplikasi <span aria-hidden="true">↘</span></a>
+        </nav>
     </header>
 
     <main>
         <section class="shell hero" aria-labelledby="hero-title">
-            <span class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> EKSPERIMEN AI DI BROWSER</span>
-            <h1 id="hero-title">AI yang bekerja<br><span class="gradient-text">lebih dekat dengan Anda.</span></h1>
-            <p class="hero-copy">Ruang untuk mencoba asisten lokal, analisis visual, alat coding, dan inferensi LiteRT-LM. Pilih aplikasi untuk memulai.</p>
-            <div class="hero-actions">
-                <a class="button button-primary" href="obrolan-claude.html">Mulai percakapan <span aria-hidden="true">→</span></a>
-                <a class="button" href="#aplikasi">Lihat semua aplikasi</a>
+            <div class="hero-content">
+                <span class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> EKSPERIMEN AI DI BROWSER</span>
+                <h1 id="hero-title">AI yang bekerja<br><span class="gradient-text">lebih dekat dengan Anda.</span></h1>
+                <p class="hero-copy">Ruang untuk mencoba asisten lokal, analisis visual, alat coding, dan inferensi LiteRT-LM. Pilih aplikasi untuk memulai.</p>
+                <div class="hero-actions">
+                    <a class="button button-primary" href="obrolan-claude.html">Mulai percakapan <span aria-hidden="true">→</span></a>
+                    <a class="button" href="#aplikasi">Lihat semua aplikasi</a>
+                </div>
+                <div class="trust-row" aria-label="Karakteristik aplikasi">
+                    <span>Pilihan pemrosesan lokal</span>
+                    <span>Berjalan di browser</span>
+                    <span>Tanpa backend proyek</span>
+                </div>
             </div>
-            <div class="trust-row" aria-label="Karakteristik aplikasi">
-                <span>Pilihan pemrosesan lokal</span>
-                <span>Berjalan di browser</span>
-                <span>Tanpa backend proyek</span>
+            <figure class="developer-card">
+                <img src="nano_asset/dev.jpeg" alt="Developer AI Lokal" width="225" height="225" fetchpriority="high">
+                <span class="developer-label">AI LOKAL · PLAYGROUND</span>
+                <span class="developer-orbit" aria-hidden="true"></span>
+                <figcaption class="developer-caption"><strong>Dibuat untuk eksplorasi.</strong><span>Eksperimen AI, langsung di browser.</span></figcaption>
+            </figure>
+        </section>
+
+        <section class="shell requirements-section" id="persyaratan" aria-labelledby="requirements-title">
+            <div class="requirements-panel">
+                <div class="requirements-heading">
+                    <div>
+                        <h2 id="requirements-title">Persyaratan browser</h2>
+                        <p>Untuk mencoba Gemini Nano langsung di perangkat, gunakan Chrome desktop yang terbaru. Ketersediaan AI lokal ditentukan juga oleh sistem operasi, perangkat keras, ruang penyimpanan, dan API yang dipakai tiap aplikasi.</p>
+                    </div>
+                    <span class="requirements-badge">Chrome · Desktop</span>
+                </div>
+                <div class="requirements-grid">
+                    <article class="requirement-card">
+                        <h3>Browser &amp; sistem operasi</h3>
+                        <p>Google Chrome versi terbaru di Windows 10/11, macOS 13+, Linux, atau Chromebook Plus yang kompatibel. Fitur model bahasa bawaan ini belum didukung di Chrome Android/iOS.</p>
+                    </article>
+                    <article class="requirement-card">
+                        <h3>Perangkat &amp; penyimpanan</h3>
+                        <p>Untuk model bahasa bawaan Chrome: CPU 4 inti dengan RAM 16 GB atau GPU dengan VRAM lebih dari 4 GB, serta minimal 22 GB ruang kosong di drive profil Chrome. Persyaratan dapat berubah mengikuti versi model.</p>
+                    </article>
+                    <article class="requirement-card">
+                        <h3>Unduh model pertama kali</h3>
+                        <p>Chrome perlu mengunduh model sebelum digunakan. Sediakan koneksi internet tanpa batasan kuota; setelah siap, pemrosesan Gemini Nano berlangsung di perangkat.</p>
+                    </article>
+                    <article class="requirement-card">
+                        <h3>Buka lewat server lokal</h3>
+                        <p>Jangan buka file langsung dengan <code>file://</code>. Jalankan <code>python3 -m http.server 8080</code>, lalu buka <code>http://localhost:8080</code>.</p>
+                    </article>
+                </div>
+                <div class="activation-guide">
+                    <h3>Cara mengaktifkan Gemini Nano di Chrome</h3>
+                    <p class="activation-intro">Beberapa halaman di playground ini memakai API Chrome eksperimental. Nama atau ketersediaan flags bisa berbeda menurut versi Chrome.</p>
+                    <ol class="activation-steps">
+                        <li>Perbarui Chrome desktop, lalu buka <code>chrome://flags</code>.</li>
+                        <li>Cari <code>Optimization Guide On Device Model</code> dan pilih <code>Enabled BypassPerfRequirement</code>; cari <code>Prompt API for Gemini Nano</code> dan pilih <code>Enabled</code>. Jika memakai fitur LiteRT-LM/WebGPU, aktifkan juga <code>Enables WebGPU</code> bila opsinya tersedia.</li>
+                        <li>Pilih <strong>Relaunch</strong> untuk memulai ulang Chrome.</li>
+                        <li>Buka <code>chrome://components</code>, cari <code>Optimization Guide On Device Model</code>, lalu pilih <strong>Check for update</strong>. Tunggu model selesai diunduh.</li>
+                        <li>Kembali ke playground melalui alamat localhost. Jika belum terdeteksi, cek <code>chrome://on-device-internals</code> dan pastikan perangkat memenuhi persyaratan.</li>
+                    </ol>
+                    <p class="requirements-note">Flags bersifat eksperimental dan dapat dihapus atau berubah. Jika opsinya tidak tersedia, cek dokumentasi Chrome untuk cara aktivasi API yang berlaku pada versi Anda. Lihat <a href="https://developer.chrome.com/docs/ai/get-started#requirements" target="_blank" rel="noopener noreferrer">persyaratan resmi Chrome</a> dan <a href="https://developer.chrome.com/docs/ai/prompt-api" target="_blank" rel="noopener noreferrer">status Prompt API</a>.</p>
+                </div>
             </div>
         </section>
 
@@ -265,51 +543,67 @@
 
             <div class="app-grid" id="app-grid">
                 <a class="app-card" href="obrolan-claude.html" data-category="chat" data-search="claude obrolan chat asisten utama" style="--icon:#f0a58b;--glow:rgba(217,119,87,.17)">
+                    <span class="app-preview"><img src="nano_asset/assets/landing-claude.jpg" alt="" loading="lazy" decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
                     <span class="app-icon" aria-hidden="true">✳</span><h3>Obrolan Claude</h3><p>Asisten percakapan dengan manajemen sesi dan alat bantu produktivitas.</p><span class="app-card-footer"><span class="tag">Percakapan</span><span class="open-arrow" aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="obrolan-claude-rag.html" data-category="chat" data-search="claude rag knowledge base dokumen" style="--icon:#f0a58b;--glow:rgba(217,119,87,.17)">
+                    <span class="app-preview"><img src="nano_asset/assets/landing-claude.jpg" alt="" loading="lazy" decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
                     <span class="app-icon" aria-hidden="true">⌕</span><h3>Obrolan Claude RAG</h3><p>Varian Claude dengan alur Knowledge Base dan pencarian referensi.</p><span class="app-card-footer"><span class="tag">Chat · RAG</span><span class="open-arrow" aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="percakapan-gemini-live.html" data-category="chat" data-search="gemini live suara voice percakapan" style="--icon:#a78bfa;--glow:rgba(167,139,250,.19)">
+                    <span class="app-preview"><img src="nano_asset/assets/landing-live.jpg" alt="" loading="lazy" decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
                     <span class="app-icon" aria-hidden="true">♫</span><h3>Percakapan Gemini Live</h3><p>Interaksi suara langsung dengan pilihan persona, mode, dan suara.</p><span class="app-card-footer"><span class="tag">Chat · Suara</span><span class="open-arrow" aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="obrolan-claude-ringkas.html" data-category="chat" data-search="claude ringkas sederhana minimal chat" style="--icon:#f0a58b;--glow:rgba(217,119,87,.13)">
+                    <span class="app-preview"><img src="nano_asset/assets/landing-claude.jpg" alt="" loading="lazy" decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
                     <span class="app-icon" aria-hidden="true">◌</span><h3>Obrolan Claude Ringkas</h3><p>Antarmuka Claude yang sederhana untuk mencoba percakapan lokal.</p><span class="app-card-footer"><span class="tag">Percakapan</span><span class="open-arrow" aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="obrolan-claude-varian-2.html" data-category="chat" data-search="claude varian versi alternatif" style="--icon:#f0a58b;--glow:rgba(217,119,87,.13)">
+                    <span class="app-preview"><img src="nano_asset/assets/landing-claude.jpg" alt="" loading="lazy" decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
                     <span class="app-icon" aria-hidden="true">Ⅱ</span><h3>Obrolan Claude · Varian 2</h3><p>Versi alternatif halaman obrolan Claude.</p><span class="app-card-footer"><span class="tag">Percakapan · Varian</span><span class="open-arrow" aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="obrolan-claude-varian-3.html" data-category="chat" data-search="claude varian versi alternatif" style="--icon:#f0a58b;--glow:rgba(217,119,87,.13)">
+                    <span class="app-preview"><img src="nano_asset/assets/landing-claude.jpg" alt="" loading="lazy" decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
                     <span class="app-icon" aria-hidden="true">Ⅲ</span><h3>Obrolan Claude · Varian 3</h3><p>Varian lain untuk membandingkan susunan dan alur percakapan.</p><span class="app-card-footer"><span class="tag">Percakapan · Varian</span><span class="open-arrow" aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="analisis-vision.html" data-category="vision" data-search="vision analisis multimodal gambar dokumen ultimate" style="--icon:#67e8f9;--glow:rgba(103,232,249,.15)">
+                    <span class="app-preview"><img src="nano_asset/assets/landing-v2.jpg" alt="" loading="lazy" decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
                     <span class="app-icon" aria-hidden="true">◉</span><h3>Analisis Vision</h3><p>Asisten analisis dengan dukungan dokumen, visualisasi, dan alat percakapan.</p><span class="app-card-footer"><span class="tag">Vision</span><span class="open-arrow" aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="analisis-kode.html" data-category="vision" data-search="kode code coding developer programming" style="--icon:#6ee7b7;--glow:rgba(110,231,183,.14)">
+                    <span class="app-preview"><img src="nano_asset/assets/landing-vs.jpg" alt="" loading="lazy" decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
                     <span class="app-icon" aria-hidden="true">⌘</span><h3>Analisis Kode</h3><p>Asisten untuk eksplorasi kode, prompt teknis, dan pratinjau hasil.</p><span class="app-card-footer"><span class="tag">Kode</span><span class="open-arrow" aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="analisis-vision-rag.html" data-category="vision" data-search="vision rag knowledge base dokumen" style="--icon:#67e8f9;--glow:rgba(103,232,249,.14)">
+                    <span class="app-preview"><img src="nano_asset/assets/landing-v2.jpg" alt="" loading="lazy" decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
                     <span class="app-icon" aria-hidden="true">⌕</span><h3>Analisis Vision RAG</h3><p>Varian Vision dengan alur pencarian dokumen dan konteks lokal.</p><span class="app-card-footer"><span class="tag">Vision · RAG</span><span class="open-arrow" aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="analisis-kode-varian-2.html" data-category="vision" data-search="kode code coding varian alternatif" style="--icon:#6ee7b7;--glow:rgba(110,231,183,.14)">
+                    <span class="app-preview"><img src="nano_asset/assets/landing-vs.jpg" alt="" loading="lazy" decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
                     <span class="app-icon" aria-hidden="true">⌘</span><h3>Analisis Kode · Varian 2</h3><p>Versi alternatif alat coding dan analisis.</p><span class="app-card-footer"><span class="tag">Kode · Varian</span><span class="open-arrow" aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="analisis-vision-versi-1.html" data-category="vision" data-search="vision versi 1" style="--icon:#67e8f9;--glow:rgba(103,232,249,.12)">
+                    <span class="app-preview"><img src="nano_asset/assets/landing-v2.jpg" alt="" loading="lazy" decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
                     <span class="app-icon" aria-hidden="true">Ⅰ</span><h3>Analisis Vision · Versi 1</h3><p>Versi sebelumnya dari aplikasi Analisis Vision.</p><span class="app-card-footer"><span class="tag">Vision · Versi</span><span class="open-arrow" aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="analisis-vision-versi-2.html" data-category="vision" data-search="vision versi 2" style="--icon:#67e8f9;--glow:rgba(103,232,249,.12)">
+                    <span class="app-preview"><img src="nano_asset/assets/landing-vs.jpg" alt="" loading="lazy" decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
                     <span class="app-icon" aria-hidden="true">Ⅱ</span><h3>Analisis Vision · Versi 2</h3><p>Versi pengembangan lain untuk eksplorasi fitur Vision.</p><span class="app-card-footer"><span class="tag">Vision · Versi</span><span class="open-arrow" aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="analisis-vision-varian-3.html" data-category="vision" data-search="vision varian versi 3" style="--icon:#67e8f9;--glow:rgba(103,232,249,.12)">
+                    <span class="app-preview"><img src="nano_asset/assets/landing-v2.jpg" alt="" loading="lazy" decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
                     <span class="app-icon" aria-hidden="true">Ⅲ</span><h3>Analisis Vision · Varian 3</h3><p>Varian tambahan halaman Vision.</p><span class="app-card-footer"><span class="tag">Vision · Varian</span><span class="open-arrow" aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="analisis-vision-varian-4.html" data-category="vision" data-search="vision varian versi 4" style="--icon:#67e8f9;--glow:rgba(103,232,249,.12)">
+                    <span class="app-preview"><img src="nano_asset/assets/landing-vs.jpg" alt="" loading="lazy" decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
                     <span class="app-icon" aria-hidden="true">Ⅳ</span><h3>Analisis Vision · Varian 4</h3><p>Varian tambahan halaman Vision.</p><span class="app-card-footer"><span class="tag">Vision · Varian</span><span class="open-arrow" aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="analisis-vision-varian-5.html" data-category="vision" data-search="vision varian versi 5" style="--icon:#67e8f9;--glow:rgba(103,232,249,.12)">
+                    <span class="app-preview"><img src="nano_asset/assets/landing-vs.jpg" alt="" loading="lazy" decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
                     <span class="app-icon" aria-hidden="true">Ⅴ</span><h3>Analisis Vision · Varian 5</h3><p>Varian tambahan untuk membandingkan pengalaman Vision.</p><span class="app-card-footer"><span class="tag">Vision · Varian</span><span class="open-arrow" aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="mesin-litert-lm.html" data-category="engine" data-search="litert lm webgpu model gemma engine inferensi" style="--icon:#f0abfc;--glow:rgba(240,171,252,.16)">
+                    <span class="app-preview app-preview--live"><iframe src="mesin-litert-lm.html" title="Pratinjau halaman Mesin LiteRT-LM" loading="lazy" tabindex="-1"></iframe><span class="app-preview-label">Pratinjau halaman</span></span>
                     <span class="app-icon" aria-hidden="true">▦</span><h3>Mesin LiteRT-LM</h3><p>Muat model `.litertlm` lokal atau melalui URL untuk inferensi WebGPU.</p><span class="app-card-footer"><span class="tag">Mesin AI · WebGPU</span><span class="open-arrow" aria-hidden="true">↗</span></span>
                 </a>
             </div>
@@ -323,14 +617,36 @@
         </section>
     </main>
 
-    <footer><div class="shell"><span>AI Lokal · Playground aplikasi browser</span><span>Privasi dan ketersediaan fitur mengikuti aplikasi yang dipilih.</span></div></footer>
+    <footer><div class="shell"><span>AI Lokal · Playground aplikasi browser</span><span>Privasi dan ketersediaan fitur mengikuti aplikasi yang dipilih.</span><a href="https://github.com/subuh-kurniawan" target="_blank" rel="noopener noreferrer">GitHub · @subuh-kurniawan ↗</a></div></footer>
+    <button class="chat-fab" id="chat-open" type="button" aria-label="Buka chatbot AI" aria-haspopup="dialog" aria-controls="chat-dialog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8A8.5 8.5 0 0 1 8.7 3.9a8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"/></svg>
+        <span class="chat-fab-label">Tanya AI</span>
+    </button>
+    <dialog class="chat-dialog" id="chat-dialog" aria-labelledby="chat-dialog-title">
+        <div class="chat-modal-content">
+            <header class="chat-modal-header">
+                <div class="chat-modal-title">
+                    <span class="chat-modal-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/><circle cx="12" cy="12" r="4"/></svg></span>
+                    <div><h2 id="chat-dialog-title">Asisten AI</h2><p>Ruang chatbot</p></div>
+                </div>
+                <button class="chat-close" id="chat-close" type="button" aria-label="Tutup dialog">×</button>
+            </header>
+            <div class="chat-mount" id="chatbot-mount" role="region" aria-label="Area chatbot">
+                <iframe id="chatbot-frame" src="https://aps.sman1gadingrejo.sch.id/CSC.php" title="Chatbot Asisten AI" loading="lazy" allow="microphone; clipboard-write"></iframe>
+            </div>
+        </div>
+    </dialog>
     <script>
         (() => {
             const search = document.getElementById('app-search');
             const cards = [...document.querySelectorAll('.app-card')];
             const filters = [...document.querySelectorAll('.filter')];
             const emptyState = document.getElementById('empty-state');
+            const chatDialog = document.getElementById('chat-dialog');
+            const chatOpen = document.getElementById('chat-open');
+            const chatClose = document.getElementById('chat-close');
             let selectedCategory = 'all';
+            let pointerStartedOutsideDialog = false;
 
             function updateCards() {
                 const query = search.value.trim().toLocaleLowerCase('id');
@@ -350,6 +666,20 @@
                 filters.forEach(filter => filter.setAttribute('aria-pressed', String(filter === button)));
                 updateCards();
             }));
+
+            chatOpen.addEventListener('click', () => chatDialog.showModal());
+            chatClose.addEventListener('click', () => chatDialog.close());
+            chatDialog.addEventListener('pointerdown', event => {
+                const bounds = chatDialog.getBoundingClientRect();
+                pointerStartedOutsideDialog = event.target === chatDialog && (
+                    event.clientX < bounds.left || event.clientX > bounds.right
+                    || event.clientY < bounds.top || event.clientY > bounds.bottom
+                );
+            });
+            chatDialog.addEventListener('click', event => {
+                if (event.target === chatDialog && pointerStartedOutsideDialog) chatDialog.close();
+                pointerStartedOutsideDialog = false;
+            });
         })();
     </script>
 </body>
