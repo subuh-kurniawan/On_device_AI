@@ -15,9 +15,9 @@
   - [📑 Table of Contents](#-table-of-contents)
   - [✨ Overview](#-overview)
   - [📂 Project Structure & Modules](#-project-structure--modules)
-    - [1. `liter.html` (WebGPU LiteRT-LM Engine)](#1-literhtml-webgpu-litert-lm-engine)
-    - [2. `claude.html` (Multi-Provider Chat Interface)](#2-claudehtml-multi-provider-chat-interface)
-    - [3. `vision_ulti.html` & `vision_code.html` (Vision & Code Analysis)](#3-vision_ultihtml--vision_codehtml-vision--code-analysis)
+    - [1. `mesin-litert-lm.html` (WebGPU LiteRT-LM Engine)](#1-mesin-litert-lmhtml-webgpu-litert-lm-engine)
+    - [2. `obrolan-claude.html` (Multi-Provider Chat Interface)](#2-obrolan-claudehtml-multi-provider-chat-interface)
+    - [3. `analisis-vision.html` & `analisis-kode.html` (Vision & Code Analysis)](#3-analisis-visionhtml--analisis-kodehtml-vision--code-analysis)
   - [🧠 In-Browser RAG & Local Knowledge Base](#-in-browser-rag--local-knowledge-base)
   - [🛠️ Architecture & Technology](#️-architecture--technology)
   - [🚀 Prerequisites & How to Run](#-prerequisites--how-to-run)
@@ -43,9 +43,11 @@ This repository is a _playground_ to explore the limits of **Browser-based AI**.
 
 ## 📂 Project Structure & Modules
 
+Start at the [application landing page](index.html) to browse all pages.
+
 Each `.html` file in this repository acts as a standalone *Single-Page Application (SPA)* demonstrating different technologies.
 
-### 1. `liter.html` (WebGPU LiteRT-LM Engine)
+### 1. `mesin-litert-lm.html` (WebGPU LiteRT-LM Engine)
 This file is a *state-of-the-art* implementation of WebGPU inference using the latest framework from Google.
 * **Technology:** `@litert-lm/core` (Primary) and `@mediapipe/tasks-genai` (Fallback).
 * **Features:** 
@@ -53,7 +55,7 @@ This file is a *state-of-the-art* implementation of WebGPU inference using the l
   * Realtime progress bar when downloading model weights from the network.
   * Inference pipeline uses VRAM (GPU) directly for high-speed streaming responses.
 
-### 2. `claude.html` (Multi-Provider Chat Interface)
+### 2. `obrolan-claude.html` (Multi-Provider Chat Interface)
 A feature-rich chat interface, designed similarly to high-end professional AI applications (like Claude/ChatGPT).
 * **Technology:** Google Chrome Built-in AI (`window.ai`), Ollama REST API, OpenAI-compatible API.
 * **Features:**
@@ -64,7 +66,7 @@ A feature-rich chat interface, designed similarly to high-end professional AI ap
   * **Persona/Prompt Library:** A built-in *system prompt* library to change the AI assistant's character (as a Programmer, Editor, Translator, etc.).
   * **Session Management:** Conversations are persistently stored in IndexedDB (`ClaudeChatDB`). Exporting conversations to PDF, DOCX, TXT, and JSON formats is available.
 
-### 3. `vision_ulti.html` & `vision_code.html` (Vision & Code Analysis)
+### 3. `analisis-vision.html` & `analisis-kode.html` (Vision & Code Analysis)
 Focused on advanced text analysis and simple multimodal tasks.
 * **Special Features:** *Quick Action* buttons for instant text manipulation (Translate, Summarize, Refine, Code Review).
 * UI optimized for reading long lines of code and specifically formatted syntax.
@@ -73,7 +75,7 @@ Focused on advanced text analysis and simple multimodal tasks.
 
 ## 🧠 In-Browser RAG & Local Knowledge Base
 
-All application modules above (`liter.html`, `claude.html`, `vision_code.html`) are now equipped with a **Retrieval-Augmented Generation (RAG)** system that runs entirely on the client-side!
+The primary application modules (`mesin-litert-lm.html`, `obrolan-claude.html`, `analisis-kode.html`) include a client-side **Retrieval-Augmented Generation (RAG)** system.
 
 **How it works?**
 1. **Document Parsing:** Users upload reference documents (supports `.pdf` via PDF.js, `.docx` via Mammoth.js, as well as `.txt` and `.md`).
@@ -162,7 +164,7 @@ Then open `http://localhost:8080/` in a browser where the flags have been manual
 
 ## ⚙️ AI Mode Configuration Guide (Multi-Provider)
 
-This application (especially in the `claude.html` and `vision_ulti.html` interfaces) supports dynamic AI model switching. You can switch models via the **Settings** menu (Gear icon in the chat interface). Here is the configuration guide for each mode:
+This application (especially in the `obrolan-claude.html` and `analisis-vision.html` interfaces) supports dynamic AI model switching. You can switch models via the **Settings** menu (Gear icon in the chat interface). Here is the configuration guide for each mode:
 
 ### 1. Chrome On-Device Mode (Gemini Nano)
 This is the **default** mode of the application and runs 100% offline within your computer's RAM.
@@ -186,9 +188,9 @@ Use this mode to connect to premium Cloud API services (like OpenAI GPT-4o) or t
 
 ## 🐛 Troubleshooting
 
-* **Simulation Model Active in `liter.html`:** This happens because the `@litert-lm/core` CDN package is still in "Early Preview" by Google and sometimes fails to download (depending on the CDN registry at that moment). Our script is equipped with multi-CDN fallbacks. Ensure a stable internet connection during initial initialization.
+* **Simulation Model Active in `mesin-litert-lm.html`:** This happens because the `@litert-lm/core` CDN package is still in "Early Preview" by Google and sometimes fails to download (depending on the CDN registry at that moment). Our script is equipped with multi-CDN fallbacks. Ensure a stable internet connection during initial initialization.
 * **CORS Error on Transformers.js:** Ensure you are accessing the application via `localhost` or local IP (`127.0.0.1`), not by opening the file directly from File Explorer (`file://` protocol).
-* **Gemini Nano not responding (`claude.html`):** Sometimes Chrome's local model takes time to download in the background. Try opening `chrome://components/`, find *Optimization Guide On Device Model*, and click the *Check for update* button.
+* **Gemini Nano not responding (`obrolan-claude.html`):** Sometimes Chrome's local model takes time to download in the background. Try opening `chrome://components/`, find *Optimization Guide On Device Model*, and click the *Check for update* button.
 
 ---
 

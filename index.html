@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0a1020">
+    <meta name="description" content="Kumpulan aplikasi AI lokal untuk percakapan, analisis, kode, dan inferensi LiteRT-LM.">
+    <title>AI Lokal — Pusat Aplikasi</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #0a1020;
+            --surface: rgba(17, 27, 48, .82);
+            --surface-raised: #17233b;
+            --line: rgba(180, 198, 235, .14);
+            --text: #eef3ff;
+            --muted: #9aa9c4;
+            --accent: #a78bfa;
+            --cyan: #67e8f9;
+            --green: #6ee7b7;
+        }
+
+        * { box-sizing: border-box; }
+        html { min-width: 320px; scroll-behavior: smooth; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text);
+            background:
+                radial-gradient(ellipse at 12% 0%, rgba(103, 232, 249, .13), transparent 38rem),
+                radial-gradient(ellipse at 92% 8%, rgba(167, 139, 250, .16), transparent 34rem),
+                var(--bg);
+            font: 15px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        a { color: inherit; }
+        button, input { font: inherit; }
+        .shell { width: min(1120px, calc(100% - 40px)); margin: auto; }
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 24px 0;
+        }
+        .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; font-weight: 750; letter-spacing: -.02em; }
+        .brand-mark {
+            display: grid;
+            width: 38px;
+            height: 38px;
+            place-items: center;
+            border: 1px solid rgba(103, 232, 249, .3);
+            border-radius: 13px;
+            color: var(--cyan);
+            background: rgba(103, 232, 249, .1);
+            box-shadow: 0 0 32px rgba(103, 232, 249, .12);
+        }
+        .top-link { color: var(--muted); font-size: 13px; text-decoration: none; }
+        .top-link:hover { color: var(--text); }
+        .hero { padding: clamp(48px, 9vw, 104px) 0 58px; }
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 11px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            color: #c8d4ea;
+            background: rgba(255, 255, 255, .035);
+            font-size: 12px;
+            letter-spacing: .04em;
+        }
+        .eyebrow-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 14px var(--green); }
+        h1 {
+            max-width: 780px;
+            margin: 22px 0 16px;
+            font-size: clamp(42px, 7vw, 76px);
+            line-height: 1.04;
+            letter-spacing: -.06em;
+        }
+        .gradient-text {
+            color: transparent;
+            background: linear-gradient(95deg, var(--cyan), #b6a3ff 58%, #f0abfc);
+            background-clip: text;
+            -webkit-background-clip: text;
+        }
+        .hero-copy { max-width: 640px; margin: 0; color: var(--muted); font-size: clamp(16px, 2vw, 19px); }
+        .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+        .button {
+            display: inline-flex;
+            min-height: 44px;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            padding: 10px 16px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            color: var(--text);
+            background: rgba(255, 255, 255, .045);
+            text-decoration: none;
+            font-weight: 650;
+            transition: transform .18s ease, border-color .18s ease, background .18s ease;
+        }
+        .button:hover { transform: translateY(-2px); border-color: rgba(167, 139, 250, .55); background: rgba(167, 139, 250, .1); }
+        .button-primary { border-color: transparent; color: #111426; background: linear-gradient(105deg, var(--cyan), #c4b5fd); }
+        .button-primary:hover { border-color: transparent; background: linear-gradient(105deg, #a5f3fc, #ddd6fe); }
+        .trust-row { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 34px; color: var(--muted); font-size: 12px; }
+        .trust-row span::before { margin-right: 7px; color: var(--green); content: "✓"; }
+
+        .apps-section { padding: 34px 0 76px; }
+        .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+        .section-heading h2 { margin: 0; font-size: clamp(24px, 4vw, 32px); letter-spacing: -.04em; }
+        .section-heading p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+        .search-box { position: relative; width: min(310px, 100%); flex: 0 0 auto; }
+        .search-box span { position: absolute; top: 50%; left: 13px; transform: translateY(-50%); color: var(--muted); }
+        .search-box input {
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 14px 10px 38px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            outline: none;
+            color: var(--text);
+            background: rgba(8, 15, 30, .72);
+        }
+        .search-box input:focus { border-color: rgba(103, 232, 249, .58); box-shadow: 0 0 0 3px rgba(103, 232, 249, .08); }
+        .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
+        .filter {
+            min-height: 35px;
+            padding: 6px 12px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            color: var(--muted);
+            background: transparent;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .filter[aria-pressed="true"] { border-color: rgba(167, 139, 250, .45); color: var(--text); background: rgba(167, 139, 250, .12); }
+        .app-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+        .app-card {
+            position: relative;
+            display: flex;
+            min-height: 206px;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 20px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: linear-gradient(145deg, rgba(23, 35, 59, .9), rgba(13, 21, 39, .84));
+            text-decoration: none;
+            transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+        }
+        .app-card::after {
+            position: absolute;
+            right: -36px;
+            bottom: -56px;
+            width: 145px;
+            height: 145px;
+            border-radius: 50%;
+            background: var(--glow, rgba(103, 232, 249, .11));
+            filter: blur(36px);
+            content: "";
+            pointer-events: none;
+        }
+        .app-card:hover { transform: translateY(-4px); border-color: rgba(167, 139, 250, .45); box-shadow: 0 16px 44px rgba(0, 0, 0, .22); }
+        .app-card[hidden] { display: none; }
+        .app-icon {
+            display: grid;
+            width: 43px;
+            height: 43px;
+            place-items: center;
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 14px;
+            color: var(--icon, var(--cyan));
+            background: rgba(255, 255, 255, .055);
+            font-size: 20px;
+        }
+        .app-card h3 { margin: 18px 0 5px; font-size: 17px; letter-spacing: -.025em; }
+        .app-card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+        .app-card-footer { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 17px; }
+        .tag { color: #b5c5e2; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+        .open-arrow { color: var(--cyan); font-size: 18px; transition: transform .18s ease; }
+        .app-card:hover .open-arrow { transform: translateX(4px); }
+        .empty-state { display: none; padding: 42px 20px; color: var(--muted); text-align: center; }
+        .empty-state.visible { display: block; }
+        .info-strip {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1fr;
+            gap: 16px;
+            margin-top: 30px;
+            padding: 22px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: rgba(255, 255, 255, .025);
+        }
+        .info-strip strong { display: block; margin-bottom: 4px; font-size: 13px; }
+        .info-strip p { margin: 0; color: var(--muted); font-size: 12px; }
+        footer { padding: 22px 0 30px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+        footer .shell { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+        :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+
+        @media (max-width: 850px) {
+            .app-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .section-heading { align-items: stretch; flex-direction: column; }
+            .search-box { width: 100%; }
+        }
+        @media (max-width: 560px) {
+            .shell { width: min(100% - 28px, 1120px); }
+            .topbar { padding: 17px 0; }
+            .hero { padding-top: 48px; }
+            .app-grid { grid-template-columns: 1fr; }
+            .app-card { min-height: 184px; }
+            .info-strip { grid-template-columns: 1fr; }
+            .trust-row { gap: 8px 14px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+        }
+    </style>
+</head>
+<body>
+    <header class="shell topbar">
+        <a class="brand" href="index.html" aria-label="AI Lokal, beranda">
+            <span class="brand-mark" aria-hidden="true">✳</span>
+            <span>AI Lokal <span style="color:var(--muted);font-weight:500">/ Playground</span></span>
+        </a>
+        <a class="top-link" href="#aplikasi">Jelajahi aplikasi <span aria-hidden="true">↘</span></a>
+    </header>
+
+    <main>
+        <section class="shell hero" aria-labelledby="hero-title">
+            <span class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> EKSPERIMEN AI DI BROWSER</span>
+            <h1 id="hero-title">AI yang bekerja<br><span class="gradient-text">lebih dekat dengan Anda.</span></h1>
+            <p class="hero-copy">Ruang untuk mencoba asisten lokal, analisis visual, alat coding, dan inferensi LiteRT-LM. Pilih aplikasi untuk memulai.</p>
+            <div class="hero-actions">
+                <a class="button button-primary" href="obrolan-claude.html">Mulai percakapan <span aria-hidden="true">→</span></a>
+                <a class="button" href="#aplikasi">Lihat semua aplikasi</a>
+            </div>
+            <div class="trust-row" aria-label="Karakteristik aplikasi">
+                <span>Pilihan pemrosesan lokal</span>
+                <span>Berjalan di browser</span>
+                <span>Tanpa backend proyek</span>
+            </div>
+        </section>
+
+        <section class="shell apps-section" id="aplikasi" aria-labelledby="apps-title">
+            <div class="section-heading">
+                <div>
+                    <h2 id="apps-title">Pilih aplikasi</h2>
+                    <p>Halaman mandiri dengan alur dan kemampuan yang berbeda.</p>
+                </div>
+                <label class="search-box">
+                    <span aria-hidden="true">⌕</span>
+                    <input id="app-search" type="search" placeholder="Cari aplikasi..." autocomplete="off" aria-label="Cari aplikasi">
+                </label>
+            </div>
+
+            <div class="filters" role="group" aria-label="Filter kategori aplikasi">
+                <button class="filter" type="button" data-filter="all" aria-pressed="true">Semua</button>
+                <button class="filter" type="button" data-filter="chat" aria-pressed="false">Percakapan</button>
+                <button class="filter" type="button" data-filter="vision" aria-pressed="false">Vision &amp; kode</button>
+                <button class="filter" type="button" data-filter="engine" aria-pressed="false">Mesin AI</button>
+            </div>
+
+            <div class="app-grid" id="app-grid">
+                <a class="app-card" href="obrolan-claude.html" data-category="chat" data-search="claude obrolan chat asisten utama" style="--icon:#f0a58b;--glow:rgba(217,119,87,.17)">
+                    <span class="app-icon" aria-hidden="true">✳</span><h3>Obrolan Claude</h3><p>Asisten percakapan dengan manajemen sesi dan alat bantu produktivitas.</p><span class="app-card-footer"><span class="tag">Percakapan</span><span class="open-arrow" aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="obrolan-claude-rag.html" data-category="chat" data-search="claude rag knowledge base dokumen" style="--icon:#f0a58b;--glow:rgba(217,119,87,.17)">
+                    <span class="app-icon" aria-hidden="true">⌕</span><h3>Obrolan Claude RAG</h3><p>Varian Claude dengan alur Knowledge Base dan pencarian referensi.</p><span class="app-card-footer"><span class="tag">Chat · RAG</span><span class="open-arrow" aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="percakapan-gemini-live.html" data-category="chat" data-search="gemini live suara voice percakapan" style="--icon:#a78bfa;--glow:rgba(167,139,250,.19)">
+                    <span class="app-icon" aria-hidden="true">♫</span><h3>Percakapan Gemini Live</h3><p>Interaksi suara langsung dengan pilihan persona, mode, dan suara.</p><span class="app-card-footer"><span class="tag">Chat · Suara</span><span class="open-arrow" aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="obrolan-claude-ringkas.html" data-category="chat" data-search="claude ringkas sederhana minimal chat" style="--icon:#f0a58b;--glow:rgba(217,119,87,.13)">
+                    <span class="app-icon" aria-hidden="true">◌</span><h3>Obrolan Claude Ringkas</h3><p>Antarmuka Claude yang sederhana untuk mencoba percakapan lokal.</p><span class="app-card-footer"><span class="tag">Percakapan</span><span class="open-arrow" aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="obrolan-claude-varian-2.html" data-category="chat" data-search="claude varian versi alternatif" style="--icon:#f0a58b;--glow:rgba(217,119,87,.13)">
+                    <span class="app-icon" aria-hidden="true">Ⅱ</span><h3>Obrolan Claude · Varian 2</h3><p>Versi alternatif halaman obrolan Claude.</p><span class="app-card-footer"><span class="tag">Percakapan · Varian</span><span class="open-arrow" aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="obrolan-claude-varian-3.html" data-category="chat" data-search="claude varian versi alternatif" style="--icon:#f0a58b;--glow:rgba(217,119,87,.13)">
+                    <span class="app-icon" aria-hidden="true">Ⅲ</span><h3>Obrolan Claude · Varian 3</h3><p>Varian lain untuk membandingkan susunan dan alur percakapan.</p><span class="app-card-footer"><span class="tag">Percakapan · Varian</span><span class="open-arrow" aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="analisis-vision.html" data-category="vision" data-search="vision analisis multimodal gambar dokumen ultimate" style="--icon:#67e8f9;--glow:rgba(103,232,249,.15)">
+                    <span class="app-icon" aria-hidden="true">◉</span><h3>Analisis Vision</h3><p>Asisten analisis dengan dukungan dokumen, visualisasi, dan alat percakapan.</p><span class="app-card-footer"><span class="tag">Vision</span><span class="open-arrow" aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="analisis-kode.html" data-category="vision" data-search="kode code coding developer programming" style="--icon:#6ee7b7;--glow:rgba(110,231,183,.14)">
+                    <span class="app-icon" aria-hidden="true">⌘</span><h3>Analisis Kode</h3><p>Asisten untuk eksplorasi kode, prompt teknis, dan pratinjau hasil.</p><span class="app-card-footer"><span class="tag">Kode</span><span class="open-arrow" aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="analisis-vision-rag.html" data-category="vision" data-search="vision rag knowledge base dokumen" style="--icon:#67e8f9;--glow:rgba(103,232,249,.14)">
+                    <span class="app-icon" aria-hidden="true">⌕</span><h3>Analisis Vision RAG</h3><p>Varian Vision dengan alur pencarian dokumen dan konteks lokal.</p><span class="app-card-footer"><span class="tag">Vision · RAG</span><span class="open-arrow" aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="analisis-kode-varian-2.html" data-category="vision" data-search="kode code coding varian alternatif" style="--icon:#6ee7b7;--glow:rgba(110,231,183,.14)">
+                    <span class="app-icon" aria-hidden="true">⌘</span><h3>Analisis Kode · Varian 2</h3><p>Versi alternatif alat coding dan analisis.</p><span class="app-card-footer"><span class="tag">Kode · Varian</span><span class="open-arrow" aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="analisis-vision-versi-1.html" data-category="vision" data-search="vision versi 1" style="--icon:#67e8f9;--glow:rgba(103,232,249,.12)">
+                    <span class="app-icon" aria-hidden="true">Ⅰ</span><h3>Analisis Vision · Versi 1</h3><p>Versi sebelumnya dari aplikasi Analisis Vision.</p><span class="app-card-footer"><span class="tag">Vision · Versi</span><span class="open-arrow" aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="analisis-vision-versi-2.html" data-category="vision" data-search="vision versi 2" style="--icon:#67e8f9;--glow:rgba(103,232,249,.12)">
+                    <span class="app-icon" aria-hidden="true">Ⅱ</span><h3>Analisis Vision · Versi 2</h3><p>Versi pengembangan lain untuk eksplorasi fitur Vision.</p><span class="app-card-footer"><span class="tag">Vision · Versi</span><span class="open-arrow" aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="analisis-vision-varian-3.html" data-category="vision" data-search="vision varian versi 3" style="--icon:#67e8f9;--glow:rgba(103,232,249,.12)">
+                    <span class="app-icon" aria-hidden="true">Ⅲ</span><h3>Analisis Vision · Varian 3</h3><p>Varian tambahan halaman Vision.</p><span class="app-card-footer"><span class="tag">Vision · Varian</span><span class="open-arrow" aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="analisis-vision-varian-4.html" data-category="vision" data-search="vision varian versi 4" style="--icon:#67e8f9;--glow:rgba(103,232,249,.12)">
+                    <span class="app-icon" aria-hidden="true">Ⅳ</span><h3>Analisis Vision · Varian 4</h3><p>Varian tambahan halaman Vision.</p><span class="app-card-footer"><span class="tag">Vision · Varian</span><span class="open-arrow" aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="analisis-vision-varian-5.html" data-category="vision" data-search="vision varian versi 5" style="--icon:#67e8f9;--glow:rgba(103,232,249,.12)">
+                    <span class="app-icon" aria-hidden="true">Ⅴ</span><h3>Analisis Vision · Varian 5</h3><p>Varian tambahan untuk membandingkan pengalaman Vision.</p><span class="app-card-footer"><span class="tag">Vision · Varian</span><span class="open-arrow" aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="mesin-litert-lm.html" data-category="engine" data-search="litert lm webgpu model gemma engine inferensi" style="--icon:#f0abfc;--glow:rgba(240,171,252,.16)">
+                    <span class="app-icon" aria-hidden="true">▦</span><h3>Mesin LiteRT-LM</h3><p>Muat model `.litertlm` lokal atau melalui URL untuk inferensi WebGPU.</p><span class="app-card-footer"><span class="tag">Mesin AI · WebGPU</span><span class="open-arrow" aria-hidden="true">↗</span></span>
+                </a>
+            </div>
+            <p class="empty-state" id="empty-state" role="status">Tidak ada aplikasi yang cocok. Coba kata kunci lain.</p>
+
+            <div class="info-strip">
+                <div><strong>Eksperimen client-side</strong><p>Aplikasi dirancang berjalan dari browser, dengan dukungan kemampuan lokal sesuai perangkat dan browser.</p></div>
+                <div><strong>Model dan koneksi berbeda</strong><p>Setiap halaman dapat memiliki opsi model, endpoint, dan persyaratan yang berbeda.</p></div>
+                <div><strong>Jalankan lewat server lokal</strong><p>Untuk API browser dan pemuatan aset, buka proyek melalui server HTTP lokal.</p></div>
+            </div>
+        </section>
+    </main>
+
+    <footer><div class="shell"><span>AI Lokal · Playground aplikasi browser</span><span>Privasi dan ketersediaan fitur mengikuti aplikasi yang dipilih.</span></div></footer>
+    <script>
+        (() => {
+            const search = document.getElementById('app-search');
+            const cards = [...document.querySelectorAll('.app-card')];
+            const filters = [...document.querySelectorAll('.filter')];
+            const emptyState = document.getElementById('empty-state');
+            let selectedCategory = 'all';
+
+            function updateCards() {
+                const query = search.value.trim().toLocaleLowerCase('id');
+                let visibleCount = 0;
+                for (const card of cards) {
+                    const matchesCategory = selectedCategory === 'all' || card.dataset.category === selectedCategory;
+                    const matchesQuery = !query || `${card.dataset.search} ${card.textContent}`.toLocaleLowerCase('id').includes(query);
+                    card.hidden = !(matchesCategory && matchesQuery);
+                    if (!card.hidden) visibleCount += 1;
+                }
+                emptyState.classList.toggle('visible', visibleCount === 0);
+            }
+
+            search.addEventListener('input', updateCards);
+            filters.forEach(button => button.addEventListener('click', () => {
+                selectedCategory = button.dataset.filter;
+                filters.forEach(filter => filter.setAttribute('aria-pressed', String(filter === button)));
+                updateCards();
+            }));
+        })();
+    </script>
+</body>
+</html>

@@ -15,9 +15,9 @@
   - [📑 Daftar Isi](#-daftar-isi)
   - [✨ Gambaran Umum](#-gambaran-umum)
   - [📂 Struktur & Modul Proyek](#-struktur--modul-proyek)
-    - [1. `liter.html` (WebGPU LiteRT-LM Engine)](#1-literhtml-webgpu-litert-lm-engine)
-    - [2. `claude.html` (Multi-Provider Chat Interface)](#2-claudehtml-multi-provider-chat-interface)
-    - [3. `vision_ulti.html` & `vision_code.html` (Vision & Code Analysis)](#3-vision_ultihtml--vision_codehtml-vision--code-analysis)
+    - [1. `mesin-litert-lm.html` (WebGPU LiteRT-LM Engine)](#1-mesin-litert-lmhtml-webgpu-litert-lm-engine)
+    - [2. `obrolan-claude.html` (Multi-Provider Chat Interface)](#2-obrolan-claudehtml-multi-provider-chat-interface)
+    - [3. `analisis-vision.html` & `analisis-kode.html` (Vision & Code Analysis)](#3-analisis-visionhtml--analisis-kodehtml-vision--code-analysis)
   - [🧠 In-Browser RAG & Knowledge Base Lokal](#-in-browser-rag--knowledge-base-lokal)
   - [🛠️ Arsitektur & Teknologi](#️-arsitektur--teknologi)
   - [🚀 Prasyarat & Cara Menjalankan](#-prasyarat--cara-menjalankan)
@@ -42,9 +42,11 @@ Repositori ini adalah sebuah _playground_ untuk mengeksplorasi batas kemampuan *
 
 ## 📂 Struktur & Modul Proyek
 
+Mulai dari [landing page aplikasi](index.html) untuk menelusuri semua halaman.
+
 Setiap file `.html` dalam repositori ini bertindak sebagai sebuah *Single-Page Application (SPA)* mandiri yang mendemonstrasikan teknologi yang berbeda.
 
-### 1. `liter.html` (WebGPU LiteRT-LM Engine)
+### 1. `mesin-litert-lm.html` (WebGPU LiteRT-LM Engine)
 File ini adalah implementasi *state-of-the-art* dari inferensi WebGPU menggunakan framework terbaru dari Google.
 * **Teknologi:** `@litert-lm/core` (Primary) dan `@mediapipe/tasks-genai` (Fallback).
 * **Fitur:** 
@@ -52,7 +54,7 @@ File ini adalah implementasi *state-of-the-art* dari inferensi WebGPU menggunaka
   * Memiliki *progress bar* realtime saat mengunduh bobot model dari jaringan.
   * Pipeline inferensi menggunakan VRAM (GPU) secara langsung untuk streaming respons berkecepatan tinggi.
 
-### 2. `claude.html` (Multi-Provider Chat Interface)
+### 2. `obrolan-claude.html` (Multi-Provider Chat Interface)
 Halaman antarmuka obrolan yang kaya fitur, dirancang mirip dengan aplikasi AI profesional kelas atas (seperti Claude/ChatGPT).
 * **Teknologi:** Google Chrome Built-in AI (`window.ai`), Ollama REST API, OpenAI-compatible API.
 * **Fitur:**
@@ -63,7 +65,7 @@ Halaman antarmuka obrolan yang kaya fitur, dirancang mirip dengan aplikasi AI pr
   * **Persona/Prompt Library:** Pustaka *system prompt* bawaan untuk mengubah karakter asisten AI (sebagai Programmer, Editor, Translator, dll).
   * **Session Management:** Percakapan disimpan secara presisten ke IndexedDB (`ClaudeChatDB`). Ekspor percakapan ke format PDF, DOCX, TXT, dan JSON tersedia.
 
-### 3. `vision_ulti.html` & `vision_code.html` (Vision & Code Analysis)
+### 3. `analisis-vision.html` & `analisis-kode.html` (Vision & Code Analysis)
 Fokus pada analisis teks lanjutan dan tugas multimodal sederhana.
 * **Fitur Khusus:** Tombol *Quick Action* untuk manipulasi teks secara instan (Translate, Summarize, Refine, Code Review).
 * UI yang dioptimalkan untuk membaca baris kode panjang dan sintaks yang diformat khusus.
@@ -72,7 +74,7 @@ Fokus pada analisis teks lanjutan dan tugas multimodal sederhana.
 
 ## 🧠 In-Browser RAG & Knowledge Base Lokal
 
-Semua modul aplikasi di atas (`liter.html`, `claude.html`, `vision_code.html`) kini dilengkapi dengan sistem **Retrieval-Augmented Generation (RAG)** yang berjalan sepenuhnya di sisi klien!
+Modul aplikasi utama (`mesin-litert-lm.html`, `obrolan-claude.html`, `analisis-kode.html`) dilengkapi dengan sistem **Retrieval-Augmented Generation (RAG)** yang berjalan di sisi klien.
 
 **Bagaimana ini bekerja?**
 1. **Parsing Dokumen:** Pengguna mengunggah dokumen referensi (mendukung `.pdf` via PDF.js, `.docx` via Mammoth.js, serta `.txt` dan `.md`).
@@ -138,7 +140,8 @@ Agar fitur AI bawaan Chrome dapat berjalan secara lokal, Anda perlu mengaktifkan
 ### Langkah 2: Jalankan Local Server & Buka Browser (Otomatis)
 Untuk mempermudah Anda, kami telah menyediakan skrip otomatisasi yang akan:
 1. Memulai HTTP server lokal (menggunakan Python).
-2. Membuka Google Chrome dengan parameter baris perintah (CLI flags) yang dibutuhkan secara otomatis.
+2. Membuka halaman `percakapan-gemini-live.html` di Google Chrome dengan parameter baris perintah (CLI flags) yang dibutuhkan secara otomatis.
+3. Menjaga server berjalan sampai jendela Terminal ditutup atau `Ctrl+C` ditekan.
 
 **Bagi Pengguna Windows:**
 Cukup klik ganda (double-click) file `start_windows.bat` yang ada di folder repositori ini.
@@ -155,13 +158,13 @@ Jika Anda lebih suka menjalankannya secara manual tanpa skrip di atas, Anda bisa
 python3 -m http.server 8080
 # Atau menggunakan Node.js: npx http-server -p 8080
 ```
-Lalu buka `http://localhost:8080/` di browser yang telah dikonfigurasi flags-nya secara manual.
+Lalu buka `http://localhost:8080/percakapan-gemini-live.html` di browser yang telah dikonfigurasi flags-nya secara manual.
 
 ---
 
 ## ⚙️ Panduan Pengaturan Mode AI (Multi-Provider)
 
-Aplikasi ini (khususnya pada antarmuka `claude.html` dan `vision_ulti.html`) mendukung pergantian model AI secara dinamis. Anda dapat beralih model melalui menu **Pengaturan (Settings)** (Ikon Roda Gigi di antarmuka obrolan). Berikut adalah panduan konfigurasi untuk masing-masing mode:
+Aplikasi ini (khususnya pada antarmuka `obrolan-claude.html` dan `analisis-vision.html`) mendukung pergantian model AI secara dinamis. Anda dapat beralih model melalui menu **Pengaturan (Settings)** (Ikon Roda Gigi di antarmuka obrolan). Berikut adalah panduan konfigurasi untuk masing-masing mode:
 
 ### 1. Mode Chrome On-Device (Gemini Nano)
 Mode ini adalah **default** dari aplikasi dan berjalan 100% secara offline di dalam RAM komputer Anda.
@@ -185,9 +188,9 @@ Gunakan mode ini untuk terhubung ke layanan Cloud API premium (seperti OpenAI GP
 
 ## 🐛 Troubleshooting
 
-* **Model Simulasi Aktif di `liter.html`:** Ini terjadi karena CDN package `@litert-lm/core` saat ini masih berstatus "Early Preview" oleh Google dan kadang tidak dapat diunduh (tergantung registry CDN saat itu). Skrip kami telah dilengkapi dengan fallback multi-CDN. Pastikan koneksi internet stabil saat inisialisasi awal.
+* **Model Simulasi Aktif di `mesin-litert-lm.html`:** Ini terjadi karena CDN package `@litert-lm/core` saat ini masih berstatus "Early Preview" oleh Google dan kadang tidak dapat diunduh (tergantung registry CDN saat itu). Skrip kami telah dilengkapi dengan fallback multi-CDN. Pastikan koneksi internet stabil saat inisialisasi awal.
 * **Error CORS pada Transformers.js:** Pastikan Anda mengakses aplikasi melalui `localhost` atau IP lokal (`127.0.0.1`), bukan dengan membuka file langsung dari File Explorer (protokol `file://`).
-* **Gemini Nano tidak merespons (`claude.html`):** Terkadang model lokal Chrome memerlukan waktu untuk terunduh di latar belakang. Coba buka `chrome://components/`, cari *Optimization Guide On Device Model*, dan klik tombol *Check for update*.
+* **Gemini Nano tidak merespons (`obrolan-claude.html`):** Terkadang model lokal Chrome memerlukan waktu untuk terunduh di latar belakang. Coba buka `chrome://components/`, cari *Optimization Guide On Device Model*, dan klik tombol *Check for update*.
 
 ---
 
