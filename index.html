@@ -6,9 +6,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#0a1020">
     <meta name="description"
-        content="Kumpulan aplikasi AI lokal untuk percakapan, analisis, kode, dan inferensi LiteRT-LM.">
+        content="Jelajahi playground AI berbasis browser: percakapan, analisis vision dan kode, RAG lokal, serta inferensi WebGPU. Utamakan privasi dengan pemrosesan di perangkat.">
     <title>AI Lokal — Pusat Aplikasi</title>
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="id_ID">
+    <meta property="og:site_name" content="Chrome On-Device AI Playground">
+    <meta property="og:title" content="AI Lokal — Chrome On-Device AI Playground">
+    <meta property="og:description"
+        content="Jelajahi playground AI berbasis browser: percakapan, analisis vision dan kode, RAG lokal, serta inferensi WebGPU. Utamakan privasi dengan pemrosesan di perangkat.">
+    <meta property="og:image"
+        content="https://raw.githubusercontent.com/subuh-kurniawan/On_device_AI/main/nano_asset/assets/og-image.jpg">
+    <meta property="og:image:secure_url"
+        content="https://raw.githubusercontent.com/subuh-kurniawan/On_device_AI/main/nano_asset/assets/og-image.jpg">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Ilustrasi AI Lokal Playground dengan antarmuka AI, WebGPU, dan RAG">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AI Lokal — Chrome On-Device AI Playground">
+    <meta name="twitter:description"
+        content="Jelajahi playground AI berbasis browser: percakapan, analisis vision dan kode, RAG lokal, serta inferensi WebGPU. Utamakan privasi dengan pemrosesan di perangkat.">
+    <meta name="twitter:image"
+        content="https://raw.githubusercontent.com/subuh-kurniawan/On_device_AI/main/nano_asset/assets/og-image.jpg">
+    <meta name="twitter:image:alt" content="Ilustrasi AI Lokal Playground dengan antarmuka AI, WebGPU, dan RAG">
     <style>
+        @font-face {
+            font-family: Poppins;
+            src: url("nano_asset/assets/fonts/poppins-400.woff2") format("woff2");
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+        }
+
         :root {
             color-scheme: dark;
             --bg: #0a1020;
@@ -20,6 +49,7 @@
             --accent: #a78bfa;
             --cyan: #67e8f9;
             --green: #6ee7b7;
+            --glass: rgba(12, 20, 37, .78);
         }
 
         * {
@@ -29,9 +59,11 @@
         html {
             min-width: 320px;
             scroll-behavior: smooth;
+            scroll-padding-top: 92px;
         }
 
         body {
+            position: relative;
             min-height: 100vh;
             margin: 0;
             color: var(--text);
@@ -39,7 +71,29 @@
                 radial-gradient(ellipse at 12% 0%, rgba(103, 232, 249, .13), transparent 38rem),
                 radial-gradient(ellipse at 92% 8%, rgba(167, 139, 250, .16), transparent 34rem),
                 var(--bg);
-            font: 15px/1.6 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font: 15px/1.6 Poppins, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: "Iowan Old Style", Baskerville, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+            font-weight: 600;
+            letter-spacing: -.025em;
+        }
+
+        body::before {
+            position: fixed;
+            z-index: -1;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 50% 34%, rgba(103, 232, 249, .045), transparent 42rem),
+                linear-gradient(rgba(180, 198, 235, .025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(180, 198, 235, .025) 1px, transparent 1px);
+            background-size: auto, 56px 56px, 56px 56px;
+            mask-image: linear-gradient(to bottom, black, transparent 78%);
+            content: "";
+            pointer-events: none;
         }
 
         a {
@@ -57,11 +111,20 @@
         }
 
         .topbar {
+            position: sticky;
+            z-index: 10;
+            top: 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 20px;
-            padding: 24px 0;
+            margin-top: 12px;
+            padding: 11px 16px;
+            border: 1px solid rgba(180, 198, 235, .15);
+            border-radius: 17px;
+            background: var(--glass);
+            box-shadow: 0 12px 34px rgba(0, 0, 0, .16);
+            backdrop-filter: blur(18px);
         }
 
         .brand {
@@ -83,6 +146,12 @@
             color: var(--cyan);
             background: rgba(103, 232, 249, .1);
             box-shadow: 0 0 32px rgba(103, 232, 249, .12);
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+
+        .brand:hover .brand-mark {
+            transform: rotate(-12deg);
+            box-shadow: 0 0 38px rgba(103, 232, 249, .24);
         }
 
         .top-nav {
@@ -101,12 +170,21 @@
             color: var(--text);
         }
 
+        .top-link span {
+            display: inline-block;
+            transition: transform .18s ease;
+        }
+
+        .top-link:hover span {
+            transform: translate(2px, 2px);
+        }
+
         .hero {
             display: grid;
-            grid-template-columns: minmax(0, 1.08fr) minmax(280px, .72fr);
+            grid-template-columns: 1fr;
             align-items: center;
-            gap: clamp(32px, 7vw, 88px);
-            padding: clamp(42px, 7vw, 82px) 0 58px;
+            gap: 32px;
+            padding: clamp(54px, 8vw, 96px) 0 72px;
         }
 
         .eyebrow {
@@ -120,6 +198,7 @@
             background: rgba(255, 255, 255, .035);
             font-size: 12px;
             letter-spacing: .04em;
+            box-shadow: inset 0 1px rgba(255, 255, 255, .05);
         }
 
         .eyebrow-dot {
@@ -133,9 +212,10 @@
         h1 {
             max-width: 740px;
             margin: 22px 0 16px;
-            font-size: clamp(42px, 6.5vw, 72px);
+            font-size: clamp(44px, 7vw, 82px);
             line-height: 1.04;
             letter-spacing: -.06em;
+            text-wrap: balance;
         }
 
         .gradient-text {
@@ -150,6 +230,7 @@
             margin: 0;
             color: var(--muted);
             font-size: clamp(16px, 2vw, 19px);
+            line-height: 1.7;
         }
 
         .hero-actions {
@@ -185,6 +266,7 @@
             border-color: transparent;
             color: #111426;
             background: linear-gradient(105deg, var(--cyan), #c4b5fd);
+            box-shadow: 0 8px 28px rgba(103, 232, 249, .16);
         }
 
         .button-primary:hover {
@@ -201,6 +283,11 @@
             font-size: 12px;
         }
 
+        .trust-row span {
+            display: inline-flex;
+            align-items: center;
+        }
+
         .trust-row span::before {
             margin-right: 7px;
             color: var(--green);
@@ -209,7 +296,9 @@
 
         .developer-card {
             position: relative;
-            min-height: 390px;
+            width: min(100%, 420px);
+            min-height: 340px;
+            justify-self: center;
             margin: 0;
             overflow: hidden;
             border: 1px solid rgba(180, 198, 235, .2);
@@ -217,6 +306,13 @@
             background: #38c5ca;
             box-shadow: 0 28px 80px rgba(0, 0, 0, .3), 0 0 70px rgba(103, 232, 249, .12);
             isolation: isolate;
+            transform: none;
+            transition: transform .45s ease, box-shadow .45s ease;
+        }
+
+        .developer-card:hover {
+            transform: perspective(1100px) rotateY(0) rotateX(0) translateY(-4px);
+            box-shadow: 0 34px 90px rgba(0, 0, 0, .36), 0 0 80px rgba(103, 232, 249, .18);
         }
 
         .developer-card::after {
@@ -234,6 +330,17 @@
             height: 100%;
             object-fit: cover;
             object-position: center 30%;
+            animation: hero-image-drift 24s ease-in-out infinite alternate;
+        }
+
+        @keyframes hero-image-drift {
+            from {
+                transform: translate3d(0, 0, 0) scale(1);
+            }
+
+            to {
+                transform: translate3d(0, -5px, 0) scale(1.035);
+            }
         }
 
         .developer-label {
@@ -293,6 +400,81 @@
             pointer-events: none;
         }
 
+        .video-section {
+            padding: 0 0 48px;
+            scroll-margin-top: 92px;
+        }
+
+        .video-panel {
+            padding: clamp(18px, 3vw, 30px);
+            border: 1px solid rgba(180, 198, 235, .16);
+            border-radius: 22px;
+            background: linear-gradient(145deg, rgba(22, 34, 58, .76), rgba(13, 21, 39, .78));
+            box-shadow: 0 22px 70px rgba(0, 0, 0, .18);
+            backdrop-filter: blur(14px);
+        }
+
+        .video-heading {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 18px;
+        }
+
+        .video-heading h2 {
+            margin: 0;
+            font-size: clamp(23px, 4vw, 31px);
+        }
+
+        .video-heading p {
+            margin: 5px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .video-badge {
+            flex: 0 0 auto;
+            padding: 6px 10px;
+            border: 1px solid rgba(167, 139, 250, .28);
+            border-radius: 999px;
+            color: #d2c7ff;
+            background: rgba(167, 139, 250, .08);
+            font-size: 10px;
+        }
+
+        .video-frame {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            border: 1px solid rgba(180, 198, 235, .18);
+            border-radius: 16px;
+            background:
+                radial-gradient(ellipse at 50% 50%, rgba(103, 232, 249, .12), transparent 45%),
+                #080e1a;
+            box-shadow: 0 16px 46px rgba(0, 0, 0, .24);
+        }
+
+        .video-frame iframe {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .video-fallback {
+            margin: 12px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .video-fallback a {
+            color: var(--cyan);
+            text-underline-offset: 3px;
+        }
+
         .requirements-section {
             padding: 6px 0 38px;
             scroll-margin-top: 20px;
@@ -304,6 +486,7 @@
             border-radius: 18px;
             background: linear-gradient(145deg, rgba(22, 34, 58, .88), rgba(13, 21, 39, .84));
             box-shadow: 0 22px 70px rgba(0, 0, 0, .16);
+            backdrop-filter: blur(14px);
         }
 
         .requirements-heading {
@@ -340,7 +523,7 @@
 
         .requirements-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: 1fr;
             gap: 12px;
         }
 
@@ -349,6 +532,13 @@
             border: 1px solid var(--line);
             border-radius: 16px;
             background: rgba(255, 255, 255, .025);
+            transition: transform .2s ease, border-color .2s ease, background .2s ease;
+        }
+
+        .requirement-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(103, 232, 249, .24);
+            background: rgba(255, 255, 255, .04);
         }
 
         .requirement-card h3 {
@@ -438,7 +628,8 @@
         }
 
         .apps-section {
-            padding: 34px 0 76px;
+            padding: 50px 0 84px;
+            scroll-margin-top: 92px;
         }
 
         .section-heading {
@@ -455,10 +646,22 @@
             letter-spacing: -.04em;
         }
 
+        .section-heading h2 span {
+            color: var(--cyan);
+        }
+
         .section-heading p {
             margin: 6px 0 0;
             color: var(--muted);
             font-size: 14px;
+        }
+
+        .result-count {
+            display: inline-block;
+            margin-top: 9px;
+            color: #cbd6e9;
+            font-size: 11px;
+            font-variant-numeric: tabular-nums;
         }
 
         .search-box {
@@ -484,11 +687,13 @@
             outline: none;
             color: var(--text);
             background: rgba(8, 15, 30, .72);
+            transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
         }
 
         .search-box input:focus {
             border-color: rgba(103, 232, 249, .58);
             box-shadow: 0 0 0 3px rgba(103, 232, 249, .08);
+            background: rgba(8, 15, 30, .94);
         }
 
         .filters {
@@ -499,6 +704,9 @@
         }
 
         .filter {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             min-height: 35px;
             padding: 6px 12px;
             border: 1px solid var(--line);
@@ -507,6 +715,13 @@
             background: transparent;
             cursor: pointer;
             font-size: 12px;
+            transition: color .18s ease, border-color .18s ease, background .18s ease, transform .18s ease;
+        }
+
+        .filter:hover {
+            transform: translateY(-1px);
+            border-color: rgba(167, 139, 250, .35);
+            color: var(--text);
         }
 
         .filter[aria-pressed="true"] {
@@ -515,9 +730,27 @@
             background: rgba(167, 139, 250, .12);
         }
 
+        .filter-count {
+            display: inline-grid;
+            min-width: 20px;
+            height: 20px;
+            place-items: center;
+            padding: 0 5px;
+            border-radius: 999px;
+            color: #c5d1e6;
+            background: rgba(255, 255, 255, .07);
+            font-size: 10px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .filter[aria-pressed="true"] .filter-count {
+            color: var(--cyan);
+            background: rgba(103, 232, 249, .1);
+        }
+
         .app-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: 1fr;
             gap: 14px;
         }
 
@@ -533,7 +766,12 @@
             border-radius: 18px;
             background: linear-gradient(145deg, rgba(23, 35, 59, .9), rgba(13, 21, 39, .84));
             text-decoration: none;
-            transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, .1);
+            transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease, background .25s ease;
+        }
+
+        .app-card:focus-visible {
+            z-index: 1;
         }
 
         .app-preview {
@@ -545,6 +783,14 @@
             overflow: hidden;
             border-bottom: 1px solid var(--line);
             background: #10192c;
+        }
+
+        .app-preview::after {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(103, 232, 249, .08), transparent 55%, rgba(167, 139, 250, .12));
+            content: "";
+            pointer-events: none;
         }
 
         .app-preview img {
@@ -576,6 +822,7 @@
 
         .app-preview-label {
             position: absolute;
+            z-index: 1;
             right: 10px;
             bottom: 10px;
             padding: 4px 8px;
@@ -602,9 +849,10 @@
         }
 
         .app-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(167, 139, 250, .45);
-            box-shadow: 0 16px 44px rgba(0, 0, 0, .22);
+            transform: translateY(-6px);
+            border-color: rgba(167, 139, 250, .58);
+            background: linear-gradient(145deg, rgba(29, 43, 71, .96), rgba(13, 21, 39, .92));
+            box-shadow: 0 22px 50px rgba(0, 0, 0, .28), 0 0 24px rgba(167, 139, 250, .07);
         }
 
         .app-card[hidden] {
@@ -666,6 +914,8 @@
         .empty-state {
             display: none;
             padding: 42px 20px;
+            border: 1px dashed var(--line);
+            border-radius: 18px;
             color: var(--muted);
             text-align: center;
         }
@@ -674,15 +924,34 @@
             display: block;
         }
 
+        .empty-state p {
+            margin: 0 0 12px;
+        }
+
+        .empty-state button {
+            padding: 7px 12px;
+            border: 1px solid rgba(103, 232, 249, .25);
+            border-radius: 999px;
+            color: var(--cyan);
+            background: rgba(103, 232, 249, .07);
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .empty-state button:hover {
+            background: rgba(103, 232, 249, .13);
+        }
+
         .info-strip {
             display: grid;
-            grid-template-columns: 1.2fr 1fr 1fr;
+            grid-template-columns: 1fr;
             gap: 16px;
             margin-top: 30px;
             padding: 22px;
             border: 1px solid var(--line);
             border-radius: 18px;
             background: rgba(255, 255, 255, .025);
+            backdrop-filter: blur(12px);
         }
 
         .info-strip strong {
@@ -855,16 +1124,30 @@
             outline-offset: 3px;
         }
 
+        @keyframes section-reveal {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 24px, 0) scale(.99);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0) scale(1);
+            }
+        }
+
+        .has-scroll-reveal .scroll-reveal {
+            opacity: 0;
+            animation: section-reveal .75s cubic-bezier(.2, .7, .2, 1) both;
+            animation-delay: var(--reveal-delay, 0ms);
+            animation-play-state: paused;
+        }
+
+        .has-scroll-reveal .scroll-reveal.is-visible {
+            animation-play-state: running;
+        }
+
         @media (max-width: 850px) {
-            .hero {
-                grid-template-columns: minmax(0, 1fr) minmax(240px, .72fr);
-                gap: 28px;
-            }
-
-            .app-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-
             .section-heading {
                 align-items: stretch;
                 flex-direction: column;
@@ -880,16 +1163,50 @@
             }
         }
 
-        @media (max-width: 680px) {
+        @media (min-width: 561px) {
+            .shell {
+                width: min(1120px, calc(100% - 40px));
+            }
+
+            .app-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 681px) {
             .hero {
-                grid-template-columns: 1fr;
-                gap: 32px;
+                grid-template-columns: minmax(0, 1.08fr) minmax(240px, .72fr);
+                gap: 28px;
             }
 
             .developer-card {
-                width: min(100%, 420px);
-                min-height: 340px;
-                justify-self: center;
+                width: auto;
+                min-height: 390px;
+                justify-self: stretch;
+                transform: perspective(1100px) rotateY(-3deg) rotateX(1deg);
+            }
+        }
+
+        @media (min-width: 851px) {
+            .hero {
+                grid-template-columns: minmax(0, 1.08fr) minmax(280px, .72fr);
+                gap: clamp(32px, 7vw, 88px);
+            }
+
+            .app-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 680px) {
+            .hero {
+                gap: 32px;
+            }
+
+            .video-heading {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 10px;
             }
         }
 
@@ -898,20 +1215,46 @@
                 width: min(100% - 28px, 1120px);
             }
 
+            html {
+                scroll-padding-top: 76px;
+            }
+
             .topbar {
-                padding: 17px 0;
+                top: 8px;
+                margin-top: 8px;
+                padding: 9px 11px;
+                border-radius: 14px;
+            }
+
+            .brand {
+                gap: 8px;
+                font-size: 13px;
+            }
+
+            .brand-mark {
+                width: 34px;
+                height: 34px;
             }
 
             .top-nav {
-                gap: 12px;
+                gap: 9px;
             }
 
             .top-link {
-                font-size: 11px;
+                font-size: 10px;
             }
 
             .hero {
-                padding-top: 48px;
+                padding-top: 42px;
+                padding-bottom: 52px;
+            }
+
+            h1 {
+                font-size: clamp(42px, 12vw, 58px);
+            }
+
+            .hero-actions .button {
+                flex: 1 1 auto;
             }
 
             .app-grid {
@@ -936,6 +1279,10 @@
 
             .trust-row {
                 gap: 8px 14px;
+            }
+
+            .developer-card:hover {
+                transform: none;
             }
 
             .chat-fab {
@@ -970,6 +1317,12 @@
             }
         }
 
+        @media (max-width: 380px) {
+            .top-nav .top-link:first-child {
+                display: none;
+            }
+        }
+
         @media (prefers-reduced-motion: reduce) {
 
             *,
@@ -977,6 +1330,8 @@
             *::after {
                 scroll-behavior: auto !important;
                 transition-duration: .01ms !important;
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
             }
         }
     </style>
@@ -1014,12 +1369,37 @@
                 </div>
             </div>
             <figure class="developer-card">
-                <img src="nano_asset/dev.jpeg" alt="Developer AI Lokal" width="225" height="225" fetchpriority="high">
+                <img src="nano_asset/dev.jpeg" alt="Developer AI Lokal" width="225" height="225" decoding="async"
+                    fetchpriority="high">
                 <span class="developer-label">AI LOKAL · PLAYGROUND</span>
                 <span class="developer-orbit" aria-hidden="true"></span>
                 <figcaption class="developer-caption"><strong>Dibuat untuk eksplorasi.</strong><span>Eksperimen AI,
                         langsung di browser.</span></figcaption>
             </figure>
+        </section>
+
+        <section class="shell video-section" id="video" aria-labelledby="video-title">
+            <div class="video-panel">
+                <div class="video-heading">
+                    <div>
+                        <h2 id="video-title">Lihat videonya</h2>
+                        <p>Video YouTube terkait proyek AI Lokal.</p>
+                    </div>
+                    <span class="video-badge">YouTube · mulai 01:00</span>
+                </div>
+                <div class="video-frame">
+                    <iframe
+                        src="https://www.youtube-nocookie.com/embed/LkD_aw_w4A8?start=60&amp;rel=0"
+                        title="Video proyek AI Lokal di YouTube" loading="lazy"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen></iframe>
+                </div>
+                <p class="video-fallback">Jika pemutar tidak tersedia,
+                    <a href="https://www.youtube.com/watch?v=LkD_aw_w4A8&amp;t=60s" target="_blank"
+                        rel="noopener noreferrer">tonton langsung di YouTube ↗</a>.
+                </p>
+            </div>
         </section>
 
         <section class="shell requirements-section" id="persyaratan" aria-labelledby="requirements-title">
@@ -1090,6 +1470,7 @@
                 <div>
                     <h2 id="apps-title">Pilih aplikasi</h2>
                     <p>Halaman mandiri dengan alur dan kemampuan yang berbeda.</p>
+                    <output class="result-count" id="app-count" aria-live="polite"></output>
                 </div>
                 <label class="search-box">
                     <span aria-hidden="true">⌕</span>
@@ -1099,11 +1480,14 @@
             </div>
 
             <div class="filters" role="group" aria-label="Filter kategori aplikasi">
-                <button class="filter" type="button" data-filter="all" aria-pressed="true">Semua</button>
-                <button class="filter" type="button" data-filter="chat" aria-pressed="false">Percakapan</button>
+                <button class="filter" type="button" data-filter="all" aria-pressed="true">Semua <span
+                        class="filter-count" data-count-for="all">0</span></button>
+                <button class="filter" type="button" data-filter="chat" aria-pressed="false">Percakapan <span
+                        class="filter-count" data-count-for="chat">0</span></button>
                 <button class="filter" type="button" data-filter="vision" aria-pressed="false">Vision &amp;
-                    kode</button>
-                <button class="filter" type="button" data-filter="engine" aria-pressed="false">Mesin AI</button>
+                    kode <span class="filter-count" data-count-for="vision">0</span></button>
+                <button class="filter" type="button" data-filter="engine" aria-pressed="false">Mesin AI <span
+                        class="filter-count" data-count-for="engine">0</span></button>
             </div>
 
             <div class="app-grid" id="app-grid">
@@ -1270,8 +1654,10 @@
                             aria-hidden="true">↗</span></span>
                 </a>
             </div>
-            <p class="empty-state" id="empty-state" role="status">Tidak ada aplikasi yang cocok. Coba kata kunci lain.
-            </p>
+            <div class="empty-state" id="empty-state" role="status">
+                <p>Tidak ada aplikasi yang cocok. Coba kata kunci lain atau hapus filter.</p>
+                <button id="reset-filters" type="button">Hapus pencarian &amp; filter</button>
+            </div>
 
             <div class="info-strip">
                 <div><strong>Eksperimen client-side</strong>
@@ -1331,11 +1717,37 @@
             const cards = [...document.querySelectorAll('.app-card')];
             const filters = [...document.querySelectorAll('.filter')];
             const emptyState = document.getElementById('empty-state');
+            const appCount = document.getElementById('app-count');
+            const resetFilters = document.getElementById('reset-filters');
             const chatDialog = document.getElementById('chat-dialog');
             const chatOpen = document.getElementById('chat-open');
             const chatClose = document.getElementById('chat-close');
             let selectedCategory = 'all';
             let pointerStartedOutsideDialog = false;
+
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+                const revealTargets = [...document.querySelectorAll('main > section, footer')];
+                document.body.classList.add('has-scroll-reveal');
+                const revealObserver = new IntersectionObserver(entries => {
+                    entries.forEach(entry => {
+                        if (!entry.isIntersecting) return;
+                        entry.target.classList.add('is-visible');
+                        revealObserver.unobserve(entry.target);
+                    });
+                }, { rootMargin: '0px 0px -10% 0px', threshold: 0 });
+
+                revealTargets.forEach((target, index) => {
+                    target.classList.add('scroll-reveal');
+                    target.style.setProperty('--reveal-delay', `${Math.min(index * 90, 180)}ms`);
+                    revealObserver.observe(target);
+                });
+            }
+
+            document.querySelectorAll('[data-count-for]').forEach(count => {
+                count.textContent = String(cards.filter(card =>
+                    count.dataset.countFor === 'all' || card.dataset.category === count.dataset.countFor
+                ).length);
+            });
 
             function updateCards() {
                 const query = search.value.trim().toLocaleLowerCase('id');
@@ -1347,6 +1759,7 @@
                     if (!card.hidden) visibleCount += 1;
                 }
                 emptyState.classList.toggle('visible', visibleCount === 0);
+                appCount.textContent = `Menampilkan ${visibleCount} dari ${cards.length} aplikasi`;
             }
 
             search.addEventListener('input', updateCards);
@@ -1355,6 +1768,14 @@
                 filters.forEach(filter => filter.setAttribute('aria-pressed', String(filter === button)));
                 updateCards();
             }));
+            resetFilters.addEventListener('click', () => {
+                search.value = '';
+                selectedCategory = 'all';
+                filters.forEach(filter => filter.setAttribute('aria-pressed', String(filter.dataset.filter === 'all')));
+                updateCards();
+                search.focus();
+            });
+            updateCards();
 
             chatOpen.addEventListener('click', () => chatDialog.showModal());
             chatClose.addEventListener('click', () => chatDialog.close());
