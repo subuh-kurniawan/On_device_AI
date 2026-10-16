@@ -5,6 +5,7 @@
     <script src="nano_asset/assets/js/image-modal.js" defer></script>
     <script src="nano_asset/assets/js/mermaid-normalizer.js"></script>
     <script src="nano_asset/assets/js/chart-config-normalizer.js"></script>
+    <script src="nano_asset/assets/js/intent-enricher.js" defer></script>
     <script src="nano_asset/assets/js/d3.v7.min.js"></script>
     <script src="nano_asset/assets/js/markmap-lib.min.js"></script>
     <script src="nano_asset/assets/js/markmap-view.min.js"></script>
@@ -115,7 +116,7 @@
     <script src="nano_asset/assets/js/xlsx.full.min.js"></script>
     <script src="nano_asset/assets/js/jszip.min.js"></script>
     <script src="nano_asset/assets/js/FileSaver.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="nano_asset/assets/js/chart.min.js"></script>
     <script src="nano_asset/assets/js/mermaid.min.js"></script>
     <script>
       if (typeof mermaid !== "undefined") {
@@ -852,7 +853,8 @@
         try {
           let responseText = "Maaf, AI lokal belum merespons.";
           if (chatSession) {
-            const stream = await chatSession.promptStreaming(text);
+            const enrichedText = window.GemmaIntent?.enrichPrompt(text) || text;
+            const stream = await chatSession.promptStreaming(enrichedText);
             responseText = "";
             for await (const chunk of stream) {
               responseText = chunk;

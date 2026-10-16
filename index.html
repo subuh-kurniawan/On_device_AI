@@ -29,6 +29,16 @@
     <meta name="twitter:image"
         content="https://raw.githubusercontent.com/subuh-kurniawan/On_device_AI/main/nano_asset/assets/og-image.jpg">
     <meta name="twitter:image:alt" content="Ilustrasi AI Lokal Playground dengan antarmuka AI, WebGPU, dan RAG">
+    <script>
+        try {
+            const savedTheme = localStorage.getItem('ondevice-ai-theme');
+            if (savedTheme === 'light' || savedTheme === 'dark') {
+                document.documentElement.dataset.theme = savedTheme;
+            }
+        } catch (error) {
+            console.warn('Preferensi tema tersimpan tidak dapat dibaca.', error);
+        }
+    </script>
     <style>
         @font-face {
             font-family: Poppins;
@@ -50,6 +60,24 @@
             --cyan: #67e8f9;
             --green: #6ee7b7;
             --glass: rgba(12, 20, 37, .78);
+            --ornament-glow: rgba(103, 232, 249, .72);
+            --ornament-violet-glow: rgba(167, 139, 250, .68);
+        }
+
+        :root[data-theme="light"] {
+            color-scheme: light;
+            --bg: #f3f6fc;
+            --surface: rgba(255, 255, 255, .88);
+            --surface-raised: #ffffff;
+            --line: rgba(51, 65, 95, .16);
+            --text: #172033;
+            --muted: #5e6b82;
+            --accent: #6d4ed1;
+            --cyan: #087e9b;
+            --green: #16845e;
+            --glass: rgba(255, 255, 255, .86);
+            --ornament-glow: rgba(8, 126, 155, .58);
+            --ornament-violet-glow: rgba(109, 78, 209, .55);
         }
 
         * {
@@ -72,6 +100,14 @@
                 radial-gradient(ellipse at 92% 8%, rgba(167, 139, 250, .16), transparent 34rem),
                 var(--bg);
             font: 15px/1.6 Poppins, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            transition: background-color .3s ease, color .3s ease;
+        }
+
+        :root[data-theme="light"] body {
+            background:
+                radial-gradient(ellipse at 12% 0%, rgba(8, 126, 155, .1), transparent 38rem),
+                radial-gradient(ellipse at 92% 8%, rgba(109, 78, 209, .1), transparent 34rem),
+                var(--bg);
         }
 
         h1,
@@ -94,6 +130,112 @@
             mask-image: linear-gradient(to bottom, black, transparent 78%);
             content: "";
             pointer-events: none;
+        }
+
+        :root[data-theme="light"] body::before {
+            background:
+                radial-gradient(ellipse at 50% 34%, rgba(8, 126, 155, .04), transparent 42rem),
+                linear-gradient(rgba(51, 65, 95, .035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(51, 65, 95, .035) 1px, transparent 1px);
+        }
+
+        body::after {
+            position: fixed;
+            z-index: -1;
+            inset: 0;
+            background:
+                radial-gradient(circle at 13% 34%, transparent 0 72px, rgba(103, 232, 249, .1) 73px 74px, transparent 75px 108px, rgba(103, 232, 249, .045) 109px 110px, transparent 111px),
+                radial-gradient(circle at 88% 66%, transparent 0 96px, rgba(167, 139, 250, .11) 97px 98px, transparent 99px 136px, rgba(167, 139, 250, .05) 137px 138px, transparent 139px),
+                radial-gradient(circle at 76% 19%, rgba(238, 243, 255, .7) 0 1px, transparent 2px),
+                radial-gradient(circle at 19% 73%, rgba(103, 232, 249, .8) 0 1px, transparent 2px),
+                radial-gradient(circle at 91% 31%, rgba(167, 139, 250, .75) 0 1px, transparent 2px);
+            opacity: .72;
+            content: "";
+            pointer-events: none;
+        }
+
+        :root[data-theme="light"] body::after {
+            background:
+                radial-gradient(circle at 13% 34%, transparent 0 72px, rgba(8, 126, 155, .13) 73px 74px, transparent 75px 108px, rgba(8, 126, 155, .06) 109px 110px, transparent 111px),
+                radial-gradient(circle at 88% 66%, transparent 0 96px, rgba(109, 78, 209, .12) 97px 98px, transparent 99px 136px, rgba(109, 78, 209, .055) 137px 138px, transparent 139px),
+                radial-gradient(circle at 76% 19%, rgba(8, 126, 155, .45) 0 1px, transparent 2px),
+                radial-gradient(circle at 19% 73%, rgba(109, 78, 209, .4) 0 1px, transparent 2px),
+                radial-gradient(circle at 91% 31%, rgba(8, 126, 155, .38) 0 1px, transparent 2px);
+            opacity: .78;
+        }
+
+        .ornament-defs {
+            position: absolute;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+        }
+
+        .ornament-container {
+            position: relative;
+            isolation: isolate;
+        }
+
+        .container-ornament {
+            position: absolute;
+            z-index: 0;
+            top: 14px;
+            right: 14px;
+            width: clamp(72px, 11vw, 112px);
+            height: auto;
+            overflow: visible;
+            color: var(--cyan);
+            --ornament-opacity: .23;
+            opacity: .23;
+            pointer-events: none;
+            transform-box: fill-box;
+            transform-origin: center;
+            transition: color .3s ease;
+        }
+
+        .container-ornament--violet {
+            color: var(--accent);
+            --ornament-glow: var(--ornament-violet-glow);
+            --ornament-opacity: .2;
+            opacity: .2;
+        }
+
+        .container-ornament.is-in-view {
+            animation: ornament-scroll-reveal .9s cubic-bezier(.2, .7, .2, 1) both;
+        }
+
+        @keyframes ornament-scroll-reveal {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 14px, 0) rotate(-22deg) scale(.72);
+                filter: drop-shadow(0 0 0 transparent);
+            }
+
+            72% {
+                opacity: var(--ornament-opacity);
+                transform: translate3d(0, -3px, 0) rotate(3deg) scale(1.04);
+                filter: drop-shadow(0 0 14px var(--ornament-glow));
+            }
+
+            to {
+                opacity: var(--ornament-opacity);
+                transform: translate3d(0, 0, 0) rotate(0) scale(1);
+                filter: drop-shadow(0 0 0 transparent);
+            }
+        }
+
+        .ornament-container > :not(.container-ornament) {
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 560px) {
+            .container-ornament {
+                top: 9px;
+                right: 9px;
+                width: 68px;
+                opacity: .17;
+            }
         }
 
         a {
@@ -168,6 +310,34 @@
 
         .top-link:hover {
             color: var(--text);
+        }
+
+        .theme-toggle {
+            display: inline-flex;
+            min-height: 36px;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 6px 10px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            color: var(--text);
+            background: rgba(255, 255, 255, .06);
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+            transition: border-color .18s ease, background .18s ease, transform .18s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-1px);
+            border-color: rgba(103, 232, 249, .45);
+            background: rgba(103, 232, 249, .1);
+        }
+
+        .theme-toggle-icon {
+            font-size: 15px;
+            line-height: 1;
         }
 
         .top-link span {
@@ -406,6 +576,8 @@
         }
 
         .video-panel {
+            position: relative;
+            isolation: isolate;
             padding: clamp(18px, 3vw, 30px);
             border: 1px solid rgba(180, 198, 235, .16);
             border-radius: 22px;
@@ -481,6 +653,8 @@
         }
 
         .requirements-panel {
+            position: relative;
+            isolation: isolate;
             padding: clamp(22px, 4vw, 36px);
             border: 1px solid var(--line);
             border-radius: 18px;
@@ -519,6 +693,65 @@
             background: rgba(103, 232, 249, .07);
             font-size: 11px;
             font-weight: 650;
+        }
+
+        .ai-status-panel {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 16px;
+            margin: 0 0 18px;
+            padding: 16px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .025);
+        }
+
+        .ai-status-copy {
+            display: grid;
+            gap: 4px;
+        }
+
+        .ai-status-title {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .ai-status-dot {
+            width: 9px;
+            height: 9px;
+            flex: 0 0 auto;
+            border-radius: 50%;
+            background: #fbbf24;
+            box-shadow: 0 0 12px currentColor;
+        }
+
+        .ai-status-panel[data-state="ready"] .ai-status-dot {
+            color: var(--green);
+            background: var(--green);
+        }
+
+        .ai-status-panel[data-state="warning"] .ai-status-dot {
+            color: #fbbf24;
+            background: #fbbf24;
+        }
+
+        .ai-status-panel[data-state="error"] .ai-status-dot {
+            color: #fb7185;
+            background: #fb7185;
+        }
+
+        .ai-status-detail {
+            margin: 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .ai-status-refresh {
+            white-space: nowrap;
         }
 
         .requirements-grid {
@@ -628,6 +861,8 @@
         }
 
         .apps-section {
+            position: relative;
+            isolation: isolate;
             padding: 50px 0 84px;
             scroll-margin-top: 92px;
         }
@@ -943,6 +1178,8 @@
         }
 
         .info-strip {
+            position: relative;
+            isolation: isolate;
             display: grid;
             grid-template-columns: 1fr;
             gap: 16px;
@@ -1032,6 +1269,356 @@
         .chat-dialog::backdrop {
             background: rgba(3, 8, 18, .72);
             backdrop-filter: blur(7px);
+        }
+
+        .gallery-dialog {
+            width: min(1100px, calc(100vw - 32px));
+            max-width: 1100px;
+            max-height: min(92dvh, 900px);
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid rgba(180, 198, 235, .22);
+            border-radius: 20px;
+            color: var(--text);
+            background: #0d1527;
+            box-shadow: 0 28px 100px rgba(0, 0, 0, .5);
+        }
+
+        .gallery-dialog::backdrop {
+            background: rgba(3, 8, 18, .78);
+            backdrop-filter: blur(8px);
+        }
+
+        .gallery-content {
+            display: flex;
+            max-height: inherit;
+            flex-direction: column;
+        }
+
+        .gallery-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .gallery-heading h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .gallery-heading p {
+            margin: 2px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .gallery-stage {
+            position: relative;
+            display: grid;
+            min-height: 220px;
+            flex: 1;
+            place-items: center;
+            padding: 18px 64px;
+            overflow: hidden;
+            background: radial-gradient(ellipse at center, rgba(103, 232, 249, .07), transparent 70%);
+        }
+
+        .gallery-image {
+            display: block;
+            width: 100%;
+            max-height: min(64dvh, 680px);
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .gallery-image[hidden] {
+            display: none;
+        }
+
+        .gallery-status {
+            max-width: 480px;
+            margin: 0;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .gallery-status code {
+            color: var(--cyan);
+        }
+
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            display: grid;
+            width: 42px;
+            height: 42px;
+            place-items: center;
+            transform: translateY(-50%);
+            border: 1px solid var(--line);
+            border-radius: 50%;
+            color: var(--text);
+            background: rgba(8, 15, 30, .82);
+            cursor: pointer;
+            font-size: 22px;
+        }
+
+        .gallery-nav:hover:not(:disabled) {
+            border-color: rgba(103, 232, 249, .55);
+            background: rgba(23, 35, 59, .96);
+        }
+
+        .gallery-nav:disabled {
+            opacity: .35;
+            cursor: not-allowed;
+        }
+
+        .gallery-prev {
+            left: 14px;
+        }
+
+        .gallery-next {
+            right: 14px;
+        }
+
+        .gallery-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 18px;
+            border-top: 1px solid var(--line);
+        }
+
+        .gallery-counter {
+            flex: 0 0 auto;
+            color: var(--muted);
+            font-size: 12px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .gallery-thumbnails {
+            display: flex;
+            min-width: 0;
+            gap: 8px;
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+        }
+
+        .gallery-thumbnail {
+            width: 64px;
+            height: 44px;
+            flex: 0 0 auto;
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: 7px;
+            background: #10192c;
+            cursor: pointer;
+            opacity: .65;
+        }
+
+        .gallery-thumbnail[aria-current="true"] {
+            border-color: var(--cyan);
+            opacity: 1;
+        }
+
+        .gallery-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        :root[data-theme="light"] .topbar {
+            border-color: rgba(51, 65, 95, .14);
+            box-shadow: 0 12px 34px rgba(35, 48, 75, .1);
+        }
+
+        :root[data-theme="light"] .brand-mark {
+            border-color: rgba(8, 126, 155, .24);
+            background: rgba(8, 126, 155, .08);
+        }
+
+        :root[data-theme="light"] .eyebrow {
+            border-color: var(--line);
+            color: #45546b;
+            background: rgba(255, 255, 255, .62);
+        }
+
+        :root[data-theme="light"] .video-panel,
+        :root[data-theme="light"] .requirements-panel,
+        :root[data-theme="light"] .info-strip {
+            border-color: var(--line);
+            background: rgba(255, 255, 255, .76);
+            box-shadow: 0 18px 54px rgba(35, 48, 75, .08);
+        }
+
+        :root[data-theme="light"] .video-frame {
+            border-color: var(--line);
+            background:
+                radial-gradient(ellipse at 50% 50%, rgba(8, 126, 155, .08), transparent 45%),
+                #e8edf5;
+        }
+
+        :root[data-theme="light"] .video-badge {
+            border-color: rgba(109, 78, 209, .22);
+            color: #6046b7;
+            background: rgba(109, 78, 209, .07);
+        }
+
+        :root[data-theme="light"] .requirements-badge {
+            border-color: rgba(8, 126, 155, .24);
+            background: rgba(8, 126, 155, .06);
+        }
+
+        :root[data-theme="light"] .requirement-card,
+        :root[data-theme="light"] .ai-status-panel {
+            border-color: rgba(51, 65, 95, .12);
+            background: rgba(246, 248, 252, .9);
+        }
+
+        :root[data-theme="light"] .requirement-card:hover {
+            border-color: rgba(8, 126, 155, .28);
+            background: #fff;
+        }
+
+        :root[data-theme="light"] .requirement-card code,
+        :root[data-theme="light"] .activation-steps code {
+            border-color: rgba(51, 65, 95, .14);
+            color: #5c46a8;
+            background: rgba(109, 78, 209, .06);
+        }
+
+        :root[data-theme="light"] .activation-steps li {
+            color: #39475d;
+            background: rgba(51, 65, 95, .045);
+        }
+
+        :root[data-theme="light"] .requirements-note a {
+            color: #087e9b;
+        }
+
+        :root[data-theme="light"] .search-box input {
+            border-color: var(--line);
+            color: var(--text);
+            background: rgba(255, 255, 255, .9);
+        }
+
+        :root[data-theme="light"] .search-box input:focus {
+            border-color: rgba(8, 126, 155, .5);
+            background: #fff;
+        }
+
+        :root[data-theme="light"] .filter {
+            border-color: var(--line);
+            color: #526078;
+            background: rgba(255, 255, 255, .5);
+        }
+
+        :root[data-theme="light"] .filter:hover {
+            border-color: rgba(109, 78, 209, .35);
+            color: var(--text);
+        }
+
+        :root[data-theme="light"] .filter[aria-pressed="true"] {
+            border-color: rgba(109, 78, 209, .32);
+            color: #48348d;
+            background: rgba(109, 78, 209, .09);
+        }
+
+        :root[data-theme="light"] .filter-count {
+            color: #526078;
+            background: rgba(51, 65, 95, .08);
+        }
+
+        :root[data-theme="light"] .filter[aria-pressed="true"] .filter-count {
+            color: #087e9b;
+            background: rgba(8, 126, 155, .09);
+        }
+
+        :root[data-theme="light"] .app-card {
+            border-color: var(--line);
+            background: linear-gradient(145deg, rgba(255, 255, 255, .96), rgba(246, 248, 252, .96));
+            box-shadow: 0 10px 26px rgba(35, 48, 75, .07);
+        }
+
+        :root[data-theme="light"] .app-card:hover {
+            border-color: rgba(109, 78, 209, .38);
+            background: linear-gradient(145deg, #fff, #f5f3fc);
+            box-shadow: 0 20px 44px rgba(35, 48, 75, .14), 0 0 20px rgba(109, 78, 209, .06);
+        }
+
+        :root[data-theme="light"] .app-preview {
+            border-bottom-color: var(--line);
+            background: #e8edf5;
+        }
+
+        :root[data-theme="light"] .app-icon {
+            border-color: rgba(51, 65, 95, .1);
+            background: rgba(51, 65, 95, .045);
+        }
+
+        :root[data-theme="light"] .tag {
+            color: #566680;
+        }
+
+        :root[data-theme="light"] .empty-state button {
+            border-color: rgba(8, 126, 155, .22);
+            background: rgba(8, 126, 155, .06);
+        }
+
+        :root[data-theme="light"] .empty-state button:hover {
+            background: rgba(8, 126, 155, .11);
+        }
+
+        :root[data-theme="light"] .gallery-dialog,
+        :root[data-theme="light"] .chat-dialog {
+            border-color: rgba(51, 65, 95, .18);
+            color: var(--text);
+            background: #f8faff;
+            box-shadow: 0 28px 100px rgba(35, 48, 75, .28);
+        }
+
+        :root[data-theme="light"] .gallery-dialog::backdrop,
+        :root[data-theme="light"] .chat-dialog::backdrop {
+            background: rgba(22, 32, 52, .42);
+        }
+
+        :root[data-theme="light"] .gallery-stage {
+            background: radial-gradient(ellipse at center, rgba(8, 126, 155, .06), transparent 70%);
+        }
+
+        :root[data-theme="light"] .gallery-nav,
+        :root[data-theme="light"] .chat-close {
+            border-color: var(--line);
+            color: var(--text);
+            background: rgba(255, 255, 255, .92);
+        }
+
+        :root[data-theme="light"] .gallery-nav:hover:not(:disabled) {
+            border-color: rgba(8, 126, 155, .4);
+            background: #fff;
+        }
+
+        :root[data-theme="light"] .gallery-thumbnail {
+            border-color: var(--line);
+            background: #e8edf5;
+        }
+
+        :root[data-theme="light"] .gallery-thumbnail[aria-current="true"] {
+            border-color: var(--cyan);
+        }
+
+        :root[data-theme="light"] .chat-modal-header,
+        :root[data-theme="light"] .gallery-header,
+        :root[data-theme="light"] .gallery-footer {
+            border-color: var(--line);
+        }
+
+        :root[data-theme="light"] .chat-mount iframe {
+            background: #f8faff;
         }
 
         .chat-modal-content {
@@ -1156,6 +1743,11 @@
             .requirements-heading {
                 flex-direction: column;
                 gap: 12px;
+            }
+
+            .ai-status-panel {
+                align-items: flex-start;
+                grid-template-columns: 1fr;
             }
 
             .search-box {
@@ -1315,6 +1907,44 @@
                 resize: both;
                 border-radius: 16px;
             }
+
+            .gallery-dialog {
+                width: calc(100vw - 20px);
+                max-height: 94dvh;
+                border-radius: 14px;
+            }
+
+            .gallery-stage {
+                min-height: 180px;
+                padding: 12px 48px;
+            }
+
+            .gallery-image {
+                max-height: 62dvh;
+            }
+
+            .gallery-nav {
+                width: 36px;
+                height: 36px;
+            }
+
+            .gallery-prev {
+                left: 7px;
+            }
+
+            .gallery-next {
+                right: 7px;
+            }
+
+            .gallery-footer {
+                align-items: flex-start;
+                flex-direction: column;
+                padding: 10px 12px;
+            }
+
+            .gallery-thumbnails {
+                width: 100%;
+            }
         }
 
         @media (max-width: 380px) {
@@ -1338,6 +1968,25 @@
 </head>
 
 <body>
+    <svg class="ornament-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+        <symbol id="ornament-orbit" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.4">
+            <circle cx="60" cy="60" r="42" opacity=".65" />
+            <circle cx="60" cy="60" r="27" opacity=".48" />
+            <ellipse cx="60" cy="60" rx="52" ry="19" transform="rotate(-38 60 60)" opacity=".7" />
+            <path d="M60 5v13M60 102v13M5 60h13M102 60h13" opacity=".55" />
+            <circle cx="94" cy="27" r="4" fill="currentColor" stroke="none" />
+            <circle cx="25" cy="88" r="2.5" fill="currentColor" stroke="none" />
+        </symbol>
+        <symbol id="ornament-circuit" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M60 12v21H38v18H18M60 33h23v18h19M38 51v19H22v25h24M83 51v19h18v25H78M46 95v13h14M78 95v13" />
+            <circle cx="18" cy="51" r="4" fill="currentColor" stroke="none" />
+            <circle cx="102" cy="51" r="4" fill="currentColor" stroke="none" />
+            <circle cx="22" cy="95" r="4" fill="currentColor" stroke="none" />
+            <circle cx="101" cy="95" r="4" fill="currentColor" stroke="none" />
+            <circle cx="60" cy="12" r="4" fill="currentColor" stroke="none" />
+            <circle cx="60" cy="108" r="4" fill="currentColor" stroke="none" />
+        </symbol>
+    </svg>
     <header class="shell topbar">
         <a class="brand" href="index.html" aria-label="AI Lokal, beranda">
             <span class="brand-mark" aria-hidden="true">✳</span>
@@ -1346,6 +1995,11 @@
         <nav class="top-nav" aria-label="Navigasi utama">
             <a class="top-link" href="#persyaratan">Persyaratan browser</a>
             <a class="top-link" href="#aplikasi">Jelajahi aplikasi <span aria-hidden="true">↘</span></a>
+            <button class="theme-toggle" id="theme-toggle" type="button" role="switch" aria-label="Tema terang"
+                aria-checked="false">
+                <span class="theme-toggle-icon" id="theme-toggle-icon" aria-hidden="true">☀</span>
+                <span id="theme-toggle-label" aria-hidden="true">Terang</span>
+            </button>
         </nav>
     </header>
 
@@ -1361,6 +2015,8 @@
                     <a class="button button-primary" href="obrolan-claude.html">Mulai percakapan <span
                             aria-hidden="true">→</span></a>
                     <a class="button" href="#aplikasi">Lihat semua aplikasi</a>
+                    <button class="button" id="gallery-open" type="button" aria-haspopup="dialog"
+                        aria-controls="gallery-dialog">Galeri screenshot <span aria-hidden="true">▧</span></button>
                 </div>
                 <div class="trust-row" aria-label="Karakteristik aplikasi">
                     <span>Pilihan pemrosesan lokal</span>
@@ -1379,7 +2035,10 @@
         </section>
 
         <section class="shell video-section" id="video" aria-labelledby="video-title">
-            <div class="video-panel">
+            <div class="video-panel ornament-container">
+                <svg class="container-ornament" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+                    <use href="#ornament-orbit"></use>
+                </svg>
                 <div class="video-heading">
                     <div>
                         <h2 id="video-title">Lihat videonya</h2>
@@ -1403,7 +2062,11 @@
         </section>
 
         <section class="shell requirements-section" id="persyaratan" aria-labelledby="requirements-title">
-            <div class="requirements-panel">
+            <div class="requirements-panel ornament-container">
+                <svg class="container-ornament container-ornament--violet" viewBox="0 0 120 120"
+                    aria-hidden="true" focusable="false">
+                    <use href="#ornament-circuit"></use>
+                </svg>
                 <div class="requirements-heading">
                     <div>
                         <h2 id="requirements-title">Persyaratan browser</h2>
@@ -1412,6 +2075,16 @@
                             penyimpanan, dan API yang dipakai tiap aplikasi.</p>
                     </div>
                     <span class="requirements-badge">Chrome · Desktop</span>
+                </div>
+                <div class="ai-status-panel" id="ondevice-ai-status" data-state="checking" aria-live="polite"
+                    aria-atomic="true">
+                    <div class="ai-status-copy">
+                        <div class="ai-status-title"><span class="ai-status-dot" aria-hidden="true"></span>
+                            <span id="ondevice-ai-title">Memeriksa Chrome On-device AI…</span>
+                        </div>
+                        <p class="ai-status-detail" id="ondevice-ai-detail">Memeriksa dukungan browser dan status model lokal.</p>
+                    </div>
+                    <button class="button ai-status-refresh" id="ondevice-ai-refresh" type="button">Periksa ulang</button>
                 </div>
                 <div class="requirements-grid">
                     <article class="requirement-card">
@@ -1465,7 +2138,10 @@
             </div>
         </section>
 
-        <section class="shell apps-section" id="aplikasi" aria-labelledby="apps-title">
+        <section class="shell apps-section ornament-container" id="aplikasi" aria-labelledby="apps-title">
+            <svg class="container-ornament" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+                <use href="#ornament-circuit"></use>
+            </svg>
             <div class="section-heading">
                 <div>
                     <h2 id="apps-title">Pilih aplikasi</h2>
@@ -1659,7 +2335,11 @@
                 <button id="reset-filters" type="button">Hapus pencarian &amp; filter</button>
             </div>
 
-            <div class="info-strip">
+            <div class="info-strip ornament-container">
+                <svg class="container-ornament container-ornament--violet" viewBox="0 0 120 120"
+                    aria-hidden="true" focusable="false">
+                    <use href="#ornament-orbit"></use>
+                </svg>
                 <div><strong>Eksperimen client-side</strong>
                     <p>Aplikasi dirancang berjalan dari browser, dengan dukungan kemampuan lokal sesuai perangkat dan
                         browser.</p>
@@ -1711,6 +2391,29 @@
             </div>
         </div>
     </dialog>
+    <dialog class="gallery-dialog" id="gallery-dialog" aria-labelledby="gallery-title">
+        <div class="gallery-content">
+            <header class="gallery-header">
+                <div class="gallery-heading">
+                    <h2 id="gallery-title">Galeri screenshot</h2>
+                    <p>Gambar dibaca otomatis dari <code>nano_asset/images/</code>.</p>
+                </div>
+                <button class="chat-close" id="gallery-close" type="button" aria-label="Tutup galeri">×</button>
+            </header>
+            <div class="gallery-stage" id="gallery-stage" aria-live="polite">
+                <p class="gallery-status" id="gallery-status">Memuat gambar galeri…</p>
+                <img class="gallery-image" id="gallery-image" alt="" hidden>
+                <button class="gallery-nav gallery-prev" id="gallery-prev" type="button"
+                    aria-label="Gambar sebelumnya" disabled>‹</button>
+                <button class="gallery-nav gallery-next" id="gallery-next" type="button"
+                    aria-label="Gambar berikutnya" disabled>›</button>
+            </div>
+            <div class="gallery-footer">
+                <span class="gallery-counter" id="gallery-counter" aria-live="polite">0 gambar</span>
+                <div class="gallery-thumbnails" id="gallery-thumbnails" aria-label="Pilih screenshot"></div>
+            </div>
+        </div>
+    </dialog>
     <script>
         (() => {
             const search = document.getElementById('app-search');
@@ -1722,6 +2425,26 @@
             const chatDialog = document.getElementById('chat-dialog');
             const chatOpen = document.getElementById('chat-open');
             const chatClose = document.getElementById('chat-close');
+            const galleryDialog = document.getElementById('gallery-dialog');
+            const galleryOpen = document.getElementById('gallery-open');
+            const galleryClose = document.getElementById('gallery-close');
+            const galleryImage = document.getElementById('gallery-image');
+            const galleryStatus = document.getElementById('gallery-status');
+            const galleryCounter = document.getElementById('gallery-counter');
+            const galleryThumbnails = document.getElementById('gallery-thumbnails');
+            const galleryPrev = document.getElementById('gallery-prev');
+            const galleryNext = document.getElementById('gallery-next');
+            const onDeviceAIStatus = document.getElementById('ondevice-ai-status');
+            const onDeviceAITitle = document.getElementById('ondevice-ai-title');
+            const onDeviceAIDetail = document.getElementById('ondevice-ai-detail');
+            const onDeviceAIRefresh = document.getElementById('ondevice-ai-refresh');
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeToggleIcon = document.getElementById('theme-toggle-icon');
+            const themeToggleLabel = document.getElementById('theme-toggle-label');
+            const galleryDirectory = 'nano_asset/images/';
+            let galleryImages = [];
+            let galleryIndex = 0;
+            let galleryLoadPromise;
             let selectedCategory = 'all';
             let pointerStartedOutsideDialog = false;
 
@@ -1740,6 +2463,16 @@
                     target.classList.add('scroll-reveal');
                     target.style.setProperty('--reveal-delay', `${Math.min(index * 90, 180)}ms`);
                     revealObserver.observe(target);
+                });
+
+                const ornamentObserver = new IntersectionObserver(entries => {
+                    entries.forEach(entry => {
+                        entry.target.classList.toggle('is-in-view', entry.isIntersecting);
+                    });
+                }, { rootMargin: '0px 0px -8% 0px', threshold: .15 });
+
+                document.querySelectorAll('.container-ornament').forEach(ornament => {
+                    ornamentObserver.observe(ornament);
                 });
             }
 
@@ -1777,8 +2510,237 @@
             });
             updateCards();
 
+            function setTheme(theme) {
+                const isLight = theme === 'light';
+                document.documentElement.dataset.theme = isLight ? 'light' : 'dark';
+                themeToggle.setAttribute('aria-checked', String(isLight));
+                themeToggleIcon.textContent = isLight ? '☾' : '☀';
+                themeToggleLabel.textContent = isLight ? 'Gelap' : 'Terang';
+                try {
+                    localStorage.setItem('ondevice-ai-theme', isLight ? 'light' : 'dark');
+                } catch (error) {
+                    console.warn('Preferensi tema tidak dapat disimpan.', error);
+                }
+            }
+
+            setTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+            themeToggle.addEventListener('click', () => {
+                setTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light');
+            });
+
+            function getOnDeviceAIAPI() {
+                if (window.LanguageModel) {
+                    return { name: 'LanguageModel (Prompt API)', api: window.LanguageModel };
+                }
+                if (window.ai?.languageModel) {
+                    return { name: 'window.ai.languageModel', api: window.ai.languageModel };
+                }
+                if (window.ai?.assistant) {
+                    return { name: 'window.ai.assistant', api: window.ai.assistant };
+                }
+                return null;
+            }
+
+            function getBrowserSupport() {
+                const userAgent = navigator.userAgent;
+                const isChrome = /\bChrome\/\d+/i.test(userAgent)
+                    && !/\b(?:Edg|Edge|OPR|Opera)\/\d+/i.test(userAgent);
+                const chromeVersion = userAgent.match(/\bChrome\/(\d+)/i)?.[1];
+                if (isChrome) return `Browser: Google Chrome ${chromeVersion || ''}${isSecureContext ? ' · konteks aman' : ' · konteks tidak aman'}.`;
+                return `Browser: bukan Google Chrome yang terdeteksi${isSecureContext ? ' · konteks aman' : ' · konteks tidak aman'}.`;
+            }
+
+            async function checkOnDeviceAI() {
+                onDeviceAIRefresh.disabled = true;
+                onDeviceAIStatus.dataset.state = 'checking';
+                onDeviceAITitle.textContent = 'Memeriksa Chrome On-device AI…';
+                onDeviceAIDetail.textContent = 'Memeriksa dukungan browser dan status model lokal.';
+
+                const apiInfo = getOnDeviceAIAPI();
+                const browserSupport = getBrowserSupport();
+
+                if (!apiInfo) {
+                    onDeviceAIStatus.dataset.state = 'warning';
+                    onDeviceAITitle.textContent = 'Prompt API tidak terdeteksi';
+                    onDeviceAIDetail.textContent = `${browserSupport} API model bahasa lokal tidak tersedia di halaman ini. Pastikan memakai Chrome yang mendukung fitur ini dan membuka halaman melalui localhost atau HTTPS.`;
+                    onDeviceAIRefresh.disabled = false;
+                    return;
+                }
+
+                try {
+                    let availability;
+                    if (typeof apiInfo.api.availability === 'function') {
+                        availability = await apiInfo.api.availability();
+                    } else if (typeof apiInfo.api.capabilities === 'function') {
+                        const capabilities = await apiInfo.api.capabilities();
+                        availability = capabilities?.available;
+                    } else {
+                        throw new Error('API ditemukan, tetapi tidak menyediakan pemeriksaan availability() atau capabilities().');
+                    }
+
+                    const state = String(availability ?? 'unknown').toLowerCase();
+                    const readyStates = ['available', 'readily', 'ready'];
+                    const downloadableStates = ['downloadable', 'after-download'];
+                    const downloadingStates = ['downloading'];
+                    const unavailableStates = ['unavailable', 'no'];
+                    const contextWarning = isSecureContext ? '' : ' Halaman bukan secure context; gunakan localhost atau HTTPS.';
+
+                    if (readyStates.includes(state)) {
+                        onDeviceAIStatus.dataset.state = 'ready';
+                        onDeviceAITitle.textContent = 'Model AI lokal siap digunakan';
+                        onDeviceAIDetail.textContent = `${browserSupport} ${apiInfo.name}: ${availability}.`;
+                    } else if (downloadableStates.includes(state)) {
+                        onDeviceAIStatus.dataset.state = 'warning';
+                        onDeviceAITitle.textContent = 'Model tersedia setelah diunduh';
+                        onDeviceAIDetail.textContent = `${browserSupport} ${apiInfo.name}: ${availability}. Buka salah satu aplikasi AI untuk memulai pengunduhan model.${contextWarning}`;
+                    } else if (downloadingStates.includes(state)) {
+                        onDeviceAIStatus.dataset.state = 'warning';
+                        onDeviceAITitle.textContent = 'Model AI lokal sedang disiapkan';
+                        onDeviceAIDetail.textContent = `${browserSupport} ${apiInfo.name}: ${availability}. Periksa kembali setelah pengunduhan selesai.`;
+                    } else if (unavailableStates.includes(state)) {
+                        onDeviceAIStatus.dataset.state = 'error';
+                        onDeviceAITitle.textContent = 'Model AI lokal belum tersedia';
+                        onDeviceAIDetail.textContent = `${browserSupport} ${apiInfo.name}: ${availability}. Periksa persyaratan perangkat, Chrome flags, dan status model di chrome://on-device-internals.${contextWarning}`;
+                    } else {
+                        onDeviceAIStatus.dataset.state = 'warning';
+                        onDeviceAITitle.textContent = 'API ditemukan, status model tidak diketahui';
+                        onDeviceAIDetail.textContent = `${browserSupport} ${apiInfo.name} mengembalikan status "${availability ?? 'unknown'}". Pastikan Chrome dan API lokal diperbarui.${contextWarning}`;
+                    }
+                } catch (error) {
+                    onDeviceAIStatus.dataset.state = 'error';
+                    onDeviceAITitle.textContent = 'Pemeriksaan AI lokal gagal';
+                    onDeviceAIDetail.textContent = `${browserSupport} ${apiInfo.name}: ${error.message || 'Terjadi kesalahan saat memeriksa model.'}`;
+                    console.error('Gagal memeriksa ketersediaan Chrome On-device AI.', error);
+                } finally {
+                    onDeviceAIRefresh.disabled = false;
+                }
+            }
+
+            onDeviceAIRefresh.addEventListener('click', checkOnDeviceAI);
+            checkOnDeviceAI();
+
             chatOpen.addEventListener('click', () => chatDialog.showModal());
             chatClose.addEventListener('click', () => chatDialog.close());
+
+            function numericImageSort(left, right) {
+                return Number(left.match(/\d+/)[0]) - Number(right.match(/\d+/)[0]);
+            }
+
+            function listGalleryImagesFromDirectory(markup, baseUrl) {
+                const documentFragment = new DOMParser().parseFromString(markup, 'text/html');
+                return [...new Set([...documentFragment.querySelectorAll('a[href]')]
+                    .map(link => {
+                        const url = new URL(link.getAttribute('href'), baseUrl);
+                        if (url.origin !== location.origin || !url.pathname.startsWith(new URL(galleryDirectory, location.href).pathname)) {
+                            return null;
+                        }
+                        const filename = decodeURIComponent(url.pathname.split('/').pop());
+                        return /^img\d+\.jpg$/i.test(filename) ? filename : null;
+                    })
+                    .filter(Boolean))]
+                    .sort(numericImageSort);
+            }
+
+            function probeNumberedGalleryImages() {
+                return new Promise(resolve => {
+                    const images = [];
+                    let number = 1;
+                    const probeNext = () => {
+                        const image = new Image();
+                        image.onload = () => {
+                            images.push(`img${number}.jpg`);
+                            number += 1;
+                            probeNext();
+                        };
+                        image.onerror = () => resolve(images);
+                        image.src = `${galleryDirectory}img${number}.jpg`;
+                    };
+                    probeNext();
+                });
+            }
+
+            async function discoverGalleryImages() {
+                try {
+                    const response = await fetch(galleryDirectory, { cache: 'no-store' });
+                    if (response.ok) {
+                        const filenames = listGalleryImagesFromDirectory(await response.text(), response.url);
+                        if (filenames.length) return filenames;
+                    }
+                } catch (error) {
+                    console.warn('Daftar folder galeri tidak tersedia; mencoba img1.jpg dan seterusnya.', error);
+                }
+                return probeNumberedGalleryImages();
+            }
+
+            function showGalleryImage(index) {
+                if (!galleryImages.length) return;
+                galleryIndex = (index + galleryImages.length) % galleryImages.length;
+                const filename = galleryImages[galleryIndex];
+                galleryImage.src = `${galleryDirectory}${encodeURIComponent(filename)}`;
+                galleryImage.alt = `Screenshot ${filename}`;
+                galleryImage.hidden = false;
+                galleryStatus.hidden = true;
+                galleryCounter.textContent = `${galleryIndex + 1} dari ${galleryImages.length} · ${filename}`;
+                galleryPrev.disabled = galleryImages.length < 2;
+                galleryNext.disabled = galleryImages.length < 2;
+                [...galleryThumbnails.children].forEach((thumbnail, thumbnailIndex) => {
+                    thumbnail.setAttribute('aria-current', String(thumbnailIndex === galleryIndex));
+                });
+                galleryThumbnails.children[galleryIndex]?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            }
+
+            function renderGalleryThumbnails() {
+                galleryThumbnails.replaceChildren();
+                galleryImages.forEach((filename, index) => {
+                    const thumbnail = document.createElement('button');
+                    thumbnail.className = 'gallery-thumbnail';
+                    thumbnail.type = 'button';
+                    thumbnail.setAttribute('aria-label', `Tampilkan ${filename}`);
+                    thumbnail.setAttribute('aria-current', 'false');
+                    const image = document.createElement('img');
+                    image.src = `${galleryDirectory}${encodeURIComponent(filename)}`;
+                    image.alt = '';
+                    image.loading = 'lazy';
+                    thumbnail.append(image);
+                    thumbnail.addEventListener('click', () => showGalleryImage(index));
+                    galleryThumbnails.append(thumbnail);
+                });
+            }
+
+            async function loadGallery() {
+                if (!galleryLoadPromise) {
+                    galleryLoadPromise = discoverGalleryImages().then(images => {
+                        galleryImages = images;
+                        if (!galleryImages.length) {
+                            galleryStatus.innerHTML = 'Belum ada gambar. Tambahkan file <code>img1.jpg</code>, <code>img2.jpg</code>, dan seterusnya ke folder <code>nano_asset/images/</code>. Buka halaman melalui server lokal agar gambar dapat dimuat.';
+                            galleryCounter.textContent = '0 gambar';
+                            return;
+                        }
+                        renderGalleryThumbnails();
+                        showGalleryImage(0);
+                    }).catch(error => {
+                        galleryStatus.textContent = 'Galeri gagal dimuat. Periksa folder nano_asset/images/ dan jalankan ulang server lokal.';
+                        console.error('Gagal memuat galeri screenshot.', error);
+                    });
+                }
+                await galleryLoadPromise;
+            }
+
+            galleryOpen.addEventListener('click', () => {
+                galleryDialog.showModal();
+                loadGallery();
+            });
+            galleryClose.addEventListener('click', () => galleryDialog.close());
+            galleryPrev.addEventListener('click', () => showGalleryImage(galleryIndex - 1));
+            galleryNext.addEventListener('click', () => showGalleryImage(galleryIndex + 1));
+            galleryDialog.addEventListener('keydown', event => {
+                if (event.key === 'ArrowLeft') showGalleryImage(galleryIndex - 1);
+                if (event.key === 'ArrowRight') showGalleryImage(galleryIndex + 1);
+            });
+            galleryDialog.addEventListener('click', event => {
+                if (event.target === galleryDialog) galleryDialog.close();
+            });
+
             chatDialog.addEventListener('pointerdown', event => {
                 const bounds = chatDialog.getBoundingClientRect();
                 pointerStartedOutsideDialog = event.target === chatDialog && (

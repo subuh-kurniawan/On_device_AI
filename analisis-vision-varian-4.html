@@ -5,6 +5,7 @@
     <script src="nano_asset/assets/js/image-modal.js" defer></script>
     <script src="nano_asset/assets/js/mermaid-normalizer.js"></script>
     <script src="nano_asset/assets/js/chart-config-normalizer.js"></script>
+    <script src="nano_asset/assets/js/intent-enricher.js" defer></script>
     <script src="nano_asset/assets/js/session-search.js" defer></script>
     <script src="nano_asset/assets/js/session-export.js" defer></script>
     <script src="nano_asset/assets/js/session-import.js" defer></script>
@@ -4055,6 +4056,9 @@ try {
         }
 
         function applyKaTeXPrompt(text) {
+            if (window.GemmaIntent && typeof window.GemmaIntent.enrichPrompt === 'function') {
+                return window.GemmaIntent.enrichPrompt(text);
+            }
             let instruction = '';
             if (shouldForceKaTeX(text)) {
                 instruction += 'Bila diskusi berhubungan dengan matematika, rumus, atau konten KaTeX, jawab semua rumus dan ekspresi matematika menggunakan format KaTeX. Gunakan $...$ untuk inline dan $$...$$ untuk tampilan. ';

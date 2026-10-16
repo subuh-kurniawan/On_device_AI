@@ -5,6 +5,7 @@
     <script src="nano_asset/assets/js/image-modal.js" defer></script>
     <script src="nano_asset/assets/js/mermaid-normalizer.js"></script>
     <script src="nano_asset/assets/js/chart-config-normalizer.js"></script>
+    <script src="nano_asset/assets/js/intent-enricher.js"></script>
     <script src="nano_asset/assets/js/session-search.js" defer></script>
     <script src="nano_asset/assets/js/session-export.js" defer></script>
     <script src="nano_asset/assets/js/session-import.js" defer></script>
@@ -2872,7 +2873,13 @@ function handleTextareaInput(textarea) {
                 const langRaw = isToken ? tokenOrCode.lang : infostring;
                 const lang = (langRaw || '').trim().toLowerCase();
 
-    // 1. Penanganan khusus untuk Mermaid
+    // Penanganan khusus untuk flowchart dan Mermaid
+    if (!window.isCurrentlyStreaming && (lang === 'flow' || lang === 'flowchart')) {
+        const safeCode = encodeURIComponent(String(code || '').trim());
+        const flowchartId = `flowchart-${Math.random().toString(36).slice(2)}`;
+        return `<div id="${flowchartId}" class="flowchart-diagram my-4 p-4 rounded-2xl border border-white/10 overflow-x-auto w-full text-center" data-flowchart-code="${safeCode}" data-flowchart-rendered="false"></div>`;
+    }
+
     if (lang === 'mermaid') {
         const mermaidCode = String(code || '').trim();
         if (window.isCurrentlyStreaming) {
@@ -3261,6 +3268,19 @@ window.setupMermaidInteraction = function(wrapper, container, contentDiv) {
     });
 };
 
+function autoFixFlowchart(code) {
+    if (!code) return code;
+    return code.split('\n').map(line => {
+        let trimmed = line.trim();
+        trimmed = trimmed.replace(/^([a-zA-Z0-9_-]+)\s*=>\s*([a-zA-Z0-9_]+)\s*:\s*/, '$1=>$2: ');
+        if (trimmed.includes('-->')) trimmed = trimmed.replace(/-->/g, '->');
+        if (trimmed.includes('->') && !trimmed.includes('=>')) {
+            trimmed = trimmed.replace(/->\s*[a-zA-Z0-9_-]+\s*:\s*.*$/, match => match.split(':')[0].trim());
+        }
+        return trimmed;
+    }).join('\n');
+}
+
 function autoFixMermaid(code) {
     if (!code) return code;
 
@@ -3527,6 +3547,41 @@ window.renderMarkmapBlocks = async function(root = document) {
             if (typeof window.renderMarkmapBlocks === 'function') {
                 await window.renderMarkmapBlocks(container);
             }
+            const flowcharts = container.querySelectorAll('.flowchart-diagram[data-flowchart-rendered="false"]');
+            flowcharts.forEach((element) => {
+                let code = '';
+                try {
+                    if (typeof window.flowchart?.parse !== 'function') {
+                        throw new Error('Flowchart.js tidak tersedia.');
+                    }
+                    code = decodeURIComponent(element.dataset.flowchartCode || '');
+                    const diagram = window.flowchart.parse(autoFixFlowchart(code));
+                    const diagramStyle = getComputedStyle(document.body);
+                    const diagramText = diagramStyle.getPropertyValue('--diagram-text').trim() || '#e2e8f0';
+                    const diagramMuted = diagramStyle.getPropertyValue('--diagram-muted').trim() || '#94a3b8';
+                    diagram.drawSVG(element.id, {
+                        x: 0,
+                        y: 0,
+                        'line-width': 2,
+                        'line-length': 50,
+                        'text-margin': 10,
+                        'font-size': 12,
+                        'font-color': diagramText,
+                        'line-color': diagramMuted,
+                        'element-color': diagramMuted,
+                        fill: document.body.classList.contains('light-theme') ? '#f8fafc' : '#1e293b',
+                        'yes-text': 'Ya',
+                        'no-text': 'Tidak',
+                        'arrow-end': 'block',
+                        scale: 1
+                    });
+                    element.dataset.flowchartRendered = 'true';
+                } catch (error) {
+                    console.error('Gagal merender Flowchart.js:', error);
+                    element.dataset.flowchartRendered = 'error';
+                    element.innerHTML = `<div class="text-xs text-red-400 p-3 bg-red-500/10 rounded-xl border border-red-500/20" role="alert">Gagal merender flowchart: ${escapeHtml(error.message || String(error))}<pre class="mt-2 text-left text-[10px] bg-black/50 p-2 overflow-x-auto">${escapeHtml(code)}</pre></div>`;
+                }
+            });
             // 2. Render Chart.js — destroy instance lama terlebih dahulu untuk cegah memory leak
             const charts = container.querySelectorAll('canvas.ai-chart[data-config]:not([data-chart-rendered="true"])');
             if (charts.length) {
@@ -4364,6 +4419,9 @@ try {
         }
 
         function applyKaTeXPrompt(text) {
+            if (window.GemmaIntent && typeof window.GemmaIntent.enrichPrompt === 'function') {
+                return window.GemmaIntent.enrichPrompt(text);
+            }
             let instruction = '';
             if (shouldForceKaTeX(text)) {
                 instruction += 'Bila diskusi berhubungan dengan matematika, rumus, atau konten KaTeX, jawab semua rumus dan ekspresi matematika menggunakan format KaTeX. Gunakan $...$ untuk inline dan $$...$$ untuk tampilan. ';

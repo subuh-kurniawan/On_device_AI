@@ -5,6 +5,7 @@
     <script src="nano_asset/assets/js/image-modal.js" defer></script>
     <script src="nano_asset/assets/js/mermaid-normalizer.js"></script>
     <script src="nano_asset/assets/js/chart-config-normalizer.js"></script>
+    <script src="nano_asset/assets/js/intent-enricher.js" defer></script>
     <script src="nano_asset/assets/js/session-search.js" defer></script>
     <script src="nano_asset/assets/js/session-export.js" defer></script>
     <script src="nano_asset/assets/js/session-import.js" defer></script>
@@ -100,11 +101,11 @@ body.hacker-theme {
 <script src="nano_asset/assets/js/xlsx.full.min.js"></script>
 <script src="nano_asset/assets/js/jszip.min.js"></script>
 <script src="nano_asset/assets/js/FileSaver.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="nano_asset/assets/js/chart.min.js"></script>
 <script src="nano_asset/assets/js/mermaid.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-<script src="https://cdn.jsdelivr.net/npm/markmap-view"></script>
-<script src="https://cdn.jsdelivr.net/npm/markmap-lib"></script>
+<script src="nano_asset/assets/js/d3.v7.min.js"></script>
+<script src="nano_asset/assets/js/markmap-view.min.js"></script>
+<script src="nano_asset/assets/js/markmap-lib.min.js"></script>
 <script>
     if (typeof mermaid !== 'undefined') {
         mermaid.initialize({
@@ -3457,6 +3458,9 @@ try {
         }
 
         function applyKaTeXPrompt(text) {
+            if (window.GemmaIntent && typeof window.GemmaIntent.enrichPrompt === 'function') {
+                return window.GemmaIntent.enrichPrompt(text);
+            }
             let instruction = '';
             if (shouldForceKaTeX(text)) {
                 instruction += 'Bila diskusi berhubungan dengan matematika, rumus, atau konten KaTeX, jawab semua rumus dan ekspresi matematika menggunakan format KaTeX. Gunakan $...$ untuk inline dan $$...$$ untuk tampilan. ';

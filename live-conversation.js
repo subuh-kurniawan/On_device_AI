@@ -9,19 +9,23 @@
         constructor(options = {}) {
             this.options = {
                 language: 'id-ID',
+                voiceLanguage: 'id-ID',
                 systemPrompt: 'Anda adalah asisten suara berbahasa Indonesia. Jawab singkat, jelas, dan natural.',
                 personaPrompt: 'Gunakan gaya bahasa natural, santai, dan mudah dipahami.',
                 conversationContext: '',
                 manualMode: true,
                 onStateChange: () => {},
+                onBackendChange: () => {},
                 onTranscript: () => {},
                 onResponse: () => {},
+                onSpeechProgress: () => {},
                 onError: () => {},
                 ...options
             };
             this.recognition = null;
             this.session = null;
             this.running = false;
+            this.starting = false;
             this.listening = false;
             this.speaking = false;
             this.interimTranscript = '';
@@ -29,6 +33,8 @@
             this.responseBuffer = '';
             this.fullResponseText = '';
             this.responseComplete = false;
+            this.speechText = '';
+            this.speechPlaybackPending = false;
             this.abortController = null;
             this.selfSpeechLock = false;
             this.ttsSuppressionUntil = 0;
@@ -37,25 +43,31 @@
         }
 
         async start() {
-            if (!this.createRecognition()) return;
+            if (this.starting) return;
+            this.starting = true;
+            try {
+                if (!this.createRecognition()) return;
 
-            if (!this.running) {
-                try {
-                    this.session = await this.createSession();
-                    this.running = true;
-                } catch (error) {
-                    this.fail(error);
+                if (!this.running) {
+                    try {
+                        this.session = await this.createSession();
+                        this.running = true;
+                    } catch (error) {
+                        this.fail(error);
+                        return;
+                    }
+                }
+
+                if (this.selfSpeechLock || this.speaking || Date.now() < this.ttsSuppressionUntil) {
+                    this.setState('idle');
                     return;
                 }
-            }
 
-            if (this.selfSpeechLock || this.speaking || Date.now() < this.ttsSuppressionUntil) {
-                this.setState('idle');
-                return;
+                this.setState('listening');
+                this.startListening();
+            } finally {
+                this.starting = false;
             }
-
-            this.setState('listening');
-            this.startListening();
         }
 
         stop() {
@@ -64,6 +76,8 @@
             this.abortController = null;
             this.recognition?.stop();
             window.speechSynthesis?.cancel();
+            this.speechPlaybackPending = false;
+            this.options.onSpeechProgress({ phase: 'cancel', text: this.speechText, charIndex: this.speechText.length });
             this.listening = false;
             this.speaking = false;
             this.setState('idle');
@@ -73,6 +87,8 @@
             this.abortController?.abort();
             this.abortController = null;
             window.speechSynthesis?.cancel();
+            this.speechPlaybackPending = false;
+            this.options.onSpeechProgress({ phase: 'cancel', text: this.speechText, charIndex: this.speechText.length });
             this.speaking = false;
             if (this.running) {
                 this.setState('listening');
@@ -157,6 +173,7 @@
         async createSession() {
             const api = window.ai?.languageModel || window.ai?.assistant || window.LanguageModel;
             if (!api || typeof api.create !== 'function') {
+                this.options.onBackendChange('fallback');
                 return this.createLocalFallbackSession();
             }
             const config = {
@@ -167,7 +184,9 @@
                     content: `${this.options.systemPrompt} ${this.options.personaPrompt}${this.options.conversationContext ? `\nRiwayat percakapan sebelumnya:\n${this.options.conversationContext}` : ''}`
                 }]
             };
-            return api.create(config);
+            const session = await api.create(config);
+            this.options.onBackendChange('on-device');
+            return session;
         }
 
         createLocalFallbackSession() {
@@ -237,6 +256,9 @@
             this.responseBuffer = '';
             this.fullResponseText = '';
             this.responseComplete = false;
+            this.speechText = '';
+            this.speechPlaybackPending = false;
+            this.options.onSpeechProgress({ phase: 'reset', text: '', charIndex: 0 });
             this.abortController = new AbortController();
 
             try {
@@ -260,8 +282,8 @@
                     this.options.onResponse({ text: this.fullResponseText, done: false });
                 }
 
-                this.options.onResponse({ text: this.fullResponseText, done: true });
                 this.responseComplete = true;
+                this.options.onResponse({ text: this.fullResponseText, done: true });
                 this.speakRemaining();
                 if (this.speaking) return;
                 if (this.running && !this.options.manualMode) {
@@ -324,6 +346,11 @@
                 .replace(/([,.!?;:])(?=\S)/g, '$1 ')
                 .trim();
             if (!speechText || !window.speechSynthesis) return;
+            const segmentStart = this.speechText.length ? this.speechText.length + 1 : 0;
+            this.speechText = this.speechText ? `${this.speechText} ${speechText}` : speechText;
+            const segmentEnd = this.speechText.length;
+            this.speechPlaybackPending = true;
+            this.speaking = true;
             this.selfSpeechLock = true;
             this.ttsSuppressionUntil = Date.now() + 7000;
             this.recognition?.stop();
@@ -346,29 +373,66 @@
 
             const speakWithSystemVoice = () => {
                 const utterance = new SpeechSynthesisUtterance(speechText);
-                utterance.lang = this.options.language;
+                utterance.lang = this.options.voiceLanguage || this.options.language;
                 utterance.rate = 1;
                 utterance.pitch = 1;
                 utterance.volume = 1;
                 const voices = window.speechSynthesis.getVoices();
-                const indoVoice = voices.find(voice => voice.lang.includes('id') && voice.name.includes('Google'))
-                    || voices.find(voice => voice.lang.includes('id'));
-                if (indoVoice) utterance.voice = indoVoice;
+                const selectedVoice = voices.find(voice => voice.voiceURI === this.options.voiceURI)
+                    || voices.find(voice => voice.name === this.options.voiceName && voice.lang === this.options.voiceLanguage)
+                    || voices.find(voice => voice.lang.toLowerCase().startsWith('id') && /google/i.test(voice.name))
+                    || voices.find(voice => voice.lang.toLowerCase().startsWith('id'));
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                    utterance.lang = selectedVoice.lang || utterance.lang;
+                }
+                utterance.onboundary = event => {
+                    if (event.name && event.name !== 'word') return;
+                    const start = Math.max(0, Math.min(speechText.length, event.charIndex || 0));
+                    const end = event.charLength
+                        ? Math.min(speechText.length, start + event.charLength)
+                        : Math.min(speechText.length, (speechText.slice(start).match(/^\S+/) || [''])[0].length + start);
+                    this.options.onSpeechProgress({
+                        phase: 'progress',
+                        text: this.speechText,
+                        charIndex: segmentStart + end,
+                        wordStart: segmentStart + start,
+                        wordEnd: segmentStart + end
+                    });
+                };
                 utterance.onstart = () => {
                     this.speaking = true;
                     this.setState('speaking');
+                    this.options.onSpeechProgress({
+                        phase: 'start',
+                        text: this.speechText,
+                        charIndex: segmentStart,
+                        wordStart: -1,
+                        wordEnd: -1
+                    });
                 };
                 utterance.onend = () => {
                     this.speaking = false;
                     this.selfSpeechLock = false;
                     this.ttsSuppressionUntil = Date.now() + 500;
                     this.autoListenCooldown = Date.now() + 400;
+                    this.options.onSpeechProgress({
+                        phase: 'progress',
+                        text: this.speechText,
+                        charIndex: segmentEnd,
+                        wordStart: -1,
+                        wordEnd: -1
+                    });
                     if (this.running) {
                         if (this.responseBuffer.trim()) {
                             this.speakCompleteSentences();
                             if (this.speaking) return;
                             if (this.responseComplete) this.speakRemaining();
                             if (this.speaking) return;
+                        }
+                        if (this.responseComplete && !this.responseBuffer.trim()) {
+                            this.speechPlaybackPending = false;
+                            this.options.onSpeechProgress({ phase: 'complete', text: this.speechText, charIndex: this.speechText.length });
                         }
                         if (this.options.manualMode) {
                             this.listening = false;

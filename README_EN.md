@@ -45,6 +45,12 @@ This repository is a _playground_ to explore the limits of **Browser-based AI**.
 
 Start at the [application landing page](index.html) to browse all pages.
 
+The landing-page screenshot gallery automatically reads `img1.jpg`, `img2.jpg`, and subsequent files from `nano_asset/images/`. Add images to that folder without changing `index.html`, then open the landing page through a local server.
+
+The landing page also checks Chrome Prompt API support and local AI model availability when opened. This check only reads API status; it does not create an AI session or start a model download.
+
+The landing page includes a dark/light theme switch in the navigation and saves the selected theme in the browser.
+
 Each `.html` file in this repository acts as a standalone *Single-Page Application (SPA)* demonstrating different technologies.
 
 ### 1. `mesin-litert-lm.html` (WebGPU LiteRT-LM Engine)
@@ -69,6 +75,7 @@ A feature-rich chat interface, designed similarly to high-end professional AI ap
 ### 3. `analisis-vision.html` & `analisis-kode.html` (Vision & Code Analysis)
 Focused on advanced text analysis and simple multimodal tasks.
 * **Special Features:** *Quick Action* buttons for instant text manipulation (Translate, Summarize, Refine, Code Review).
+* **Visual Rendering:** Text chat and analysis pages support Mermaid/Flowchart.js diagrams, Chart.js charts, mind maps, and KaTeX equations; prompt intent mapping selects the appropriate visual format.
 * UI optimized for reading long lines of code and specifically formatted syntax.
 
 ---
@@ -113,28 +120,26 @@ Because this application interacts with experimental APIs (like reading local fi
 
 ### Step 1: Hardware Requirements & Chrome On-Device AI (Gemini Nano) Activation
 
-**System Requirements (Hardware):**
-* **Specific Apple Silicon (MacBook/Mac) Specs:**
-  * Fully supports devices with Apple M1, M2, M3, or M4 chips (including Pro/Max/Ultra variants).
-  * The *Unified Memory* architecture on Apple chips makes LLM and WebGPU inference run extremely smoothly *natively*. Devices with a base 8GB of unified memory are highly capable of running this built-in model smoothly.
-  * It is recommended to use at least macOS Monterey (12.0) or newer to ensure WebGPU standards run optimally.
-* **RAM (General/Windows):** Minimum 8GB (16GB or more is recommended for maximum performance and stability).
-* **Storage:** Minimum 3GB of free space on your storage media (SSD highly recommended) to download language model weights.
-* **GPU (Windows/Linux):** A graphics card that natively supports the **WebGPU** standard (e.g., Intel Iris Xe, modern AMD Radeon generations, or NVIDIA GTX 10 series and above).
-* **Browser:** Google Chrome version 127 or newer (Using the latest **Chrome Dev** or **Canary** build is recommended).
+**Chrome Built-in AI (Gemini Nano) Requirements:**
+* **Browser and OS:** The latest desktop Google Chrome on Windows 10/11, macOS 13+, Linux, or a compatible Chromebook Plus. Chrome's built-in foundation models are not supported in Chrome for Android/iOS.
+* **CPU:** At least 4 cores and 16 GB RAM; or **GPU:** more than 4 GB VRAM.
+* **Storage:** At least 22 GB of free space on the volume containing the Chrome profile.
+* **Network:** An unmetered connection to download the model. Model size may change with Chrome updates.
+* These requirements apply to Chrome's built-in foundation model and may change. Individual pages may also require additional APIs or device capabilities.
 
-**How to Activate On-Device AI (Prompt API):**
-For Chrome's built-in AI features to run locally, you need to enable experimental *flags* and ensure the model is downloaded:
+**How to Enable On-Device AI:**
+Some pages in this project use experimental Chrome APIs. Flag names and availability may vary by Chrome version:
 
 1. Open a new tab and access the URL: `chrome://flags`
-2. Search for and enable these three options:
+2. If available, search for and enable:
    * **Optimization Guide On Device Model:** Change its value to `Enabled BypassPerfRequirement`
    * **Prompt API for Gemini Nano:** Change its value to `Enabled`
-   * **Enables WebGPU:** Change its value to `Enabled` (Usually enabled by default, but verify just in case)
+   * **Enables WebGPU:** Enable it if available and you plan to use LiteRT-LM/WebGPU features.
 3. Click the **Relaunch** button in the bottom right corner to restart your browser.
 4. Once the browser reopens, open a new tab and access the URL: `chrome://components`
 5. Scroll and find the component named **Optimization Guide On Device Model**.
-6. Click the **Check for update** button. Wait for the download process to complete. This will download an AI model of ~1.5GB to 2GB in the background. Ensure the component version no longer shows `0.0.0.0`.
+6. If available, click **Check for update** and wait for the model to finish downloading. You can also check model status at `chrome://on-device-internals`.
+7. Run the app through a local HTTP server instead of opening it with `file://`. If a flag is unavailable, check the [official Chrome requirements and setup guide](https://developer.chrome.com/docs/ai/get-started#requirements), as activation may differ between versions.
 
 <img width="100%" alt="Chrome Flags Config" src="https://github.com/user-attachments/assets/b4b0d194-f1e4-41d8-869f-55ee50c4d67f" />
 

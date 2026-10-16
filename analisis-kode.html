@@ -5,6 +5,7 @@
     <script src="nano_asset/assets/js/image-modal.js" defer></script>
     <script src="nano_asset/assets/js/mermaid-normalizer.js"></script>
     <script src="nano_asset/assets/js/chart-config-normalizer.js"></script>
+    <script src="nano_asset/assets/js/intent-enricher.js" defer></script>
     <script src="nano_asset/assets/js/session-search.js" defer></script>
     <script src="nano_asset/assets/js/session-export.js" defer></script>
     <script src="nano_asset/assets/js/session-import.js" defer></script>
@@ -46,10 +47,10 @@ body.hacker-theme .bg-gradient-to-tr { background: #00aa00 !important; }
 <script src="nano_asset/assets/js/FileSaver.min.js"></script>
 <script src="nano_asset/assets/js/chart.min.js"></script>
 <script src="nano_asset/assets/js/mermaid.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@0.16.1/dist/index.min.js"></script>
+        <script src="nano_asset/assets/js/markmap-autoloader.js" defer></script>
     <!-- Flowchart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flowchart.js@1.17.1/release/flowchart.min.js"></script>
+    <script src="nano_asset/assets/js/raphael.min.js"></script>
+    <script src="nano_asset/assets/js/flowchart.min.js"></script>
     <!-- Tambahan Fitur Baru -->
     <script src="nano_asset/assets/js/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
@@ -3606,6 +3607,9 @@ div.innerHTML = `
         }
 
         function applyKaTeXPrompt(text) {
+            if (window.GemmaIntent && typeof window.GemmaIntent.enrichPrompt === 'function') {
+                return window.GemmaIntent.enrichPrompt(text);
+            }
             let instruction = '';
             if (shouldForceKaTeX(text)) {
                 instruction += 'Bila diskusi berhubungan dengan matematika, rumus, atau konten KaTeX, jawab semua rumus dan ekspresi matematika menggunakan format KaTeX. Gunakan $...$ untuk inline dan $$...$$ untuk tampilan. ';
