@@ -24,8 +24,7 @@ key.pem
 *credential*
 *secret*
 
-# 4. Binary Hasil Kompilasi & Cache Build
-jalankanserverFN_gui
+# 4. Binary Hasil Kompilasi & Cache Build (Khusus jalankanserverFN_gui disertakan untuk Mac Apple Silicon)
 *.o
 *.obj
 *.dylib
