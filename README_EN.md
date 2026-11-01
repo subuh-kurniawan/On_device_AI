@@ -1,28 +1,37 @@
-# 🚀 Chrome On-Device AI Playground (V1.5.0)
+# 🚀 Chrome On-Device AI Playground (V2.0.0)
 
 <div align="center">
   <p>
     <b><a href="README.md">🇮🇩 Bahasa Indonesia</a> | 🇬🇧 English</b>
   </p>
-  <img width="100%" alt="Screenshot 2026-08-27 at 18 05 38" src="https://github.com/user-attachments/assets/a2c87635-7af2-45d2-83a3-39fbf10527a9" />
-  <p><em>A collection of experiments and prototype Client-Side AI applications that run 100% locally in your browser, without a backend server, without API costs, and with guaranteed data privacy.</em></p>
+  <img width="100%" alt="On-Device AI Playground Banner" src="nano_asset/assets/og-image.jpg" />
+  <p><em>A collection of experiments and prototype Client-Side AI applications that run 100% locally in your browser, without an external backend server, without API costs, and with guaranteed full data privacy.</em></p>
+  <p>
+    <a href="CHANGELOG.md"><b>📋 View Release Notes (Changelog)</b></a>
+  </p>
 </div>
 
 ---
 
 ## 📑 Table of Contents
-- [🚀 Chrome On-Device AI Playground (V1.5.0)](#-chrome-on-device-ai-playground-v150)
+- [🚀 Chrome On-Device AI Playground (V2.0.0)](#-chrome-on-device-ai-playground-v200)
   - [📑 Table of Contents](#-table-of-contents)
   - [✨ Overview](#-overview)
   - [📂 Project Structure & Modules](#-project-structure--modules)
-    - [1. `mesin-litert-lm.html` (WebGPU LiteRT-LM Engine)](#1-mesin-litert-lmhtml-webgpu-litert-lm-engine)
-    - [2. `obrolan-claude.html` (Multi-Provider Chat Interface)](#2-obrolan-claudehtml-multi-provider-chat-interface)
-    - [3. `analisis-vision.html` & `analisis-kode.html` (Vision & Code Analysis)](#3-analisis-visionhtml--analisis-kodehtml-vision--code-analysis)
-  - [🧠 In-Browser RAG & Local Knowledge Base](#-in-browser-rag--local-knowledge-base)
+    - [1. `index.html` (Portal & Landing Page)](#1-indexhtml-portal--landing-page)
+    - [2. `mesin-litert-lm.html` (WebGPU LiteRT-LM Engine)](#2-mesin-litert-lmhtml-webgpu-litert-lm-engine)
+    - [3. `obrolan-claude.html` (Multi-Provider Chat Interface)](#3-obrolan-claudehtml-multi-provider-chat-interface)
+    - [4. `analisis-vision.html` & `analisis-kode.html` (Vision & Code Analysis)](#4-analisis-visionhtml--analisis-kodehtml-vision--code-analysis)
+    - [5. `percakapan-gemini-live.html` (Voice & Multimodal Interface)](#5-percakapan-gemini-livehtml-voice--multimodal-interface)
+  - [🧠 In-Browser RAG & Local Vector Knowledge Base](#-in-browser-rag--local-vector-knowledge-base)
+  - [🌐 LAN AI Relay & Bridge Server (Mobile/Tablet Access)](#-lan-ai-relay--bridge-server-mobiletablet-access)
+  - [🖥️ macOS Launchers & Automation](#️-macos-launchers--automation)
+    - [1. macOS Native Swift GUI Launcher (`jalankanserverFN.command`)](#1-macos-native-swift-gui-launcher-jalankanserverfncommand)
+    - [2. One-Click Push Script (`git_push.command`)](#2-one-click-push-script-git_pushcommand)
   - [🛠️ Architecture & Technology](#️-architecture--technology)
   - [🚀 Prerequisites & How to Run](#-prerequisites--how-to-run)
-    - [Step 1: Hardware Requirements & Chrome On-Device AI (Gemini Nano) Activation](#step-1-hardware-requirements--activation-of-chrome-on-device-ai)
-    - [Step 2: Run Local Server & Open Browser (Automated)](#step-2-run-local-server--open-browser-automated)
+    - [Step 1: Configure Chrome Flags](#step-1-configure-chrome-flags)
+    - [Step 2: Run Local Server](#step-2-run-local-server)
   - [⚙️ AI Mode Configuration Guide (Multi-Provider)](#️-ai-mode-configuration-guide-multi-provider)
   - [🐛 Troubleshooting](#-troubleshooting)
   - [🤝 Contribution](#-contribution)
@@ -32,187 +41,155 @@
 
 ## ✨ Overview
 
-This repository is a _playground_ to explore the limits of **Browser-based AI**. By leveraging cutting-edge web standards such as **WebGPU** and **Chrome Built-in AI (Prompt API)**, this repository demonstrates that Large Language Models (LLMs) can run directly on the user's hardware (local GPU/NPU) with extremely low latency.
+This repository is a playground to explore the boundaries of **Browser-based AI**. By leveraging modern web standards like **WebGPU** and **Chrome Built-in AI (Prompt API)**, this project demonstrates that Large Language Models (LLMs) can run directly on consumer-grade hardware (local GPU/NPU) with near-zero latency.
 
 **Key Advantages:**
-* **Maximum Privacy (100% Offline):** All prompt and document processing is done locally. No data is sent to external servers.
-* **Hardware-Accelerated Performance:** Uses WebGPU to utilize the device's graphics card directly.
-* **Serverless Architecture:** Applications are built purely using HTML, CSS (Vanilla), and JavaScript ES Modules.
+* **Maximum Privacy (100% Offline):** All prompt processing, document analysis, and conversational chats occur directly in your device's memory. No data is ever transmitted to external cloud servers.
+* **Hardware-Accelerated Performance:** Uses WebGPU to directly utilize device GPU/NPU cores.
+* **Serverless Client-Side Architecture:** The user interface is built purely using HTML5, modern responsive CSS3, and Vanilla JavaScript ES Modules.
+* **Multi-Device LAN Access (Bridge):** A host Mac/PC can share its local AI capabilities with smartphones and tablets on the same local Wi-Fi network through a secure SSL HTTPS connection.
 
 ---
 
 ## 📂 Project Structure & Modules
 
-Start at the [application landing page](index.html) to browse all pages.
+Each `.html` file in this repository operates as a self-contained *Single-Page Application (SPA)* demonstrating distinct AI capabilities:
 
-The landing-page screenshot gallery automatically reads `img1.jpg`, `img2.jpg`, and subsequent files from `nano_asset/images/`. Add images to that folder without changing `index.html`, then open the landing page through a local server.
+### 1. `index.html` (Portal & Landing Page)
+Central portal for navigating all available AI applications.
+* Automatically verifies Chrome Prompt API support and model availability upon launch.
+* Supports responsive Dark/Light theme switching stored persistently in browser storage.
+* Features interactive galleries and preview cards for all application variants.
 
-The landing page also checks Chrome Prompt API support and local AI model availability when opened. This check only reads API status; it does not create an AI session or start a model download.
-
-The landing page includes a dark/light theme switch in the navigation and saves the selected theme in the browser.
-
-Each `.html` file in this repository acts as a standalone *Single-Page Application (SPA)* demonstrating different technologies.
-
-### 1. `mesin-litert-lm.html` (WebGPU LiteRT-LM Engine)
-This file is a *state-of-the-art* implementation of WebGPU inference using the latest framework from Google.
-* **Technology:** `@litert-lm/core` (Primary) and `@mediapipe/tasks-genai` (Fallback).
+### 2. `mesin-litert-lm.html` (WebGPU LiteRT-LM Engine)
+State-of-the-art WebGPU inference implementation utilizing Google's latest runtime.
+* **Technology:** `@litert-lm/core` (Primary) with `@mediapipe/tasks-genai` (Fallback).
 * **Features:** 
-  * Can load `.litertlm` formatted language models (e.g., `Gemma 4 E2B Instruct`) directly from local storage (File System) or download them from a HuggingFace URL.
-  * Realtime progress bar when downloading model weights from the network.
-  * Inference pipeline uses VRAM (GPU) directly for high-speed streaming responses.
+  * Loads `.litertlm` formatted language models (e.g., *Gemma 4 E2B Instruct*) directly from the local filesystem or via Hugging Face URLs.
+  * Realtime progress tracking during model weight downloads.
+  * Inference pipeline utilizes GPU VRAM directly for ultra-fast response streaming.
 
-### 2. `obrolan-claude.html` (Multi-Provider Chat Interface)
-A feature-rich chat interface, designed similarly to high-end professional AI applications (like Claude/ChatGPT).
+### 3. `obrolan-claude.html` (Multi-Provider Chat Interface)
+Professional-grade conversational interface with multi-provider flexibility.
 * **Technology:** Google Chrome Built-in AI (`window.ai`), Ollama REST API, OpenAI-compatible API.
 * **Features:**
-  * **External LLM Server Support:** Through the built-in Settings menu, users can configure the app to connect to an external LLM server. We support:
-    * **Ollama:** Connect directly to your local Ollama server (e.g., `http://localhost:11434`) to run Llama 3, Mistral, etc.
-    * **OpenAI API / Custom Endpoint:** Enter a Base URL and API Key to use models from OpenAI (GPT-4o), Groq, Together AI, or local LM Studio servers.
-  * **Multi-Provider Switcher:** Allows you to switch seamlessly between Chrome's built-in model (Gemini Nano) and the network/server models configured above.
-  * **Persona/Prompt Library:** A built-in *system prompt* library to change the AI assistant's character (as a Programmer, Editor, Translator, etc.).
-  * **Session Management:** Conversations are persistently stored in IndexedDB (`ClaudeChatDB`). Exporting conversations to PDF, DOCX, TXT, and JSON formats is available.
+  * **Multi-Provider Switcher:** Seamlessly toggle between Chrome Built-in AI (Gemini Nano), local Ollama (Llama 3, Mistral, DeepSeek), and custom endpoints (LM Studio / OpenAI).
+  * **Interactive Mermaid & Math Renderers:** Dynamic Mermaid flowcharts with custom zoom/pan/export controls (`ai-mermaid-controls.js`) and KaTeX math typesetting.
+  * **Persistent Storage & Search:** Chats are stored locally in IndexedDB with cross-session search (`session-search.js`) and multi-format exports (PDF, DOCX, TXT, JSON).
 
-### 3. `analisis-vision.html` & `analisis-kode.html` (Vision & Code Analysis)
-Focused on advanced text analysis and simple multimodal tasks.
-* **Special Features:** *Quick Action* buttons for instant text manipulation (Translate, Summarize, Refine, Code Review).
-* **Visual Rendering:** Text chat and analysis pages support Mermaid/Flowchart.js diagrams, Chart.js charts, mind maps, and KaTeX equations; prompt intent mapping selects the appropriate visual format.
-* UI optimized for reading long lines of code and specifically formatted syntax.
+### 4. `analisis-vision.html` & `analisis-kode.html` (Vision & Code Analysis)
+Specialized tools for multimodal image understanding and source code inspection.
+* **Features:** Quick Actions for Code Review, Refactoring, translation, instant summaries, and integrated CodeMirror syntax editors.
+
+### 5. `percakapan-gemini-live.html` (Voice & Multimodal Interface)
+Experimental voice conversation and multimodal interaction canvas.
 
 ---
 
-## 🧠 In-Browser RAG & Local Knowledge Base
+## 🧠 In-Browser RAG & Local Vector Knowledge Base
 
-The primary application modules (`mesin-litert-lm.html`, `obrolan-claude.html`, `analisis-kode.html`) include a client-side **Retrieval-Augmented Generation (RAG)** system.
+The core modules feature a client-side **Retrieval-Augmented Generation (RAG)** pipeline that runs completely inside the browser:
+1. **Document Parsing:** Supports `.pdf` (via PDF.js), `.docx` (via Mammoth.js), `.txt`, and `.md`.
+2. **Local Chunking & Embeddings:** Text is chunked with overlapping windows and embedded via `Transformers.js` using local ONNX models:
+   - `intfloat/multilingual-e5-small` (113 MB via Git LFS for superior multilingual and Indonesian accuracy).
+   - `Xenova/all-MiniLM-L6-v2` (22 MB for rapid, lightweight embeddings).
+3. **Vector Storage & Retrieval:** Embeddings are indexed in IndexedDB. User queries are matched locally using cosine similarity, with top context chunks injected directly into the AI prompt.
 
-**How it works?**
-1. **Document Parsing:** Users upload reference documents (supports `.pdf` via PDF.js, `.docx` via Mammoth.js, as well as `.txt` and `.md`).
-2. **Chunking & Embedding:** Text is extracted and chunked using an *overlapping* technique. Then, using `Transformers.js` (model `Xenova/all-MiniLM-L6-v2`), the text is converted into vectors (embeddings).
-3. **Local Storage:** Vectors and original text are permanently stored in the browser using IndexedDB.
-4. **Vector Search:** When a user asks a question, the query is converted into a vector, then searched for matches (cosine similarity) against the documents in IndexedDB. Relevant context is injected directly into the AI prompt!
+---
 
-<details>
-<summary>📸 <strong>View RAG / Knowledge Base Screenshots</strong></summary>
-<br/>
-<img width="100%" alt="RAG Screenshot 1" src="https://github.com/user-attachments/assets/8cbedf0e-d84a-49e0-8962-4741f7576bbc" />
-<img width="100%" alt="RAG Screenshot 2" src="https://github.com/user-attachments/assets/3e2f8834-9e58-43c7-9bd1-94ddecce5e6b" />
-<img width="100%" alt="RAG Screenshot 3" src="https://github.com/user-attachments/assets/31bf68d9-d1ad-4602-8018-afb003713a51" />
-<img width="100%" alt="RAG Screenshot 4" src="https://github.com/user-attachments/assets/902be638-080d-43f3-970f-2ddcb68504cc" />
-<img width="100%" alt="RAG Screenshot 5" src="https://github.com/user-attachments/assets/17d43877-8855-41d0-bb6a-2f887343814e" />
-</details>
+## 🌐 LAN AI Relay & Bridge Server (Mobile/Tablet Access)
+
+Want to use local AI from your phone or tablet without loading heavy models on mobile devices?
+This project includes a **LAN AI Bridge & WebSocket Relay**:
+1. The host machine (Mac/PC) runs the local AI model and functions as an inference hub.
+2. The launcher script automatically generates local SSL certificates (`cert.pem` & `key.pem`) to satisfy modern browser HTTPS security requirements on mobile devices.
+3. Simply tap the **QR HP** button on any app page and scan the QR code with your mobile camera to interact with the host AI immediately!
+
+---
+
+## 🖥️ macOS Launchers & Automation
+
+To streamline the development and usage experience on macOS, one-click automation scripts are included:
+
+### 1. macOS Native Swift GUI Launcher (`jalankanserverFN.command`)
+* A native GUI app compiled automatically via `swiftc` from [jalankanserverFN_gui.swift](jalankanserverFN_gui.swift).
+* Features visual controls to toggle servers, monitor SSL HTTPS status, inspect port bindings, generate LAN QR codes, and stream server logs in realtime.
+
+### 2. One-Click Push Script (`git_push.command`)
+* An automated double-click bash script in macOS Finder to streamline GitHub sync.
+* Detects local modifications, creates timestamped or custom commits, and pushes to GitHub without repeated credential prompts via macOS Keychain integration.
 
 ---
 
 ## 🛠️ Architecture & Technology
 
-* **Frontend:** HTML5, CSS3 (Vanilla with custom variables for *Dynamic Theming*), Vanilla JavaScript (ESM).
-* **Local Storage:** IndexedDB (stores session history and RAG Vector Database chunks).
-* **Machine Learning / AI API:**
-  * [Chrome Prompt API](https://github.com/WICG/prompt-api) (`window.ai`)
+* **Frontend:** HTML5, Responsive CSS3 (CSS Variables for dynamic themes), Vanilla JavaScript (ES Modules).
+* **AI & Machine Learning Engine:**
+  * [Chrome Prompt API](https://github.com/WICG/prompt-api) (`window.ai` / Gemini Nano)
   * [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM) (`@litert-lm/core`) via WebGPU
-  * [Transformers.js](https://huggingface.co/docs/transformers.js/index) (for executing *embedding* models in the browser)
-* **File Parsers:** `pdf.min.js`, `mammoth.browser.min.js`, `marked.js` (for markdown rendering), `highlight.js`.
+  * [Transformers.js](https://huggingface.co/docs/transformers.js/index) (for local in-browser embeddings)
+  * [Git LFS](https://git-lfs.github.com/) (tracks large ONNX model files)
+* **Local Data Storage:** IndexedDB (`ClaudeChatDB` and RAG vector store).
+* **Renderers:** Mermaid.js (with custom pan/zoom UI), Chart.js, KaTeX, CodeMirror, Prism.js, Marked.js.
+* **Server & Relay:** Python 3 HTTP Server, Node.js WebSocket Relay, Swift Native macOS App.
 
 ---
 
 ## 🚀 Prerequisites & How to Run
 
-Because this application interacts with experimental APIs (like reading local files, WebGPU, and high-memory access), it **cannot be run directly by double-clicking** (via the `file:///` protocol). You must serve it through a local HTTP Server.
+Because this app utilizes experimental web capabilities (WebGPU, Prompt API, high-memory local buffers), it must be served through a local HTTP/HTTPS server (not via `file:///`).
 
-### Step 1: Hardware Requirements & Chrome On-Device AI (Gemini Nano) Activation
+### Step 1: Configure Chrome Flags
+1. Open Google Chrome desktop (preferably Chrome Dev / Canary).
+2. Navigate to `chrome://flags` and set:
+   * **Optimization Guide On Device Model:** `Enabled BypassPerfRequirement`
+   * **Prompt API for Gemini Nano:** `Enabled`
+   * **Enables WebGPU:** `Enabled`
+3. Click the **Relaunch** button in the bottom right corner.
+4. Open `chrome://components`, locate **Optimization Guide On Device Model**, and click **Check for update** to ensure Gemini Nano is downloaded.
 
-**Chrome Built-in AI (Gemini Nano) Requirements:**
-* **Browser and OS:** The latest desktop Google Chrome on Windows 10/11, macOS 13+, Linux, or a compatible Chromebook Plus. Chrome's built-in foundation models are not supported in Chrome for Android/iOS.
-* **CPU:** At least 4 cores and 16 GB RAM; or **GPU:** more than 4 GB VRAM.
-* **Storage:** At least 22 GB of free space on the volume containing the Chrome profile.
-* **Network:** An unmetered connection to download the model. Model size may change with Chrome updates.
-* These requirements apply to Chrome's built-in foundation model and may change. Individual pages may also require additional APIs or device capabilities.
+### Step 2: Run Local Server
 
-**How to Enable On-Device AI:**
-Some pages in this project use experimental Chrome APIs. Flag names and availability may vary by Chrome version:
+#### Automated One-Click Scripts (Recommended):
+* **Mac Users (Native Swift GUI):** Double-click `jalankanserverFN.command`.
+* **Mac Users (Standard CLI):** Double-click `start_mac.command` or `start_lan_mac.command`.
+* **Windows Users:** Double-click `start_windows.bat`.
 
-1. Open a new tab and access the URL: `chrome://flags`
-2. If available, search for and enable:
-   * **Optimization Guide On Device Model:** Change its value to `Enabled BypassPerfRequirement`
-   * **Prompt API for Gemini Nano:** Change its value to `Enabled`
-   * **Enables WebGPU:** Enable it if available and you plan to use LiteRT-LM/WebGPU features.
-3. Click the **Relaunch** button in the bottom right corner to restart your browser.
-4. Once the browser reopens, open a new tab and access the URL: `chrome://components`
-5. Scroll and find the component named **Optimization Guide On Device Model**.
-6. If available, click **Check for update** and wait for the model to finish downloading. You can also check model status at `chrome://on-device-internals`.
-7. Run the app through a local HTTP server instead of opening it with `file://`. If a flag is unavailable, check the [official Chrome requirements and setup guide](https://developer.chrome.com/docs/ai/get-started#requirements), as activation may differ between versions.
-
-<img width="100%" alt="Chrome Flags Config" src="https://github.com/user-attachments/assets/b4b0d194-f1e4-41d8-869f-55ee50c4d67f" />
-
-### Step 2: Run Local Server & Open Browser (Automated)
-To make it easier for you, we have provided automation scripts that will:
-1. Start a local HTTP server (using Python).
-2. Automatically launch Google Chrome with the required command-line parameters (CLI flags).
-
-**For Windows Users:**
-Simply double-click the `start_windows.bat` file located in this repository's folder.
-
-**For Mac Users:**
-Simply double-click the `start_mac.command` file.
-*(Note: If denied due to permission issues, open the terminal, navigate to this folder, and run `chmod +x start_mac.command` first).*
-
-### Relay AI to Other Devices with a QR Code
-To use the AI host from a phone or another device on the same Wi-Fi network:
-1. Run `start_lan_mac.command` on the Mac host and keep the terminal and host browser open.
-2. Click **QR HP** or **Perangkat lain** on the application page you want to open.
-3. Scan the QR code from the client device. It opens the same page; for AI prompts, select **Chrome On-Device AI** on the host.
-
-The relay is available on all application HTML pages. Use it only on a trusted network; client devices must be able to access the server address and port shown.
-
----
-
-*(Optional) Manual Execution via Terminal:*
-If you prefer running it manually without the scripts above, you can start the server with:
+#### Manual Terminal Command:
 ```bash
+# Using Python:
 python3 -m http.server 8080
-# Or using Node.js: npx http-server -p 8080
+
+# Or using Node.js:
+npx http-server -p 8080
 ```
-Then open `http://localhost:8080/` in a browser where the flags have been manually configured.
+Then navigate to `http://localhost:8080/index.html` in your browser.
 
 ---
 
 ## ⚙️ AI Mode Configuration Guide (Multi-Provider)
 
-This application (especially in the `obrolan-claude.html` and `analisis-vision.html` interfaces) supports dynamic AI model switching. You can switch models via the **Settings** menu (Gear icon in the chat interface). Here is the configuration guide for each mode:
-
-### 1. Chrome On-Device Mode (Gemini Nano)
-This is the **default** mode of the application and runs 100% offline within your computer's RAM.
-* **How to Use:** Works immediately if you have successfully followed *Step 1 (Chrome Flags Activation)* above.
-* **Advantages:** Maximum privacy (data never leaves the browser), extremely low latency, and requires no internet.
-
-### 2. Ollama Mode (Local Server)
-Use this mode if you want to run open-source models (Llama 3, Mistral, etc.) through your local Ollama server.
-* **Prerequisites:** You must install [Ollama](https://ollama.com/) and download a model (e.g., via terminal: `ollama run llama3`).
-* **CORS Configuration (Very Important):** For the browser to be allowed to fetch data from the Ollama API, you MUST configure CORS.
-  * **Windows:** Open *Environment Variables*, add a new *System Variable* named `OLLAMA_ORIGINS` with the value `*`. Restart the Ollama application in the system tray.
-  * **Mac/Linux:** Quit Ollama, then run it from the terminal using the command: `OLLAMA_ORIGINS="*" ollama serve`
-* **UI Application Settings:** Open Settings, select **Ollama**, ensure the **Base URL** contains `http://localhost:11434`, and enter the model name exactly as downloaded (e.g., `llama3`).
-
-### 3. OpenAI API / Custom API Mode (LM Studio, Groq, etc.)
-Use this mode to connect to premium Cloud API services (like OpenAI GPT-4o) or third-party local servers (like LM Studio) that provide an OpenAI-compatible endpoint.
-* **For OpenAI / Cloud API:** Select **OpenAI** mode, enter your valid **API Key**, and fill in the model name (e.g., `gpt-4o`). The Base URL can be left empty (defaults to OpenAI).
-* **For LM Studio (Local):** Open LM Studio and turn on the Local Server. In this web app, enter the **Base URL** from LM Studio (usually `http://localhost:1234/v1`), enter any arbitrary API Key (e.g., `lm-studio`), and enter the model name.
+Via the **Settings** menu (gear icon in chat pages):
+1. **Chrome On-Device (Gemini Nano):** Runs 100% offline in RAM, zero API fees, lowest latency, complete privacy.
+2. **Ollama (Local Server):** Connects to your Ollama instance (`http://localhost:11434`) for Llama 3, DeepSeek, or Mistral models. *(Ensure `OLLAMA_ORIGINS="*"` is enabled)*.
+3. **OpenAI / Custom API:** Connects to cloud providers or local OpenAI-compatible endpoints like LM Studio (`http://localhost:1234/v1`).
 
 ---
 
 ## 🐛 Troubleshooting
 
-* **Simulation Model Active in `mesin-litert-lm.html`:** This happens because the `@litert-lm/core` CDN package is still in "Early Preview" by Google and sometimes fails to download (depending on the CDN registry at that moment). Our script is equipped with multi-CDN fallbacks. Ensure a stable internet connection during initial initialization.
-* **CORS Error on Transformers.js:** Ensure you are accessing the application via `localhost` or local IP (`127.0.0.1`), not by opening the file directly from File Explorer (`file://` protocol).
-* **Gemini Nano not responding (`obrolan-claude.html`):** Sometimes Chrome's local model takes time to download in the background. Try opening `chrome://components/`, find *Optimization Guide On Device Model*, and click the *Check for update* button.
+* **Simulation Fallback Active in `mesin-litert-lm.html`:** Occurs if Google's CDN for `@litert-lm/core` is unreachable. The application includes automatic multi-CDN fallbacks.
+* **Transformers.js CORS Errors:** Always access the app through `http://localhost:8080` or a local LAN IP, never directly via the filesystem (`file://`).
+* **Prompt API Not Detected:** Confirm that flags are enabled and the browser was relaunched. Monitor component state at `chrome://on-device-internals`.
 
 ---
 
 ## 🤝 Contribution
 
-This project is very open to contributions! If you are interested in adding new API integrations, fixing bugs, or refining the UI, please submit a *Pull Request* or report issues via the *Issues* tab.
+Contributions are warmly welcomed! Feel free to submit a Pull Request or file an issue to report bugs or propose enhancements.
 
 ---
 
 ## 📄 License
 
-This project is open-source under the [MIT License](https://opensource.org/licenses/MIT). You are free to use, modify, and distribute this software.
+This project is open-source under the [MIT License](https://opensource.org/licenses/MIT).
