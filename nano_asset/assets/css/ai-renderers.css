@@ -162,6 +162,18 @@ html body.light-theme .mermaid-controls .mermaid-svg-container {
     flex: none;
 }
 
+.mermaid-svg-container {
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: pan-x pan-y;
+}
+
+.mermaid-svg-container.is-panning {
+    cursor: grabbing !important;
+    touch-action: none;
+}
+
 .mermaid-toolbar {
     position: absolute;
     z-index: 5;
@@ -178,6 +190,7 @@ html body.light-theme .mermaid-controls .mermaid-svg-container {
     opacity: 1 !important;
     -webkit-backdrop-filter: blur(16px);
     backdrop-filter: blur(16px);
+    transition: opacity .2s ease, transform .2s ease;
 }
 
 .mermaid-toolbar button {
@@ -192,13 +205,18 @@ html body.light-theme .mermaid-controls .mermaid-svg-container {
     color: var(--ai-renderer-text);
     cursor: pointer;
     font-size: 1.25rem;
-    transition: background-color .15s ease, color .15s ease, transform .15s ease;
+    transition: background-color .15s ease, color .15s ease, transform .15s ease, box-shadow .15s ease;
 }
 
 .mermaid-toolbar button:hover {
-    transform: translateY(-1px);
-    background: rgba(59, 130, 246, .16);
+    transform: translateY(-2px);
+    background: rgba(59, 130, 246, .18);
     color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, .2);
+}
+
+.mermaid-toolbar button:active {
+    transform: translateY(0) scale(0.95);
 }
 
 .mermaid-toolbar button:focus-visible {
@@ -312,6 +330,21 @@ body:not(.light-theme) .mermaid-error-container {
     color: #fca5a5;
 }
 
+.mermaid-node-action-pill {
+    animation: mermaidPillSlideUp .22s cubic-bezier(.16, 1, .3, 1);
+}
+
+@keyframes mermaidPillSlideUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 8px) scale(.95);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(1);
+    }
+}
+
 @media (max-width: 640px) {
     .chart-container {
         height: 280px !important;
@@ -324,24 +357,34 @@ body:not(.light-theme) .mermaid-error-container {
     .flowchart-diagram,
     .live-mermaid,
     .live-flowchart {
-        padding: .75rem;
+        padding: .5rem;
     }
 
     .mermaid-toolbar {
-        top: .5rem;
-        right: .5rem;
-        gap: .15rem;
-        padding: .35rem;
+        top: .35rem;
+        right: .35rem;
+        gap: .2rem;
+        padding: .25rem .35rem;
+        border-radius: .75rem;
+        max-width: calc(100% - .7rem);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .mermaid-toolbar button {
-        width: 2.25rem;
-        height: 2.25rem;
-        font-size: 1.05rem;
+        width: 2.15rem;
+        height: 2.15rem;
+        font-size: 1rem;
+        border-radius: .5rem;
+    }
+
+    .mermaid-toolbar-divider {
+        height: 1.25rem;
+        margin-inline: .15rem;
     }
 
     .mermaid-controls .mermaid-svg-container {
         min-height: 10rem;
-        padding: 4rem .5rem .75rem;
+        padding: 3.5rem .35rem .65rem;
     }
 }

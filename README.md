@@ -1,8 +1,8 @@
-# 🚀 Chrome On-Device AI Playground (V2.0.0)
+# 🚀 Chrome On-Device AI Playground (V2.1.0)
 
 <div align="center">
   <p>
-    <b>🇮🇩 Bahasa Indonesia | <a href="README_EN.md">🇬🇧 English</a></b>
+    <b>🇮🇩 Bahasa Indonesia | <a href="README_EN.md">🇬🇧 English</a> | <a href="README_JV.md">ꦗꦮ Basa Jawa</a></b>
   </p>
   <img width="100%" alt="On-Device AI Playground Banner" src="nano_asset/assets/og-image.jpg" />
   <p><em>Kumpulan eksperimen dan purwarupa (prototype) aplikasi AI Client-Side yang berjalan 100% secara lokal di dalam browser Anda, tanpa server backend eksternal, tanpa biaya API, dan dengan jaminan privasi data penuh.</em></p>
@@ -55,11 +55,14 @@ Repositori ini adalah sebuah _playground_ untuk mengeksplorasi batas kemampuan *
 
 Setiap berkas `.html` dalam repositori ini bertindak sebagai sebuah *Single-Page Application (SPA)* mandiri yang mendemonstrasikan kapabilitas teknologi AI tertentu:
 
-### 1. `index.html` (Portal & Landing Page)
-Halaman sentral untuk menelusuri seluruh varian aplikasi AI yang tersedia.
-* Memeriksa dukungan Chrome Prompt API dan status ketersediaan model lokal secara otomatis saat dibuka.
-* Mendukung pergantian tema gelap/terang (*Dark/Light Mode*) yang tersimpan di local storage browser.
-* Dilengkapi galeri visual interaktif dan kartu pratinjau antarmuka untuk tiap modul.
+### 1. `index.html`, `index_en.html`, & `index_jv.html` (Tri-Language Portal & Landing Page)
+Halaman sentral untuk menelusuri seluruh varian aplikasi AI yang tersedia dalam 3 pilihan bahasa (Bahasa Indonesia, English, dan Basa Jawa).
+* **Welcome Language Modal:** Modal selamat datang cerdas pada kunjungan awal di `index.html` yang memungkinkan pengguna memilih bahasa yang diinginkan dan menyimpan preferensi.
+* **3-Way Language Switcher:** Dropdown ringkas (`[🇮🇩 ID ▾]`, `[🇬🇧 EN ▾]`, `[ꦗꦮ JV ▾]`) di bilah atas (*topbar*) apung berukuran 46px yang ramah layar ponsel (*mobile-first non-stacking*).
+* **Simulasi Alur Interaktif SVG & Live Metrics:** Diagram arsitektur pipeline 4-lapisan dengan animasi sirkuit SVG dan tombol uji (`💬 Teks & Kode`, `📄 Dokumen RAG`, `🖼️ Analisis Gambar`) lengkap dengan metrik latensi, privasi RAM, dan akselerasi hardware.
+* **Narasi Edukatif Chrome On-Device AI:** Penjelasan komprehensif mengenai cara kerja Gemini Nano, privasi 100% luring (*zero-leakage*), dan standar W3C Web Platform AI.
+* **Quickstart OS Tabs Bebas-Lag:** Panduan unduh dan jalankan lokal dengan tab sistem operasi (macOS, Windows, Linux) dan tombol salin perintah 1-klik.
+* **Verifikasi Integritas Aset Otomatis:** Deteksi model Git LFS stub dan pengunduh otomatis dari server mirror (`verify_assets.py`).
 
 ### 2. `mesin-litert-lm.html` (WebGPU LiteRT-LM Engine)
 Implementasi *state-of-the-art* dari inferensi WebGPU menggunakan framework terbaru Google.
@@ -86,14 +89,16 @@ Antarmuka eksperimental untuk percakapan interaktif dengan dukungan audio visual
 
 ---
 
-## 🧠 In-Browser RAG & Vector Knowledge Base
+## 🧠 In-Browser RAG & Vector Knowledge Base (Tingkat Lanjut)
 
-Modul aplikasi utama dilengkapi dengan sistem **Retrieval-Augmented Generation (RAG)** yang sepenuhnya berjalan di sisi klien:
-1. **Parsing Dokumen:** Mendukung dokumen `.pdf` (via PDF.js), `.docx` (via Mammoth.js), `.txt`, dan `.md`.
-2. **Chunking & Embedding Lokal:** Teks dipecah dengan teknik *overlapping* dan diubah menjadi vektor menggunakan `Transformers.js` dengan model embedding lokal berkecepatan tinggi:
-   - `intfloat/multilingual-e5-small` (113 MB via Git LFS untuk dokumen multibahasa/Bahasa Indonesia presisi tinggi).
-   - `Xenova/all-MiniLM-L6-v2` (22 MB untuk embedding ringan dan cepat).
-3. **Penyimpanan & Pencarian Vektor:** Vektor disimpan di IndexedDB secara permanen. Pertanyaan pengguna dicocokkan menggunakan kalkulasi *cosine similarity* secara lokal dan konteks terbaik otomatis disuntikkan ke prompt AI.
+Modul aplikasi utama (`obrolan-claude-rag.html` dan `analisis-vision-rag.html`) dilengkapi dengan sistem **Retrieval-Augmented Generation (RAG)** mutakhir yang sepenuhnya berjalan di sisi klien:
+1. **Dual Embedding Model Selector:**
+   - `Xenova/all-MiniLM-L6-v2` (22 MB): Cepat, ringan, dan hemat memori RAM.
+   - `intfloat/multilingual-e5-small` (118 MB): Presisi tinggi untuk dokumen multibahasa (Indonesia, Inggris, Jawa, dll.) dengan fitur *1-click re-indexing*.
+2. **Smart Header-Aware Chunking:** Memecah dokumen secara semantik dengan mempertahankan hierarki heading Markdown (`#`, `##`, `###`) serta nomor halaman dokumen PDF asli.
+3. **Hybrid Search Engine:** Menggabungkan *Cosine Similarity Vektor* (bobot 65%) dengan *Lexical BM25 Keyword Search* (bobot 35%) untuk hasil temu-balik dokumen yang jauh lebih presisi.
+4. **Sitasi Sumber Akurat:** Menampilkan label sumber berbasis halaman (`Hal. X`) yang transparan dengan rincian skor kecocokan hibrida.
+5. **Strict Anti-Hallucination Mode:** Sakelar proteksi untuk mewajibkan model menjawab hanya berdasarkan konteks dokumen terverifikasi, meminimalisir halusinasi AI.
 
 ---
 

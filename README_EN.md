@@ -1,8 +1,8 @@
-# 🚀 Chrome On-Device AI Playground (V2.0.0)
+# 🚀 Chrome On-Device AI Playground (V2.1.0)
 
 <div align="center">
   <p>
-    <b><a href="README.md">🇮🇩 Bahasa Indonesia</a> | 🇬🇧 English</b>
+    <b><a href="README.md">🇮🇩 Bahasa Indonesia</a> | 🇬🇧 English | <a href="README_JV.md">ꦗꦮ Basa Jawa</a></b>
   </p>
   <img width="100%" alt="On-Device AI Playground Banner" src="nano_asset/assets/og-image.jpg" />
   <p><em>A collection of experiments and prototype Client-Side AI applications that run 100% locally in your browser, without an external backend server, without API costs, and with guaranteed full data privacy.</em></p>
@@ -55,11 +55,14 @@ This repository is a playground to explore the boundaries of **Browser-based AI*
 
 Each `.html` file in this repository operates as a self-contained *Single-Page Application (SPA)* demonstrating distinct AI capabilities:
 
-### 1. `index.html` (Portal & Landing Page)
-Central portal for navigating all available AI applications.
-* Automatically verifies Chrome Prompt API support and model availability upon launch.
-* Supports responsive Dark/Light theme switching stored persistently in browser storage.
-* Features interactive galleries and preview cards for all application variants.
+### 1. `index.html`, `index_en.html`, & `index_jv.html` (Tri-Language Portal & Landing Page)
+Central landing portal for exploring all on-device AI applications available in 3 languages (Indonesian, English, and Javanese).
+* **Welcome Language Modal:** Intelligent modal dialog on first load of `index.html` prompting users for their preferred language with persistent preference saving.
+* **3-Way Language Switcher:** Compact topbar dropdown (`[🇮🇩 ID ▾]`, `[🇬🇧 EN ▾]`, `[ꦗꦮ JV ▾]`) housed in a 46px floating pill optimized for mobile screens without stacking.
+* **Interactive SVG Pipeline Simulation & Live Metrics:** 4-layer architecture diagram with animated circuit flows and test simulation buttons (`💬 Text & Code`, `📄 RAG Document`, `🖼️ Vision Analysis`), reporting real-time zero-cloud latency and local NPU/GPU metrics.
+* **Chrome On-Device AI Educational Narrative:** Deep-dive breakdown of Gemini Nano architecture, 100% local RAM data isolation, and W3C Web Platform AI standards.
+* **Lag-Free Multi-OS Quickstart:** Terminal quickstart tabs (macOS, Windows, Linux) with 1-click command copy.
+* **Automated Asset Integrity Verification:** Built-in scanner to detect Git LFS stubs and automatically download model bundles (`verify_assets.py`).
 
 ### 2. `mesin-litert-lm.html` (WebGPU LiteRT-LM Engine)
 State-of-the-art WebGPU inference implementation utilizing Google's latest runtime.
@@ -86,14 +89,16 @@ Experimental voice conversation and multimodal interaction canvas.
 
 ---
 
-## 🧠 In-Browser RAG & Local Vector Knowledge Base
+## 🧠 In-Browser Advanced RAG & Vector Knowledge Base
 
-The core modules feature a client-side **Retrieval-Augmented Generation (RAG)** pipeline that runs completely inside the browser:
-1. **Document Parsing:** Supports `.pdf` (via PDF.js), `.docx` (via Mammoth.js), `.txt`, and `.md`.
-2. **Local Chunking & Embeddings:** Text is chunked with overlapping windows and embedded via `Transformers.js` using local ONNX models:
-   - `intfloat/multilingual-e5-small` (113 MB via Git LFS for superior multilingual and Indonesian accuracy).
-   - `Xenova/all-MiniLM-L6-v2` (22 MB for rapid, lightweight embeddings).
-3. **Vector Storage & Retrieval:** Embeddings are indexed in IndexedDB. User queries are matched locally using cosine similarity, with top context chunks injected directly into the AI prompt.
+The core modules (`obrolan-claude-rag.html` and `analisis-vision-rag.html`) feature state-of-the-art **Retrieval-Augmented Generation (RAG)** running 100% client-side:
+1. **Dual Embedding Model Selector:**
+   - `Xenova/all-MiniLM-L6-v2` (22 MB): Rapid, lightweight, and memory-efficient.
+   - `intfloat/multilingual-e5-small` (118 MB): High-accuracy multilingual embedding with 1-click re-indexing.
+2. **Smart Header-Aware Chunking:** Preserves Markdown heading structure (`#`, `##`, `###`) and PDF document page numbers.
+3. **Hybrid Search Engine:** Fuses *Cosine Similarity* (65% weight) with *Lexical BM25 Keyword Search* (35% weight) for superior retrieval precision.
+4. **Accurate Source Citations:** Page-level pill tags (`p. X`) accompanied by transparent hybrid relevance scoring.
+5. **Strict Anti-Hallucination Toggle:** Constrains generation strictly to retrieved context, preventing AI hallucinations.
 
 ---
 

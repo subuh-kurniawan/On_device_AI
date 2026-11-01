@@ -46,16 +46,20 @@ if %errorlevel% neq 0 (
 )
 echo.
 
-:: 3. Periksa & Tarik Model Git LFS
-echo [3/4] Memeriksa Model Git LFS...
-where git-lfs >nul 2>&1
+:: 3. Periksa Integritas Model & Aset
+echo [3/4] Memeriksa Integritas Model AI & Aset...
+where python >nul 2>&1
 if %errorlevel% equ 0 (
-    echo [INFO] Menginisialisasi Git LFS & mengunduh model ONNX...
-    git lfs install
-    git lfs pull
-    echo [BERHASIL] Model AI lokal siap.
+    python verify_assets.py
 ) else (
-    echo [PERINGATAN] Git LFS tidak ditemukan. Model AI berukuran besar mungkin belum terunduh penuh.
+    where git-lfs >nul 2>&1
+    if !errorlevel! equ 0 (
+        echo [INFO] Menginisialisasi Git LFS...
+        git lfs install
+        git lfs pull
+    ) else (
+        echo [PERINGATAN] Jalankan verify_assets.bat untuk memastikan kelengkapan model AI.
+    )
 )
 echo.
 

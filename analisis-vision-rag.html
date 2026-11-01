@@ -1870,6 +1870,29 @@ body.light-theme::after {
                     <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </summary>
                 <div class="px-4 pb-4 space-y-3 border-t border-white/5 pt-4 cursor-default">
+                    <!-- Model Embedding Selector -->
+                    <div class="space-y-1.5 bg-black/20 p-2.5 rounded-xl border border-white/5">
+                        <div class="flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                            <span>Model Embedding</span>
+                            <span id="kb-model-badge" class="text-[9px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-medium">Cepat (22MB)</span>
+                        </div>
+                        <select id="kb-embedding-model-select" onchange="changeEmbeddingModel(this.value)" class="w-full bg-[#141416] border border-white/10 rounded-lg px-2.5 py-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-emerald-400/50 cursor-pointer">
+                            <option value="all-MiniLM-L6-v2">all-MiniLM-L6-v2 (Cepat · 22MB · EN)</option>
+                            <option value="multilingual-e5-small">multilingual-e5-small (Presisi · 113MB · ID/Multi)</option>
+                        </select>
+                        <div class="flex items-center justify-between pt-1">
+                            <span class="text-[9px] text-slate-500">Chunking: Smart Semantic</span>
+                            <button type="button" onclick="reindexKnowledgeBase()" id="kb-reindex-btn" class="text-[9px] text-slate-400 hover:text-emerald-400 underline transition-colors" title="Hitung ulang vektor dengan model yang dipilih">Re-index Dokumen</button>
+                        </div>
+                        <div class="pt-1.5 border-t border-white/5 mt-1 flex items-center justify-between">
+                            <label class="flex items-center gap-1.5 cursor-pointer select-none text-[9px] text-slate-300">
+                                <input type="checkbox" id="kb-strict-mode-toggle" onchange="toggleKBStrictMode(this.checked)" checked class="rounded border-white/20 bg-white/5 text-emerald-400 focus:ring-0 cursor-pointer w-3 h-3">
+                                <span>Anti-Halusinasi Ketat</span>
+                            </label>
+                            <span class="text-[8px] text-slate-500 font-mono" title="Hanya jawab berdasarkan fakta tertulis">Zero-Hallucination</span>
+                        </div>
+                    </div>
+
                     <!-- Tombol Unggah -->
                     <button onclick="document.getElementById('kb-file-input').click()" class="w-full py-2.5 px-3 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-[10px] font-bold text-emerald-400 transition-all flex items-center justify-center gap-2">
                         <i class='bx bx-cloud-upload text-sm'></i> Tambah Dokumen ke KB
@@ -3799,7 +3822,7 @@ window.renderMarkmapBlocks = async function(root = document) {
                         <details class="w-full bg-white/5 border border-white/5 rounded-xl overflow-hidden mt-1 mb-2">
                             <summary class="cursor-pointer flex items-center justify-between p-3 text-xs font-semibold text-slate-300 hover:bg-white/5 transition-colors select-none">
                                 <div class="flex items-center gap-2">
-                                    <i class='bx bx-library text-base text-[#D97757]'></i>
+                                    <i class='bx bx-library text-base text-emerald-400'></i>
                                     <span>${meta.citations.length} Referensi dari Knowledge Base</span>
                                 </div>
                                 <i class='bx bx-chevron-down text-lg text-slate-500'></i>
@@ -3807,14 +3830,20 @@ window.renderMarkmapBlocks = async function(root = document) {
                             <div class="p-3 border-t border-white/5 bg-black/20 flex flex-col gap-3 max-h-64 overflow-y-auto custom-scrollbar">
                         `;
                         meta.citations.forEach((cit, idx) => {
+                            const pageBadge = cit.page ? `<span class="text-[9px] px-1.5 py-0.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded font-mono font-bold">Hal. ${cit.page}</span>` : '';
+                            const sectionBadge = cit.section ? `<span class="text-[9px] px-1.5 py-0.5 bg-white/10 text-slate-300 rounded truncate max-w-[150px]" title="${cit.section}">${cit.section}</span>` : '';
+                            const cleanText = (cit.text || '').replace(/\[Halaman\s+\d+\]\s*/gi, '').replace(/\[Konteks:[^\]]+\]\s*/gi, '').trim();
+
                             citationHtml += `
                                 <div class="bg-white/5 border border-white/5 rounded-lg p-2.5">
-                                    <div class="flex items-center gap-2 mb-1">
+                                    <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
                                         <i class='bx bx-file-blank text-slate-400'></i>
-                                        <span class="text-[10px] font-bold text-slate-300">${cit.fileName}</span>
-                                        <span class="text-[9px] px-1.5 py-0.5 bg-[#D97757]/20 text-[#D97757] rounded ml-auto">Sim: ${(cit.score*100).toFixed(0)}%</span>
+                                        <span class="text-[10px] font-bold text-slate-200">${cit.fileName}</span>
+                                        ${pageBadge}
+                                        ${sectionBadge}
+                                        <span class="text-[9px] px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 rounded ml-auto font-mono" title="Hybrid: ${(cit.score*100).toFixed(0)}% (Vektor: ${(cit.vectorScore*100).toFixed(0)}% · Kata Kunci: ${(cit.keywordScore*100).toFixed(0)}%)">Akurasi: ${(cit.score*100).toFixed(0)}%</span>
                                     </div>
-                                    <p class="text-[11px] text-slate-400 leading-relaxed italic border-l-2 border-slate-600 pl-2">${cit.text}</p>
+                                    <p class="text-[11px] text-slate-400 leading-relaxed italic border-l-2 border-emerald-500/40 pl-2.5">${cleanText}</p>
                                 </div>
                             `;
                         });
@@ -3925,8 +3954,32 @@ window.renderMarkmapBlocks = async function(root = document) {
                     const kbResults = await searchKnowledgeBase(text, 3);
                     console.log("[KB] Hasil search:", kbResults ? kbResults.length : 0, "chunk(s)");
                     if (kbResults && kbResults.length > 0) {
-                        const kbContext = kbResults.map(res => `[Dokumen: ${res.fileName}]\n${res.text}`).join('\n\n---\n\n');
-                        augmentedText = `[INFO DARI KNOWLEDGE BASE LOKAL]\nBerikut adalah potongan dokumen relevan yang ditemukan di Knowledge Base (prioritaskan info ini jika relevan):\n\n${kbContext}\n\n[AKHIR INFO]\n\nPertanyaan Pengguna: ${text}`;
+                        const kbContext = kbResults.map((res, i) => {
+                            const pageInfo = res.page ? ` (Halaman ${res.page})` : '';
+                            const sectionInfo = res.section ? ` [Topik: ${res.section}]` : '';
+                            return `[Sumber ${i+1}: ${res.fileName}${pageInfo}${sectionInfo}]\n${res.text}`;
+                        }).join('\n\n---\n\n');
+
+                        const isStrict = localStorage.getItem('kb_strict_mode') !== 'false';
+                        const ragDirective = isStrict
+                            ? `[PANDUAN RAG GROUNDING: KETAT ANTI-HALUSINASI & SITASI SUMBER]
+1. FAKTA BERDASARKAN DOKUMEN: Jawablah HANYA menggunakan informasi yang tertulis secara eksplisit dalam [KONTEKS DOKUMEN RESMI] di bawah.
+2. LARANGAN HALUSINASI: Jika pertanyaan tidak dapat dijawab secara lengkap dari konteks dokumen yang diberikan, katakan secara jujur dan lugas: "Berdasarkan dokumen yang tersedia di Knowledge Base, informasi mengenai hal tersebut tidak ditemukan." DILARANG berspekulasi, mengarang angka, atau mengasumsikan fakta di luar dokumen.
+3. SITASI SUMBER: Sertakan sitasi nomor rujukan di akhir kalimat fakta yang Anda kutip (contoh: "...sebesar 15% [Sumber 1: Hal. 3]").
+4. OBJEKTIVITAS: Pertahankan ketepatan nama, tanggal, istilah teknis, dan angka persis seperti yang tertulis.
+[AKHIR PANDUAN]`
+                            : `[PANDUAN RAG GROUNDING]
+Prioritaskan informasi dari [KONTEKS DOKUMEN RESMI] berikut dan sertakan sitasi rujukan (misal: [Sumber 1]) pada kutipan fakta relevan.
+[AKHIR PANDUAN]`;
+
+                        augmentedText = `${ragDirective}
+
+[KONTEKS DOKUMEN RESMI]
+${kbContext}
+[AKHIR KONTEKS DOKUMEN]
+
+Pertanyaan Pengguna:
+${text}`;
                         console.log("[KB] RAG Injected:", kbResults.length, "chunks dari file:", kbResults.map(r=>r.fileName));
                         ragCitations = kbResults;
                     }
@@ -6962,6 +7015,97 @@ try {
         }
 
         let featureExtractor = null;
+        let currentEmbeddingModel = localStorage.getItem('preferred_embedding_model') || 'all-MiniLM-L6-v2';
+
+        function updateKBModelBadge() {
+            const badge = document.getElementById('kb-model-badge');
+            const select = document.getElementById('kb-embedding-model-select');
+            const strictToggle = document.getElementById('kb-strict-mode-toggle');
+            if (select) select.value = currentEmbeddingModel;
+            if (strictToggle) {
+                strictToggle.checked = localStorage.getItem('kb_strict_mode') !== 'false';
+            }
+            if (badge) {
+                if (currentEmbeddingModel === 'multilingual-e5-small') {
+                    badge.innerText = 'Presisi (113MB)';
+                    badge.className = 'text-[9px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-medium';
+                } else {
+                    badge.innerText = 'Cepat (22MB)';
+                    badge.className = 'text-[9px] px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-medium';
+                }
+            }
+        }
+
+        function toggleKBStrictMode(checked) {
+            localStorage.setItem('kb_strict_mode', checked ? 'true' : 'false');
+            showKBToast(checked ? "🛡️ Mode Ketat Anti-Halusinasi Aktif" : "Mode Standar RAG Aktif");
+        }
+
+        async function changeEmbeddingModel(modelName) {
+            if (currentEmbeddingModel === modelName) return;
+            currentEmbeddingModel = modelName;
+            localStorage.setItem('preferred_embedding_model', modelName);
+            featureExtractor = null; // Reset instance model lama
+            updateKBModelBadge();
+            showKBToast(`Model embedding dialihkan ke: ${modelName}`);
+        }
+
+        async function reindexKnowledgeBase() {
+            if (!db) {
+                alert("Database Knowledge Base belum siap.");
+                return;
+            }
+            
+            const confirmReindex = confirm(`Hitung ulang semua embedding dokumen dengan model "${currentEmbeddingModel}"?\nProses ini berjalan sepenuhnya lokal di browser.`);
+            if (!confirmReindex) return;
+
+            document.getElementById('kb-progress-text').innerText = "Menyiapkan model...";
+            document.getElementById('kb-progress-percentage').innerText = "0%";
+            document.getElementById('kb-progress-bar').style.width = "0%";
+            document.getElementById('kb-progress-container').classList.remove('hidden');
+
+            try {
+                const extractor = await initFeatureExtractor();
+                if (!extractor) throw new Error("Gagal memuat model embedding.");
+
+                const txRead = db.transaction('kb_chunks', 'readonly');
+                const store = txRead.objectStore('kb_chunks');
+                const allChunks = await new Promise((res, rej) => {
+                    const req = store.getAll();
+                    req.onsuccess = () => res(req.result);
+                    req.onerror = () => rej(req.error);
+                });
+
+                if (!allChunks || allChunks.length === 0) {
+                    alert("Belum ada dokumen di Knowledge Base untuk di-reindex.");
+                    return;
+                }
+
+                document.getElementById('kb-progress-text').innerText = `Re-indexing ${allChunks.length} chunks...`;
+                let processed = 0;
+
+                for (const chunk of allChunks) {
+                    await new Promise(r => setTimeout(r, 12)); // Menjaga UI tetap responsif
+                    const newEmbedding = await extractEmbedding(chunk.text, false);
+                    if (newEmbedding) {
+                        const txWrite = db.transaction('kb_chunks', 'readwrite');
+                        chunk.embedding = newEmbedding;
+                        txWrite.objectStore('kb_chunks').put(chunk);
+                    }
+                    processed++;
+                    const pct = Math.round((processed / allChunks.length) * 100);
+                    document.getElementById('kb-progress-percentage').innerText = pct + "%";
+                    document.getElementById('kb-progress-bar').style.width = pct + "%";
+                }
+
+                showKBToast(`Berhasil re-index ${processed} chunks dengan ${currentEmbeddingModel}!`);
+            } catch (err) {
+                console.error("Gagal re-index KB:", err);
+                alert("Gagal re-index KB: " + err.message);
+            } finally {
+                document.getElementById('kb-progress-container').classList.add('hidden');
+            }
+        }
 
         async function initFeatureExtractor() {
             if (featureExtractor) return featureExtractor;
@@ -6986,11 +7130,14 @@ try {
                 return null;
             }
 
+            const modelId = currentEmbeddingModel || 'all-MiniLM-L6-v2';
+            const modelLabel = modelId === 'multilingual-e5-small' ? 'multilingual-e5-small (113MB)' : 'all-MiniLM-L6-v2 (22MB)';
+
             try {
-                document.getElementById('kb-progress-text').innerText = "Memuat model AI lokal...";
+                document.getElementById('kb-progress-text').innerText = `Memuat model AI: ${modelLabel}...`;
                 document.getElementById('kb-progress-container').classList.remove('hidden');
                 
-                featureExtractor = await window.transformersPipeline('feature-extraction', 'all-MiniLM-L6-v2', {
+                featureExtractor = await window.transformersPipeline('feature-extraction', modelId, {
                     progress_callback: (x) => {
                         if (x.status === 'progress') {
                             const pct = Math.round(x.progress);
@@ -6999,20 +7146,25 @@ try {
                         }
                     }
                 });
-                console.log("[KB] Model embedding berhasil dimuat.");
+                console.log(`[KB] Model embedding [${modelId}] berhasil dimuat.`);
                 document.getElementById('kb-progress-container').classList.add('hidden');
                 return featureExtractor;
             } catch (err) {
-                console.error("[KB] Gagal memuat model embedding:", err);
+                console.error(`[KB] Gagal memuat model embedding [${modelId}]:`, err);
                 document.getElementById('kb-progress-container').classList.add('hidden');
                 return null;
             }
         }
 
-        async function extractEmbedding(text) {
+        async function extractEmbedding(text, isQuery = false) {
             const extractor = await initFeatureExtractor();
             if (!extractor) return null;
-            const output = await extractor(text, { pooling: 'mean', normalize: true });
+            let input = text;
+            // Model E5 memerlukan prefix instruksi untuk akurasi maksimal
+            if (currentEmbeddingModel === 'multilingual-e5-small') {
+                input = (isQuery ? 'query: ' : 'passage: ') + text;
+            }
+            const output = await extractor(input, { pooling: 'mean', normalize: true });
             return Array.from(output.data);
         }
 
@@ -7028,6 +7180,61 @@ try {
             return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
         }
 
+        function computeKeywordScore(query, text, fileName = '') {
+            if (!query || !text) return 0;
+            const queryLower = query.toLowerCase().trim();
+            const textLower = text.toLowerCase();
+            const fileLower = (fileName || '').toLowerCase();
+
+            let score = 0;
+            // 1. Exact phrase match boost
+            if (queryLower.length > 3 && textLower.includes(queryLower)) {
+                score += 0.45;
+            }
+
+            // 2. Tokenized search (buang stopwords)
+            const stopWords = new Set(['yang', 'dan', 'di', 'ke', 'dari', 'ini', 'itu', 'untuk', 'pada', 'adalah', 'the', 'and', 'in', 'of', 'to', 'is', 'for', 'with', 'on', 'at', 'a', 'an']);
+            const tokens = queryLower.split(/[\s,.;:?!()\[\]{}"'\/\\]+/).filter(w => w.length > 1 && !stopWords.has(w));
+            if (tokens.length === 0) return Math.min(score, 1.0);
+
+            let matches = 0;
+            let freqBonus = 0;
+
+            for (const token of tokens) {
+                if (textLower.includes(token)) {
+                    matches++;
+                    let count = 0;
+                    let pos = 0;
+                    while ((pos = textLower.indexOf(token, pos)) !== -1 && count < 5) {
+                        count++;
+                        pos += token.length;
+                    }
+                    freqBonus += Math.min(count - 1, 4) * 0.04;
+                } else if (fileLower.includes(token)) {
+                    matches += 0.5;
+                }
+            }
+
+            const tokenRatio = matches / tokens.length;
+            score += (tokenRatio * 0.45) + Math.min(freqBonus, 0.2);
+            return Math.min(score, 1.0);
+        }
+
+        function extractChunkMetadata(rawText) {
+            let page = null;
+            let section = null;
+
+            // Deteksi nomor halaman
+            const pageMatch = rawText.match(/\[Halaman\s+(\d+)\]/i) || rawText.match(/\[Page\s+(\d+)\]/i);
+            if (pageMatch) page = pageMatch[1];
+
+            // Deteksi konteks topik/heading
+            const sectionMatch = rawText.match(/\[Konteks:\s+([^\]]+)\]/i) || rawText.match(/^(?:#{1,4}\s+|Bab\s+|BAB\s+|Pasal\s+)([^\n]+)/m);
+            if (sectionMatch) section = sectionMatch[1].trim();
+
+            return { page, section };
+        }
+
         async function searchKnowledgeBase(query, topK = 3) {
             if (!db) return [];
             
@@ -7036,7 +7243,7 @@ try {
             });
             if (fileCount === 0) return [];
 
-            const queryEmbedding = await extractEmbedding(query);
+            const queryEmbedding = await extractEmbedding(query, true);
             if (!queryEmbedding) return [];
 
             return new Promise((resolve) => {
@@ -7051,15 +7258,27 @@ try {
                     storeChunks.getAll().onsuccess = (e) => {
                         const chunks = e.target.result;
                         let scoredChunks = chunks.map(chunk => {
+                            const fileName = fileMap[chunk.fileId] || "Dokumen KB";
+                            const vectorScore = cosineSimilarity(queryEmbedding, chunk.embedding);
+                            const keywordScore = computeKeywordScore(query, chunk.text, fileName);
+                            // Hybrid Weighted Score: 65% Vektor Semantik + 35% Kata Kunci Eksak
+                            const hybridScore = (0.65 * vectorScore) + (0.35 * keywordScore);
+                            const meta = extractChunkMetadata(chunk.text);
+
                             return {
                                 text: chunk.text,
-                                fileName: fileMap[chunk.fileId] || "Dokumen KB",
-                                score: cosineSimilarity(queryEmbedding, chunk.embedding)
+                                fileName: fileName,
+                                score: hybridScore,
+                                vectorScore: vectorScore,
+                                keywordScore: keywordScore,
+                                page: meta.page,
+                                section: meta.section
                             };
                         });
                         
                         scoredChunks.sort((a, b) => b.score - a.score);
-                        scoredChunks = scoredChunks.filter(c => c.score > 0.35); // threshold 0.35 = lebih relevan
+                        // Filter relevan: hybridScore > 0.32 atau keywordScore > 0.4
+                        scoredChunks = scoredChunks.filter(c => c.score > 0.32 || c.keywordScore > 0.4);
                         
                         resolve(scoredChunks.slice(0, topK));
                     };
@@ -7068,23 +7287,39 @@ try {
         }
 
         function chunkText(text, chunkSize = 1000, overlap = 200) {
-            // Semantic Chunking: Split by double newline (paragraphs)
-            const paragraphs = text.split(/\n\s*\n/);
+            // Smart Semantic & Header-aware chunking
+            const blockPattern = /(?:\r?\n){2,}|(?=\n#{1,4}\s)|(?=\n(?:Bab|BAB|Pasal|Section)\s)|(?=\n\[Halaman\s+\d+\])/g;
+            const rawBlocks = text.split(blockPattern).map(b => b.trim()).filter(Boolean);
+            if (rawBlocks.length === 0) return [text];
+
             const chunks = [];
             let currentChunk = "";
+            let currentSection = "";
 
-            for (const para of paragraphs) {
-                if (currentChunk.length + para.length > chunkSize && currentChunk.length > 0) {
-                    chunks.push(currentChunk.trim());
-                    // Create overlap by taking the last few words
+            for (const block of rawBlocks) {
+                const headerMatch = block.match(/^(#{1,4}\s+[^\n]+|(?:Bab|BAB|Pasal|Section)\s+[^\n]+|\[Halaman\s+\d+\])/i);
+                if (headerMatch) {
+                    currentSection = headerMatch[1].replace(/^[#\s]+/, '').trim();
+                }
+
+                const candidate = currentChunk ? (currentChunk + "\n\n" + block) : block;
+                if (candidate.length > chunkSize && currentChunk.length > 0) {
+                    const prefix = (currentSection && !currentChunk.includes(currentSection)) ? `[Konteks: ${currentSection}]\n` : '';
+                    chunks.push((prefix + currentChunk).trim());
+
+                    // Overlap preserving
                     const words = currentChunk.split(' ');
-                    const overlapWords = words.slice(-Math.floor(overlap / 5)).join(' ');
-                    currentChunk = overlapWords + "\n\n" + para;
+                    const overlapCount = Math.min(Math.floor(overlap / 6), Math.max(10, Math.floor(words.length * 0.2)));
+                    const overlapWords = words.slice(-overlapCount).join(' ');
+                    currentChunk = overlapWords + "\n\n" + block;
                 } else {
-                    currentChunk += (currentChunk ? "\n\n" : "") + para;
+                    currentChunk = candidate;
                 }
             }
-            if (currentChunk.trim().length > 0) chunks.push(currentChunk.trim());
+            if (currentChunk.trim().length > 0) {
+                const prefix = (currentSection && !currentChunk.includes(currentSection)) ? `[Konteks: ${currentSection}]\n` : '';
+                chunks.push((prefix + currentChunk).trim());
+            }
             return chunks;
         }
 
@@ -7109,9 +7344,9 @@ try {
                     for (let i = 1; i <= pdf.numPages; i++) {
                         const page = await pdf.getPage(i);
                         const content = await page.getTextContent();
-                        // Gabungkan item teks per baris, lalu pisahkan antar halaman dengan \n\n
-                        // agar semantic chunking per paragraf bisa bekerja
-                        text += content.items.map(item => item.str).join(' ') + '\n\n';
+                        // Sertakan penanda [Halaman X] agar chunk mengetahui nomor halaman dokumen
+                        const pageText = content.items.map(item => item.str).join(' ');
+                        text += `[Halaman ${i}]\n` + pageText + '\n\n';
                         document.getElementById('kb-progress-percentage').innerText = Math.round((i/pdf.numPages)*30) + "%";
                         document.getElementById('kb-progress-bar').style.width = Math.round((i/pdf.numPages)*30) + "%";
                     }
@@ -7133,7 +7368,7 @@ try {
                 text = text.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
                 if (!text) throw new Error("Teks kosong atau gagal diekstrak");
 
-                document.getElementById('kb-progress-text').innerText = "Membuat vector embeddings...";
+                document.getElementById('kb-progress-text').innerText = `Membuat vector embeddings (${currentEmbeddingModel})...`;
                 
                 const chunks = chunkText(text, 1000, 200);
                 let savedChunks = 0;
@@ -7148,7 +7383,7 @@ try {
                     // Beri jeda kecil agar main thread tidak freeze & UI progress bar ter-update
                     await new Promise(r => setTimeout(r, 15));
                     
-                    const embedding = await extractEmbedding(chunkTextData);
+                    const embedding = await extractEmbedding(chunkTextData, false);
                     
                     if (embedding) {
                         // Simpan chunk di transaksi baru setelah await
@@ -7168,6 +7403,7 @@ try {
                 }
                 
                 renderKBList();
+                showKBToast(`Berhasil menambahkan "${fileName}" (${savedChunks} chunks)`);
                 
             } catch (err) {
                 console.error(err);
@@ -7178,6 +7414,7 @@ try {
         }
 
         function renderKBList() {
+            updateKBModelBadge();
             if (!db) return;
             const tx = db.transaction('kb_files', 'readonly');
             const store = tx.objectStore('kb_files');

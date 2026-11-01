@@ -185,17 +185,21 @@ fi
 
 echo ""
 echo -e "${BOLD}${CYAN}--------------------------------------------------------${RESET}"
-echo -e "${BOLD}📦 Memeriksa Bobot Model AI (Git LFS)${RESET}"
+echo -e "${BOLD}📦 Memeriksa Bobot Model AI & Integritas Aset${RESET}"
 echo -e "${BOLD}${CYAN}--------------------------------------------------------${RESET}"
 
-# 3. Tarik Model ONNX via Git LFS
-if command -v git-lfs &>/dev/null; then
+# 3. Jalankan Skrip Integritas Aset & Auto-Downloader
+if command -v python3 &>/dev/null; then
+    python3 verify_assets.py || true
+elif command -v python &>/dev/null; then
+    python verify_assets.py || true
+elif command -v git-lfs &>/dev/null; then
     echo -e "${CYAN}⏳ Menginisialisasi Git LFS & mengunduh model jika diperlukan...${RESET}"
     git lfs install --skip-repo 2>/dev/null || git lfs install || true
     git lfs pull || true
     echo -e "${GREEN}✅ Model AI lokal siap.${RESET}"
 else
-    echo -e "${YELLOW}⚠️  Git LFS belum terpasang. Model ONNX besar mungkin hanya berupa file pointer.${RESET}"
+    echo -e "${YELLOW}⚠️  Python3 atau Git LFS belum terpasang. Jalankan ./verify_assets.sh untuk verifikasi model.${RESET}"
 fi
 
 # 4. Beri Izin Eksekusi untuk Seluruh Skrip Peluncur

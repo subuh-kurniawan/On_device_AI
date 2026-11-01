@@ -2,12 +2,39 @@
 
 <div align="center">
   <p>
-    <b><a href="CHANGELOG.md">🇮🇩 Bahasa Indonesia</a> | 🇬🇧 English</b>
+    <b><a href="CHANGELOG.md">🇮🇩 Bahasa Indonesia</a> | 🇬🇧 English | <a href="CHANGELOG_JV.md">ꦗꦮ Basa Jawa</a></b>
   </p>
 </div>
 
 All notable changes to the **Chrome On-Device AI Playground** project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/).
+
+---
+
+## [2.1.0] - 2026-11-02
+
+### ✨ Added
+- **Tri-Language Landing Pages (ID, EN, JV) & Welcome Language Modal (`index.html`, `index_en.html`, `index_jv.html`)**:
+  - Interactive Welcome Language Modal on `index.html` prompting users for their preferred language (Indonesian, English, Javanese) on first load with preference storage.
+  - 3-Way Language Switcher Dropdown (`[🇮🇩 ID ▾]`, `[🇬🇧 EN ▾]`, `[ꦗꦮ JV ▾]`) in the top navigation bar with a mobile-first 46px floating pill non-stacking design.
+  - Dedicated full Javanese portal (`index_jv.html`) using formal Krama Madya across all UI components, 18 app cards, educational narratives, and modal dialogs.
+  - Dedicated full English portal (`index_en.html`).
+- **Interactive SVG Architecture Pipeline Simulation & Live Metrics (`index.html`, `index_en.html`, `index_jv.html`)**:
+  - Animated SVG flow simulation with 3 pipeline test triggers (`💬 Text & Code`, `📄 RAG Document`, `🖼️ Vision Analysis`).
+  - Dynamic Live Metrics Bar tracking cloud latency, RAM data privacy, active hardware accelerator (NPU/GPU), and offline readiness.
+- **Asset Integrity Verification & Automated Model Downloader (`verify_assets.py`, `verify_assets.sh`, `verify_assets.bat`)**:
+  - Automated detection of Git LFS pointer stubs (< 2 KB) for local ONNX embedding models.
+  - Automatic download from official server mirror (`https://agendakelas.my.id/models.zip`) and Google Drive fallback with automated extraction into `models/`.
+  - Built-in integration into cross-platform setup scripts (`setup.sh`, `setup_mac.command`, `setup.bat`).
+- **In-Browser Advanced RAG System Enhancements (`obrolan-claude-rag.html`, `analisis-vision-rag.html`)**:
+  - Dual embedding model selector: `all-MiniLM-L6-v2` (22 MB, fast) vs `multilingual-e5-small` (118 MB, high-accuracy multilingual) with 1-click re-indexing.
+  - Smart header-aware chunking preserving Markdown structure and PDF page numbers.
+  - Hybrid Search Engine (Cosine Similarity 65% + Lexical BM25 35%).
+  - Accurate source citation pills (`p. X`) and hybrid relevance breakdown.
+  - Strict Anti-Hallucination Mode toggle preventing answers outside verified knowledge base contexts.
+- **Mobile-First Header & OS Tab Switching Fixes**:
+  - Early initialization for Quickstart OS tabs (macOS, Windows, Linux) ensuring immediate, zero-lag switching.
+  - Clean focus-visible styling eliminating default browser outline rings.
 
 ---
 

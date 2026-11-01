@@ -2,12 +2,39 @@
 
 <div align="center">
   <p>
-    <b>🇮🇩 Bahasa Indonesia | <a href="CHANGELOG_EN.md">🇬🇧 English</a></b>
+    <b>🇮🇩 Bahasa Indonesia | <a href="CHANGELOG_EN.md">🇬🇧 English</a> | <a href="CHANGELOG_JV.md">ꦗꦮ Basa Jawa</a></b>
   </p>
 </div>
 
 Semua perubahan penting pada proyek **Chrome On-Device AI Playground** didokumentasikan dalam berkas ini.
 Format pencatatan mengikuti panduan [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan menganut prinsip [Semantic Versioning](https://semver.org/).
+
+---
+
+## [2.1.0] - 2026-11-02
+
+### ✨ Ditambahkan (Added)
+- **Dukungan Tri-Bahasa Landing Page (ID, EN, JV) & Welcome Language Modal (`index.html`, `index_en.html`, `index_jv.html`)**:
+  - Modal selamat datang (*Welcome Language Modal*) interaktif pada `index.html` untuk memilih bahasa awal (Bahasa Indonesia, English, Basa Jawa) saat kunjungan pertama dengan fitur simpan preferensi.
+  - Dropdown bahasa 3 arah (`[🇮🇩 ID ▾]`, `[🇬🇧 EN ▾]`, `[ꦗꦮ JV ▾]`) di bilah navigasi atas (topbar) dengan desain *mobile-first floating pill* 46px non-stacking.
+  - Halaman penuh berbahasa Jawa (`index_jv.html`) bertata bahasa Krama Madya baku untuk seluruh elemen UI, 18 kartu aplikasi, narasi edukatif Chrome On-Device AI, dan modal dialog.
+  - Halaman penuh berbahasa Inggris (`index_en.html`).
+- **Simulasi Pipeline Arsitektur Interaktif SVG & Live Metrics (`index.html`, `index_en.html`, `index_jv.html`)**:
+  - Diagram alur interaktif berbasis SVG animasi dengan 3 tombol pengujian alur (`💬 Teks & Kode`, `📄 Dokumen RAG`, `🖼️ Analisis Gambar`).
+  - Bar metrik langsung (*Live Metrics Bar*) yang memperbarui status latensi, privasi data RAM, akselerator hardware aktif (NPU/GPU), dan ketersediaan luring secara dinamis.
+- **Skrip Verifikasi Integritas Aset & Pengunduh Model Otomatis (`verify_assets.py`, `verify_assets.sh`, `verify_assets.bat`)**:
+  - Pemeriksa integritas model embedding ONNX lokal untuk mendeteksi *pointer stub* Git LFS (< 2 KB).
+  - Pengunduh otomatis arsip model dari cermin server (`https://agendakelas.my.id/models.zip`) dan Google Drive (`1UPM-az2Y5VIkzoBuPB06CDLj3IiQkZL-`) dengan ekstraksi otomatis ke direktori `models/`.
+  - Terintegrasi langsung ke dalam skrip setup lintas platform (`setup.sh`, `setup_mac.command`, `setup.bat`).
+- **Penyempurnaan Sistem In-Browser RAG & Vector Knowledge Base (`obrolan-claude-rag.html`, `analisis-vision-rag.html`)**:
+  - Pemilih model embedding dinamis: `all-MiniLM-L6-v2` (22 MB, cepat) dan `multilingual-e5-small` (118 MB, akurasi tinggi multi-bahasa) dengan fitur *1-click re-index*.
+  - *Smart header-aware chunking* yang mempertahankan hierarki heading Markdown dan nomor halaman dokumen PDF.
+  - *Hybrid Search Engine* (Kombinasi Cosine Similarity 65% + Lexical BM25 35%).
+  - Sitasi sumber akurat dengan *page pills* (`Hal. X`) dan skor relevansi hibrida transparan.
+  - Tombol *Strict Anti-Hallucination Mode* untuk mencegah model memberikan jawaban di luar basis pengetahuan.
+- **Perbaikan Responsivitas Mobile-First & Tab Sistem Operasi**:
+  - Inisialisasi awal (*early execution*) untuk tab sistem operasi (macOS, Windows, Linux) pada bagian Quickstart sehingga bebas lag dan langsung dapat di-switch.
+  - Penghapusan browser focus ring ganda pada tombol tab sistem operasi.
 
 ---
 

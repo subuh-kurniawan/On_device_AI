@@ -132,12 +132,17 @@
         let dragStart = null;
         let hasDragged = false;
 
-        const updateTransform = () => {
+        let initialPinchDistance = null;
+        let initialPinchScale = 1;
+
+        const updateTransform = (animate = false) => {
+            diagram.style.transition = animate ? 'transform 0.15s cubic-bezier(0.2, 0.9, 0.4, 1)' : 'none';
+            diagram.style.willChange = 'transform';
             diagram.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
         };
-        const zoom = delta => {
-            scale = Math.min(5, Math.max(0.5, scale + delta));
-            updateTransform();
+        const zoom = (delta, animate = true) => {
+            scale = Math.min(5, Math.max(0.4, Number((scale + delta).toFixed(2))));
+            updateTransform(animate);
         };
 
         toolbar.querySelector('.mermaid-btn-zoom-in')?.addEventListener('click', () => zoom(0.2));
@@ -146,34 +151,82 @@
             scale = 1;
             panX = 0;
             panY = 0;
-            updateTransform();
+            updateTransform(true);
         });
 
+        // Double click viewport untuk reset zoom
+        viewport.addEventListener('dblclick', event => {
+            if (event.target.closest('.mermaid-toolbar, .mermaid-node-action-pill, g.node, .node')) return;
+            scale = 1;
+            panX = 0;
+            panY = 0;
+            updateTransform(true);
+        });
+
+        // Pointer Drag & Pan (Mouse / Pen / Single Touch)
         viewport.addEventListener('pointerdown', event => {
-            if (event.button !== 0 || event.target.closest('.mermaid-toolbar')) return;
+            if (event.button !== 0 || event.target.closest('.mermaid-toolbar, .mermaid-node-action-pill')) return;
             dragStart = { x: event.clientX - panX, y: event.clientY - panY };
             hasDragged = false;
             viewport.classList.add('is-panning');
-            viewport.setPointerCapture(event.pointerId);
+            try { viewport.setPointerCapture(event.pointerId); } catch (_) {}
         });
         viewport.addEventListener('pointermove', event => {
             if (!dragStart) return;
             const dist = Math.hypot(event.clientX - panX - dragStart.x, event.clientY - panY - dragStart.y);
-            if (dist > 4) hasDragged = true;
+            if (dist > 5) hasDragged = true;
             panX = event.clientX - dragStart.x;
             panY = event.clientY - dragStart.y;
-            updateTransform();
+            updateTransform(false);
         });
-        const stopDragging = () => {
+        const stopDragging = event => {
+            if (dragStart && event?.pointerId) {
+                try { viewport.releasePointerCapture(event.pointerId); } catch (_) {}
+            }
             dragStart = null;
             viewport.classList.remove('is-panning');
         };
         viewport.addEventListener('pointerup', stopDragging);
         viewport.addEventListener('pointercancel', stopDragging);
+
+        // Multi-touch Pinch-to-Zoom untuk layar sentuh HP / Tablet
+        viewport.addEventListener('touchstart', event => {
+            if (event.touches.length === 2) {
+                const t1 = event.touches[0];
+                const t2 = event.touches[1];
+                initialPinchDistance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+                initialPinchScale = scale;
+                dragStart = null;
+                viewport.classList.remove('is-panning');
+            }
+        }, { passive: true });
+
+        viewport.addEventListener('touchmove', event => {
+            if (event.touches.length === 2 && initialPinchDistance) {
+                event.preventDefault();
+                const t1 = event.touches[0];
+                const t2 = event.touches[1];
+                const currentDistance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+                if (initialPinchDistance > 0) {
+                    const ratio = currentDistance / initialPinchDistance;
+                    scale = Math.min(5, Math.max(0.4, Number((initialPinchScale * ratio).toFixed(2))));
+                    updateTransform(false);
+                    hasDragged = true;
+                }
+            }
+        }, { passive: false });
+
+        viewport.addEventListener('touchend', event => {
+            if (event.touches.length < 2) {
+                initialPinchDistance = null;
+            }
+        }, { passive: true });
+
+        // Wheel zoom (Ctrl / Meta + Wheel atau trackpad pinch)
         viewport.addEventListener('wheel', event => {
             if (!event.ctrlKey && !event.metaKey) return;
             event.preventDefault();
-            zoom(event.deltaY < 0 ? 0.1 : -0.1);
+            zoom(event.deltaY < 0 ? 0.1 : -0.1, false);
         }, { passive: false });
 
         // Klik node untuk memicu aksi penjelasan kontekstual AI
