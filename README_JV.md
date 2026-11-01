@@ -7,7 +7,8 @@
   <img width="100%" alt="On-Device AI Playground Banner" src="nano_asset/assets/og-image.jpg" />
   <p><em>Kempalan panaliten lan purwarupa (prototype) aplikasi AI Client-Side ingkang lumampah 100% kanthi lokal ing salebeting browser panjenengan, tanpa server eksternal, tanpa ragad API, lan kanthi jaminan privasi data ingkang wutuh.</em></p>
   <p>
-    <a href="CHANGELOG_JV.md"><b>📋 Tingali Cathetan Pangowahan (Changelog)</b></a>
+    <a href="CHANGELOG_JV.md"><b>📋 Tingali Cathetan Pangowahan (Changelog)</b></a> • 
+    <a href="https://github.com/subuh-kurniawan/On_device_AI/wiki"><b>📖 Bukak Dokumentasi Wiki</b></a>
   </p>
 </div>
 

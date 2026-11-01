@@ -7,7 +7,8 @@
   <img width="100%" alt="On-Device AI Playground Banner" src="nano_asset/assets/og-image.jpg" />
   <p><em>A collection of experiments and prototype Client-Side AI applications that run 100% locally in your browser, without an external backend server, without API costs, and with guaranteed full data privacy.</em></p>
   <p>
-    <a href="CHANGELOG_EN.md"><b>📋 View Release Notes (Changelog)</b></a>
+    <a href="CHANGELOG_EN.md"><b>📋 View Release Notes (Changelog)</b></a> • 
+    <a href="https://github.com/subuh-kurniawan/On_device_AI/wiki"><b>📖 Open Wiki Documentation</b></a>
   </p>
 </div>
 
