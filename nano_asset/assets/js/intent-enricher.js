@@ -174,13 +174,126 @@
         };
     }
 
+    /**
+     * Menganalisis respon AI untuk merekomendasikan aksi visual / tindak lanjut interaktif (Action Chips)
+     */
+    function suggestActions(aiResponseText) {
+        const text = String(aiResponseText || '').trim();
+        if (!text) return [];
+
+        const actions = [];
+        const hasMermaid = /```(?:mermaid|flowchart|mindmap)/i.test(text);
+        const hasChart = /```chart/i.test(text);
+        const hasTable = /\|.+\|[\r\n]+\|[-:| ]+\|/i.test(text);
+        const hasNumberedList = /(?:^|\n)\s*\d+[\.\)]\s+.+(?:\n\s*\d+[\.\)]\s+.+)+/m.test(text);
+        const hasMath = MATH_KEYWORDS.test(text) || FORMULA_PATTERNS.test(text);
+
+        // Rekomendasi Flowchart jika ada daftar berurutan / tahapan tanpa diagram
+        if (hasNumberedList && !hasMermaid) {
+            actions.push({
+                id: 'flowchart',
+                icon: '🔀',
+                label: 'Bagan Alur (Flowchart)',
+                prompt: 'Buatkan diagram alir (Mermaid flowchart TD) dari tahapan atau poin-poin pembahasan di atas.'
+            });
+        }
+
+        // Rekomendasi Mindmap jika pembahasan luas/bercabang tanpa diagram
+        if (!hasMermaid && (text.length > 300 || /(?:bab|sub-bab|topik|kategori|materi|struktur)/i.test(text))) {
+            actions.push({
+                id: 'mindmap',
+                icon: '🗺️',
+                label: 'Peta Konsep (Mindmap)',
+                prompt: 'Sajikan ringkasan topik di atas dalam bentuk peta konsep / mindmap Mermaid dengan hierarki yang jelas.'
+            });
+        }
+
+        // Rekomendasi Grafik jika memuat tabel angka atau data statistik tanpa chart
+        if ((hasTable || /\b\d+(?:[.,]\d+)?%\b|\bstatistik\b|\bperbandingan data\b/i.test(text)) && !hasChart) {
+            actions.push({
+                id: 'chart',
+                icon: '📊',
+                label: 'Grafik Data',
+                prompt: 'Visualisasikan data angka atau perbandingan di atas menjadi konfigurasi grafik Chart.js yang menarik.'
+            });
+        }
+
+        // Rekomendasi Penjabaran Rumus jika ada konsep sains/matematika
+        if (hasMath && !/\$\$[\s\S]+\$\$/i.test(text)) {
+            actions.push({
+                id: 'math',
+                icon: '📐',
+                label: 'Jabarkan Rumus KaTeX',
+                prompt: 'Tuliskan rumus atau formula matematika formal terkait topik ini menggunakan format KaTeX display ($$...$$).'
+            });
+        }
+
+        // Rekomendasi Ringkasan Padat jika teks panjang
+        if (text.length > 500) {
+            actions.push({
+                id: 'summary',
+                icon: '📝',
+                label: 'Ringkas Inti',
+                prompt: 'Rangkum inti sari pembahasan di atas dalam 3 poin kesimpulan paling penting.'
+            });
+        }
+
+        return actions.slice(0, 4);
+    }
+
+    /**
+     * Render elemen visual Smart Action Chips di DOM
+     */
+    function renderActionChips(container, aiResponseText, onSelectAction) {
+        if (!container || !(container instanceof Element)) return null;
+        const actions = suggestActions(aiResponseText);
+        if (actions.length === 0) return null;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'ai-action-chips flex flex-wrap items-center gap-1.5 mt-3 pt-2.5 border-t border-white/5';
+        wrapper.setAttribute('role', 'toolbar');
+        wrapper.setAttribute('aria-label', 'Saran tindak lanjut visual AI');
+
+        const title = document.createElement('span');
+        title.className = 'text-[11px] font-medium text-slate-400 select-none mr-1';
+        title.textContent = 'Saran visual:';
+        wrapper.appendChild(title);
+
+        actions.forEach(action => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white hover:border-white/20 transition-all cursor-pointer';
+            btn.setAttribute('title', action.prompt);
+            btn.innerHTML = `<span aria-hidden="true">${action.icon}</span><span>${action.label}</span>`;
+            btn.addEventListener('click', () => {
+                if (typeof onSelectAction === 'function') {
+                    onSelectAction(action);
+                } else if (typeof window.sendPromptToAI === 'function') {
+                    window.sendPromptToAI(action.prompt);
+                } else {
+                    const input = document.getElementById('user-input') || document.querySelector('textarea, input[type="text"]');
+                    if (input) {
+                        input.value = action.prompt;
+                        input.focus();
+                    }
+                }
+            });
+            wrapper.appendChild(btn);
+        });
+
+        container.appendChild(wrapper);
+        return wrapper;
+    }
+
     // Expose ke global namespace
     global.GemmaIntent = {
         detectIntent,
         shouldForceKaTeX,
         enrichPrompt,
         convertNumberedListToFlowchart,
-        convertTableToChartConfig
+        convertTableToChartConfig,
+        suggestActions,
+        renderActionChips
     };
 
     // Kompatibilitas mundur dengan fungsi applyKaTeXPrompt yang sudah dipanggil di berbagai halaman

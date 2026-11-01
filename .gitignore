@@ -1,0 +1,13 @@
+# OS & editor artifacts
+.DS_Store
+**/.DS_Store
+.vscode/
+
+# Local SSL certificates & keys (auto-generated)
+*.pem
+cert.pem
+key.pem
+
+# Compiled binaries
+jalankanserverFN_gui
+/Archive.zip

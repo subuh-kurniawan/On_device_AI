@@ -364,12 +364,16 @@
     }
 
     /**
-     * Estimasi token teks (Bahasa Indonesia & multilingual: ~3.5 karakter per token)
+     * Estimasi token teks adaptif (Kode: ~2.6 char/token, Teks reguler: ~3.4 char/token)
      */
     function estimateTokens(str) {
         if (!str) return 0;
         const text = String(str);
-        return Math.max(1, Math.ceil(text.length / 3.5));
+        if (!text) return 0;
+        if (/```|[{}\[\];=><+\-*\/]/.test(text) && text.length > 50) {
+            return Math.max(1, Math.ceil(text.length / 2.6));
+        }
+        return Math.max(1, Math.ceil(text.length / 3.4));
     }
 
     /**
@@ -389,10 +393,16 @@
         const windowSize = Number(options.historyWindow) || 0;
         const messages = windowSize > 0 ? allMessages.slice(-windowSize) : allMessages;
         for (const msg of messages) {
-            const content = typeof msg.content === 'string'
+            if (msg && typeof msg === 'object' && Number.isFinite(msg._tokens)) {
+                historyTokens += msg._tokens;
+                continue;
+            }
+            const content = typeof msg?.content === 'string'
                 ? msg.content
-                : (typeof msg.text === 'string' ? msg.text : JSON.stringify(msg.content || msg.text || ''));
-            historyTokens += estimateTokens(content);
+                : (typeof msg?.text === 'string' ? msg.text : JSON.stringify(msg?.content || msg?.text || ''));
+            const count = estimateTokens(content);
+            if (msg && typeof msg === 'object') msg._tokens = count;
+            historyTokens += count;
         }
 
         const totalUsed = systemTokens + summaryTokens + historyTokens;

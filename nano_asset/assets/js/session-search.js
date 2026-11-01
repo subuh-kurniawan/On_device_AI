@@ -31,13 +31,13 @@
                 if (!item.dataset.searchText) item.dataset.searchText = item.textContent || '';
             });
         const query = input.value.trim().toLocaleLowerCase();
+        const keywords = query ? query.split(/\s+/).filter(Boolean) : [];
         const items = Array.from(container.querySelectorAll('[data-session-search-item]'));
         let visibleCount = 0;
 
         for (const item of items) {
-            const matches = !query || (item.dataset.searchText || item.textContent)
-                .toLocaleLowerCase()
-                .includes(query);
+            const text = (item.dataset.searchText || item.textContent).toLocaleLowerCase();
+            const matches = keywords.length === 0 || keywords.every(kw => text.includes(kw));
             item.hidden = !matches;
             if (matches) visibleCount += 1;
         }

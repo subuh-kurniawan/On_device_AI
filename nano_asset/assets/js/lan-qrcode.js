@@ -1,7 +1,25 @@
 (function () {
     'use strict';
 
-    const ALLOWED_PAGES = new Set(['index.html', 'utama.html', 'utamaV2.html', 'VS.html', 'obrolan-claude.html', 'percakapan-gemini-live.html']);
+    const ALLOWED_PAGES = new Set([
+        'index.html',
+        'analisis-kode.html',
+        'analisis-kode-varian-2.html',
+        'analisis-vision.html',
+        'analisis-vision-rag.html',
+        'analisis-vision-varian-3.html',
+        'analisis-vision-varian-4.html',
+        'analisis-vision-varian-5.html',
+        'analisis-vision-versi-1.html',
+        'analisis-vision-versi-2.html',
+        'mesin-litert-lm.html',
+        'obrolan-claude.html',
+        'obrolan-claude-rag.html',
+        'obrolan-claude-ringkas.html',
+        'obrolan-claude-varian-2.html',
+        'obrolan-claude-varian-3.html',
+        'percakapan-gemini-live.html'
+    ]);
 
     function renderQr(container, value) {
         if (typeof window.qrcode !== 'function') {
@@ -40,7 +58,7 @@
 
     function createButton() {
         const header = document.querySelector('header');
-        if (!header || document.getElementById('lan-qr-open')) return;
+        if (!header || document.getElementById('lan-qr-open') || document.getElementById('lan-qr-header-btn')) return;
         const buttonGroup = [...header.children].reverse().find(element => element.classList.contains('flex')) || header;
 
         const button = document.createElement('button');
@@ -132,15 +150,17 @@
             const response = await fetch('/api/network-info', { cache: 'no-store' });
             if (!response.ok) throw new Error(`Server jaringan merespons HTTP ${response.status}.`);
             const networkInfo = await response.json();
-            const currentPage = location.pathname.split('/').pop();
-            if (!ALLOWED_PAGES.has(currentPage)) throw new Error('Halaman ini tidak tersedia untuk akses jaringan.');
+            const rawPage = location.pathname.split('/').pop();
+            const currentPage = rawPage && ALLOWED_PAGES.has(rawPage) ? rawPage : 'obrolan-claude.html';
             if (!Array.isArray(networkInfo.addresses)) throw new Error('Server tidak memberikan daftar alamat jaringan.');
 
+            const protocol = location.protocol || 'https:';
+            const serverPort = location.port || networkInfo.port || 1234;
             const model = new URLSearchParams(location.search).get('model');
             networkUrls = networkInfo.addresses
                 .filter(address => /^(?:\d{1,3}\.){3}\d{1,3}$/.test(address))
                 .map(address => {
-                    const url = new URL(`https://${address}:1234/index.html`);
+                    const url = new URL(`${protocol}//${address}:${serverPort}/${currentPage}`);
                     if (model) url.searchParams.set('model', model);
                     return { address, url: url.href };
                 });
@@ -149,7 +169,7 @@
             for (const [index, entry] of networkUrls.entries()) {
                 const option = document.createElement('option');
                 option.value = String(index);
-                option.textContent = `https://${entry.address}:1234`;
+                option.textContent = `${protocol}//${entry.address}:${serverPort}/${currentPage}`;
                 select.append(option);
             }
             updateQr();
@@ -203,5 +223,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         createModal();
         createButton();
+        window.openLanQrModal = openModal;
     }, { once: true });
+    window.openLanQrModal = openModal;
 })();

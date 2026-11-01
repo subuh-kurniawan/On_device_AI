@@ -13,17 +13,34 @@
 
     function replaceMath(source) {
         const formulas = [];
-        const blockFormula = source.replace(/\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]/g, match => {
+        const codeBlocks = [];
+
+        // 1. Lindungi blok kode (fenced ``` dan inline `) agar simbol $ di dalam kode tidak dianggap formula matematika
+        const guardedSource = source.replace(/(```[\s\S]*?```|`[^`\n]+?`)/g, match => {
+            const index = codeBlocks.push(match) - 1;
+            return `AICODETOKEN${index}END`;
+        });
+
+        // 2. Ekstrak formula matematika display ($$...$$ atau \[...\])
+        const blockFormula = guardedSource.replace(/\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]/g, match => {
             const index = formulas.push({ source: match.replace(/^\$\$|^\s*\\\[|\\\]\s*$|\$\$$/g, ''), display: true }) - 1;
             return `AIMATHTOKEN${index}END`;
         });
+
+        // 3. Ekstrak formula matematika inline (\(...\) atau $...$)
         const withInlineMath = blockFormula.replace(/\\\(([\s\S]+?)\\\)|(^|[^$])\$([^$\n]+?)\$(?!\$)/g, (match, paren, prefix, inline) => {
             const formula = paren ?? inline;
             if (formula === undefined) return match;
             const index = formulas.push({ source: formula, display: false }) - 1;
             return `${prefix || ''}AIMATHTOKEN${index}END`;
         });
-        return { source: withInlineMath, formulas };
+
+        // 4. Pulihkan kembali blok kode yang dilindungi
+        const restoredSource = withInlineMath.replace(/AICODETOKEN(\d+)END/g, (match, index) => {
+            return codeBlocks[Number(index)] ?? match;
+        });
+
+        return { source: restoredSource, formulas };
     }
 
     function renderMarkdown(source) {
@@ -92,8 +109,15 @@
         canvas.setAttribute('role', 'img');
         canvas.setAttribute('aria-label', config.options?.plugins?.title?.text || 'Grafik dari AI');
         wrapper.append(canvas);
+
+        // Hancurkan instance chart lama jika container/canvas didaur ulang
+        if (typeof window.Chart.getChart === 'function') {
+            window.Chart.getChart(canvas)?.destroy();
+        }
+
         container.replaceWith(wrapper);
-        new window.Chart(canvas.getContext('2d'), config);
+        const chartInstance = new window.Chart(canvas.getContext('2d'), config);
+        canvas.__chartInstance = chartInstance;
     }
 
     async function renderMermaid(container, source, kind) {
@@ -134,6 +158,16 @@
 
     async function renderAdvancedAIResponse(target, source) {
         if (!(target instanceof Element)) throw new TypeError('Target render tidak valid');
+
+        // Bersihkan chart lama di dalam target sebelum re-render untuk cegah memory leak
+        target.querySelectorAll('canvas').forEach(canvas => {
+            if (typeof window.Chart?.getChart === 'function') {
+                window.Chart.getChart(canvas)?.destroy();
+            } else if (canvas.__chartInstance?.destroy) {
+                canvas.__chartInstance.destroy();
+            }
+        });
+
         const renderedBody = sanitizeRenderedHtml(renderMarkdown(String(source || '')));
         target.replaceChildren(...renderedBody.childNodes);
 
@@ -158,6 +192,16 @@
                 element.textContent = `Tidak dapat merender ${kind}: ${error.message}`;
                 element.setAttribute('role', 'status');
             }
+        }
+
+        // Aktifkan runner Python interaktif jika ada blok kode python
+        if (typeof window.PythonRunner?.scan === 'function') {
+            window.PythonRunner.scan(target);
+        }
+
+        // Tambahkan saran tindak lanjut visual (Smart Action Chips)
+        if (typeof window.GemmaIntent?.renderActionChips === 'function') {
+            window.GemmaIntent.renderActionChips(target, String(source || ''));
         }
 
         return target;

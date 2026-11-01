@@ -155,6 +155,14 @@ Simply double-click the `start_windows.bat` file located in this repository's fo
 Simply double-click the `start_mac.command` file.
 *(Note: If denied due to permission issues, open the terminal, navigate to this folder, and run `chmod +x start_mac.command` first).*
 
+### Relay AI to Other Devices with a QR Code
+To use the AI host from a phone or another device on the same Wi-Fi network:
+1. Run `start_lan_mac.command` on the Mac host and keep the terminal and host browser open.
+2. Click **QR HP** or **Perangkat lain** on the application page you want to open.
+3. Scan the QR code from the client device. It opens the same page; for AI prompts, select **Chrome On-Device AI** on the host.
+
+The relay is available on all application HTML pages. Use it only on a trusted network; client devices must be able to access the server address and port shown.
+
 ---
 
 *(Optional) Manual Execution via Terminal:*

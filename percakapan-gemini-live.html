@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <script src="nano_asset/assets/js/qrcode-generator.js"></script>
+    <script src="nano_asset/assets/js/lan-ai-bridge.js"></script>
+    <script src="nano_asset/assets/js/lan-qrcode.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#121212">
@@ -426,6 +429,41 @@
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
         }
+
+    /* ===== MOBILE-FIRST RESPONSIVE ===== */
+    @media (min-width: 640px) {
+        .live-shell > section { padding: 24px; gap: 20px; }
+        .conversation-panel { padding: 24px; }
+        .modal-content { max-width: 560px; padding: 24px; }
+    }
+    @media (min-width: 768px) {
+        .live-shell > section { padding: 28px; gap: 24px; }
+        .conversation-panel { padding: 28px; }
+        .modal-content { max-width: 640px; padding: 28px; }
+    }
+    @media (min-width: 1024px) {
+        .live-shell > section { padding: 32px; gap: 28px; }
+        .conversation-panel { padding: 32px; }
+        .modal-content { max-width: 720px; padding: 32px; }
+    }
+    @media (min-width: 1280px) {
+        .live-shell > section { padding: 36px; gap: 32px; }
+        .conversation-panel { padding: 36px; }
+        .modal-content { max-width: 800px; padding: 36px; }
+    }
+    @media (max-width: 639px) {
+        .live-shell > section { padding: 12px; gap: 12px; }
+        .conversation-panel { padding: 16px; border-radius: 12px; }
+        header { position: sticky; top: 0; z-index: 20; padding: 12px 16px; }
+        header h1 { font-size: 16px; }
+        .timeline-item { max-width: 95%; }
+        .mobile-control-dock { padding: 12px; }
+        .mobile-dock-actions { gap: 8px; }
+        #live-button, #stop-button { min-height: 44px; min-width: 44px; }
+        .modal-overlay { padding: 12px; align-items: flex-start; justify-content: center; overflow-y: auto; }
+        .modal-content { width: 100%; max-width: 100%; max-height: 100dvh; border-radius: 16px; overflow: hidden; }
+        html, body { overflow-x: hidden; }
+        body { position: relative; min-height: 100dvh; }
     </style>
 </head>
 <body>

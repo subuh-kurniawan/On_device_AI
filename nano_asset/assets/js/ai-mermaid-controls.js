@@ -82,11 +82,55 @@
         window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
 
+    const escapeHtml = str => String(str).replace(/[&<>"']/g, c => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[c]);
+
+    function ensureNodeStyles() {
+        if (document.getElementById('mermaid-node-action-style')) return;
+        const style = document.createElement('style');
+        style.id = 'mermaid-node-action-style';
+        style.textContent = `
+            .mermaid-content svg g.node, .mermaid-content svg g.mindmap-node {
+                cursor: pointer;
+            }
+            .mermaid-content svg g.node:hover, .mermaid-content svg g.mindmap-node:hover {
+                filter: drop-shadow(0 0 5px rgba(99, 102, 241, 0.65));
+            }
+            .mermaid-node-action-pill {
+                position: absolute;
+                bottom: 12px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 25;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 6px 14px;
+                border-radius: 9999px;
+                background: rgba(17, 24, 39, 0.95);
+                border: 1px solid rgba(255, 255, 255, 0.16);
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+                color: #e2e8f0;
+                font-size: 12px;
+                font-family: inherit;
+                backdrop-filter: blur(8px);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    ensureNodeStyles();
+
     function attachInteractions(wrapper, viewport, diagram, toolbar) {
         let scale = 1;
         let panX = 0;
         let panY = 0;
         let dragStart = null;
+        let hasDragged = false;
 
         const updateTransform = () => {
             diagram.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
@@ -108,11 +152,14 @@
         viewport.addEventListener('pointerdown', event => {
             if (event.button !== 0 || event.target.closest('.mermaid-toolbar')) return;
             dragStart = { x: event.clientX - panX, y: event.clientY - panY };
+            hasDragged = false;
             viewport.classList.add('is-panning');
             viewport.setPointerCapture(event.pointerId);
         });
         viewport.addEventListener('pointermove', event => {
             if (!dragStart) return;
+            const dist = Math.hypot(event.clientX - panX - dragStart.x, event.clientY - panY - dragStart.y);
+            if (dist > 4) hasDragged = true;
             panX = event.clientX - dragStart.x;
             panY = event.clientY - dragStart.y;
             updateTransform();
@@ -128,6 +175,40 @@
             event.preventDefault();
             zoom(event.deltaY < 0 ? 0.1 : -0.1);
         }, { passive: false });
+
+        // Klik node untuk memicu aksi penjelasan kontekstual AI
+        viewport.addEventListener('click', event => {
+            if (hasDragged || event.target.closest('.mermaid-toolbar, .mermaid-node-action-pill')) return;
+            const node = event.target.closest('g.node, g.mindmap-node, .node');
+            wrapper.querySelector('.mermaid-node-action-pill')?.remove();
+            if (!node) return;
+
+            const rawLabel = node.textContent.trim().replace(/\s+/g, ' ');
+            if (!rawLabel || rawLabel.length < 2) return;
+
+            const pill = document.createElement('div');
+            pill.className = 'mermaid-node-action-pill';
+            pill.innerHTML = `
+                <span class="truncate max-w-[180px]">📌 <strong>${escapeHtml(rawLabel)}</strong></span>
+                <button type="button" class="px-2.5 py-1 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer border-0 transition-colors">Jelaskan</button>
+                <button type="button" class="text-slate-400 hover:text-white text-xs cursor-pointer bg-transparent border-0 ml-1">✕</button>
+            `;
+            pill.querySelector('button:first-of-type').addEventListener('click', () => {
+                const prompt = `Tolong jelaskan lebih mendalam mengenai langkah/konsep "${rawLabel}" pada diagram di atas.`;
+                if (typeof window.sendPromptToAI === 'function') {
+                    window.sendPromptToAI(prompt);
+                } else {
+                    const input = document.getElementById('user-input') || document.querySelector('textarea, input[type="text"]');
+                    if (input) {
+                        input.value = prompt;
+                        input.focus();
+                    }
+                }
+                pill.remove();
+            });
+            pill.querySelector('button:last-of-type').addEventListener('click', () => pill.remove());
+            wrapper.appendChild(pill);
+        });
 
         toolbar.querySelector('.mermaid-btn-svg')?.addEventListener('click', async () => {
             const result = getSvgString(diagram);

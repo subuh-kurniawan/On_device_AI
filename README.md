@@ -155,6 +155,14 @@ Cukup klik ganda (double-click) file `start_windows.bat` yang ada di folder repo
 Cukup klik ganda (double-click) file `start_mac.command`.
 *(Catatan: Jika ditolak karena masalah izin, buka terminal, arahkan ke folder ini, dan jalankan `chmod +x start_mac.command` terlebih dahulu).*
 
+### Relay AI ke Perangkat Lain melalui QR
+Untuk menggunakan AI host dari HP atau perangkat lain di jaringan Wi-Fi yang sama:
+1. Jalankan `start_lan_mac.command` di Mac host dan biarkan terminal serta browser host tetap terbuka.
+2. Klik tombol **QR HP** atau **Perangkat lain** di halaman aplikasi yang ingin dibuka.
+3. Pindai QR dari perangkat klien. QR membuka halaman yang sama; untuk prompt AI, pilih mode **Chrome On-Device AI** pada host.
+
+Relay ini tersedia di seluruh halaman HTML aplikasi. Gunakan hanya di jaringan tepercaya; perangkat klien harus dapat mengakses alamat dan port server yang ditampilkan.
+
 ---
 
 *(Opsional) Menjalankan Manual via Terminal:*
