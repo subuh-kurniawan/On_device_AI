@@ -148,22 +148,45 @@ Karena berinteraksi dengan API eksperimental (WebGPU, Prompt API, dan penyimpana
 3. Klik tombol **Relaunch** di pojok kanan bawah.
 4. Buka tab `chrome://components`, cari **Optimization Guide On Device Model**, dan klik **Check for update** untuk memastikan model Gemini Nano telah terunduh.
 
-### Langkah 2: Menjalankan Server Lokal
+### Langkah 2: Setup Otomatis Dependensi & Sertifikat SSL
+
+Sebelum menjalankan server untuk pertama kali, jalankan skrip setup otomatis yang sesuai dengan sistem operasi Anda:
+
+* **Pengguna macOS:**
+  - Klik ganda berkas `setup_mac.command` di Finder.
+  - Atau jalankan di terminal: `./setup.sh`
+* **Pengguna Linux:**
+  - Buka terminal dan jalankan: `bash setup.sh`
+* **Pengguna Windows:**
+  - Klik ganda berkas `setup.bat` di File Explorer.
+* **Pengguna Node.js / NPM:**
+  - Jalankan: `npm run setup`
+
+> 💡 **Apa yang dilakukan skrip setup?**
+> 1. Memeriksa & memasang Node.js, Python 3, OpenSSL, dan Git LFS secara otomatis.
+> 2. Men-generate sertifikat SSL (`key.pem` & `cert.pem`) dengan Subject Alternative Name (SAN) untuk `localhost` dan IP LAN Anda.
+> 3. Menginisialisasi Git LFS dan memastikan berkas model AI lokal (`.onnx`) telah terunduh penuh.
+> 4. Memberikan izin eksekusi (`chmod +x`) untuk seluruh skrip peluncur.
+
+### Langkah 3: Menjalankan Server Lokal
 
 #### Menggunakan Skrip Otomatis (Direkomendasikan):
 * **Pengguna Mac (GUI Native Swift):** Klik ganda `jalankanserverFN.command`.
 * **Pengguna Mac (CLI Standard):** Klik ganda `start_mac.command` atau `start_lan_mac.command`.
 * **Pengguna Windows:** Klik ganda file `start_windows.bat`.
 
-#### Menjalankan Manual via Terminal:
+#### Menjalankan Manual via Terminal / NPM:
 ```bash
+# Menggunakan NPM:
+npm start
+
 # Menggunakan Python:
 python3 -m http.server 8080
 
 # Atau menggunakan Node.js:
 npx http-server -p 8080
 ```
-Lalu buka alamat `http://localhost:8080/index.html` di browser Anda.
+Lalu buka alamat `http://localhost:8080/index.html` (atau `https://localhost:1234` jika relay HTTPS aktif) di browser Anda.
 
 ---
 

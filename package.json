@@ -1,0 +1,27 @@
+{
+  "name": "chrome-on-device-ai-playground",
+  "version": "2.0.0",
+  "description": "Kumpulan eksperimen dan purwarupa Client-Side AI yang berjalan 100% lokal di browser.",
+  "main": "nano_asset/assets/js/relay.js",
+  "scripts": {
+    "setup": "bash setup.sh",
+    "start": "node nano_asset/assets/js/relay.js 1234",
+    "serve": "python3 -m http.server 8080",
+    "relay": "node nano_asset/assets/js/lan-ai-relay-server.js 1234"
+  },
+  "keywords": [
+    "on-device-ai",
+    "webgpu",
+    "litert-lm",
+    "gemini-nano",
+    "chrome-prompt-api",
+    "transformers-js",
+    "rag"
+  ],
+  "author": "Subuh Kurniawan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/subuh-kurniawan/On_device_AI.git"
+  }
+}

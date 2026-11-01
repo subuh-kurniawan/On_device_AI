@@ -8,6 +8,12 @@ Format pencatatan mengikuti panduan [Keep a Changelog](https://keepachangelog.co
 ## [2.0.0] - 2026-11-02
 
 ### ✨ Ditambahkan (Added)
+- **Skrip Instalasi Dependensi Otomatis Lintas Platform (`setup.sh`, `setup_mac.command`, `setup.bat`, `package.json`)**:
+  - Dukungan otomatisasi untuk **macOS**, **Linux** (Ubuntu/Debian, Fedora, Arch), dan **Windows**.
+  - Deteksi dan instalasi otomatis untuk Node.js, Python 3, OpenSSL, dan Git LFS (menggunakan Homebrew di Mac, APT/DNF/Pacman di Linux, dan WinGet di Windows).
+  - Pembuatan sertifikat mandiri SSL lokal (`cert.pem` & `key.pem`) dengan Subject Alternative Name (SAN) untuk localhost dan IP LAN.
+  - Inisialisasi Git LFS otomatis untuk mengunduh model ONNX lokal.
+  - Standarisasi `package.json` untuk menjalankan `npm run setup`, `npm start`, dan `npm run serve`.
 - **Peluncur Native macOS Swift GUI (`jalankanserverFN.command` & `jalankanserverFN_gui.swift`)**:
   - Kontrol server berbasis antarmuka grafis (GUI) native macOS yang otomatis dikompilasi via `swiftc`.
   - Pemantauan status SSL HTTPS (`cert.pem` & `key.pem`), port server, QR Code LAN, dan log aktivitas realtime.

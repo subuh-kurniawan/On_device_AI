@@ -148,22 +148,45 @@ Because this app utilizes experimental web capabilities (WebGPU, Prompt API, hig
 3. Click the **Relaunch** button in the bottom right corner.
 4. Open `chrome://components`, locate **Optimization Guide On Device Model**, and click **Check for update** to ensure Gemini Nano is downloaded.
 
-### Step 2: Run Local Server
+### Step 2: Automated Dependency & SSL Setup
+
+Before launching the server for the first time, run the automated setup script for your operating system:
+
+* **macOS Users:**
+  - Double-click `setup_mac.command` in Finder.
+  - Or run in terminal: `./setup.sh`
+* **Linux Users:**
+  - Open terminal and run: `bash setup.sh`
+* **Windows Users:**
+  - Double-click `setup.bat` in File Explorer.
+* **Node.js / NPM Users:**
+  - Run: `npm run setup`
+
+> 💡 **What does the setup script do?**
+> 1. Detects and installs Node.js, Python 3, OpenSSL, and Git LFS automatically.
+> 2. Generates self-signed SSL certificates (`key.pem` & `cert.pem`) with Subject Alternative Names (SAN) for `localhost` and your LAN IP.
+> 3. Initializes Git LFS and pulls the complete local AI model files (`.onnx`).
+> 4. Grants execution permissions (`chmod +x`) to all launcher scripts.
+
+### Step 3: Run Local Server
 
 #### Automated One-Click Scripts (Recommended):
 * **Mac Users (Native Swift GUI):** Double-click `jalankanserverFN.command`.
 * **Mac Users (Standard CLI):** Double-click `start_mac.command` or `start_lan_mac.command`.
 * **Windows Users:** Double-click `start_windows.bat`.
 
-#### Manual Terminal Command:
+#### Manual Terminal Commands / NPM:
 ```bash
+# Using NPM:
+npm start
+
 # Using Python:
 python3 -m http.server 8080
 
 # Or using Node.js:
 npx http-server -p 8080
 ```
-Then navigate to `http://localhost:8080/index.html` in your browser.
+Then navigate to `http://localhost:8080/index.html` (or `https://localhost:1234` when the HTTPS relay is running) in your browser.
 
 ---
 
