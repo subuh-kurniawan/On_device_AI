@@ -8,6 +8,12 @@ Format pencatatan mengikuti panduan [Keep a Changelog](https://keepachangelog.co
 ## [2.0.0] - 2026-11-02
 
 ### ✨ Ditambahkan (Added)
+- **Peluncur Chrome Otomatis Multi-Platform dengan Deteksi Edisi (`launch_chrome_ai.sh`, `launch_chrome_mac.command`, `launch_chrome_ai.bat`)**:
+  - Otomatis mendeteksi varian instalasi Chrome: **Chrome Canary**, **Chrome Dev**, **Chrome Beta**, maupun **Chrome Biasa (Stable)**.
+  - Memilih edisi terbaik secara cerdas (memprioritaskan Dev/Canary yang memiliki API On-Device terbaru).
+  - Melakukan pengecekan spesifikasi hardware otomatis (RAM & sisa ruang disk); otomatis mengaktifkan flag `BypassPerfRequirement` jika RAM < 16 GB.
+  - Menyuntikkan seluruh flags esensial (`OptimizationGuideOnDeviceModel`, `PromptAPIForGeminiNano`, `EnableWebGPU`, dsb.) menggunakan direktori profil AI terisolasi agar flags 100% aktif tanpa mengganggu profil Chrome yang sedang berjalan.
+  - Otomatis membuka tab aplikasi, `chrome://components`, dan `chrome://on-device-internals`.
 - **Skrip Instalasi Dependensi Otomatis Lintas Platform (`setup.sh`, `setup_mac.command`, `setup.bat`, `package.json`)**:
   - Dukungan otomatisasi untuk **macOS**, **Linux** (Ubuntu/Debian, Fedora, Arch), dan **Windows**.
   - Deteksi dan instalasi otomatis untuk Node.js, Python 3, OpenSSL, dan Git LFS (menggunakan Homebrew di Mac, APT/DNF/Pacman di Linux, dan WinGet di Windows).

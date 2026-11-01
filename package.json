@@ -5,6 +5,8 @@
   "main": "nano_asset/assets/js/relay.js",
   "scripts": {
     "setup": "bash setup.sh",
+    "launch": "bash launch_chrome_ai.sh",
+    "chrome": "bash launch_chrome_ai.sh",
     "start": "node nano_asset/assets/js/relay.js 1234",
     "serve": "python3 -m http.server 8080",
     "relay": "node nano_asset/assets/js/lan-ai-relay-server.js 1234"
