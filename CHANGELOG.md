@@ -1,5 +1,11 @@
 # 📋 Changelog
 
+<div align="center">
+  <p>
+    <b>🇮🇩 Bahasa Indonesia | <a href="CHANGELOG_EN.md">🇬🇧 English</a></b>
+  </p>
+</div>
+
 Semua perubahan penting pada proyek **Chrome On-Device AI Playground** didokumentasikan dalam berkas ini.
 Format pencatatan mengikuti panduan [Keep a Changelog](https://keepachangelog.com/id/1.0.0/) dan menganut prinsip [Semantic Versioning](https://semver.org/).
 
