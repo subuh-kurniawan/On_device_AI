@@ -388,3 +388,168 @@ body:not(.light-theme) .mermaid-error-container {
         padding: 3.5rem .35rem .65rem;
     }
 }
+
+/* ========================================================
+   AI ARTIFACTS SYSTEM STYLES (Claude-Style Live Canvas)
+   ======================================================== */
+.ai-artifact-card {
+    margin: 16px 0;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 14px;
+    background: #090e1a;
+    overflow: hidden;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    transition: all 0.25s ease;
+}
+
+.ai-artifact-card.fullscreen {
+    position: fixed;
+    inset: 20px;
+    z-index: 9999;
+    margin: 0;
+    border-radius: 18px;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.85);
+}
+
+.ai-artifact-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: rgba(15, 23, 42, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ai-artifact-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #f8fafc;
+}
+
+.ai-artifact-icon {
+    font-size: 16px;
+}
+
+.ai-artifact-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 99px;
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    margin-left: 6px;
+    text-transform: uppercase;
+}
+
+.ai-artifact-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ai-artifact-tabs {
+    display: flex;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 8px;
+    padding: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ai-art-tab {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.ai-art-tab.active {
+    background: rgba(56, 189, 248, 0.2);
+    color: #38bdf8;
+}
+
+.ai-art-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.15s;
+}
+
+.ai-art-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-color: rgba(56, 189, 248, 0.4);
+}
+
+.ai-artifact-body {
+    position: relative;
+    min-height: 220px;
+    background: #020617;
+}
+
+.ai-artifact-card.fullscreen .ai-artifact-body {
+    height: calc(100% - 50px);
+}
+
+.ai-artifact-preview-pane,
+.ai-artifact-code-pane {
+    display: none;
+    width: 100%;
+    height: 100%;
+}
+
+.ai-artifact-preview-pane.active,
+.ai-artifact-code-pane.active {
+    display: block;
+}
+
+.ai-artifact-iframe {
+    width: 100%;
+    min-height: 280px;
+    border: none;
+    background: #ffffff;
+    display: block;
+}
+
+.ai-artifact-card.fullscreen .ai-artifact-iframe {
+    height: 100%;
+}
+
+.ai-artifact-svg-wrap {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #090e1a;
+}
+
+.ai-artifact-svg-wrap svg {
+    max-width: 100%;
+    height: auto;
+}
+
+.ai-artifact-code-pane pre {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    max-height: 400px;
+    overflow: auto;
+}
+

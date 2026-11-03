@@ -11,6 +11,41 @@ Format pencatatan mengikuti panduan [Keep a Changelog](https://keepachangelog.co
 
 ---
 
+## [2.2.0] - 2026-11-03
+
+### ✨ Ditambahkan (Added)
+- **Integrasi Mesin WebLLM In-Browser WebGPU & Model Penalaran DeepSeek-R1 (`mesin-web-llm.html`)**:
+  - Eksekusi model SLM open-weights secara native pada GPU pengguna tanpa dependensi cloud/server menggunakan runtime `@mlc-ai/web-llm`.
+  - **Dukungan Model Penalaran `DeepSeek-R1-Distill-Qwen-1.5B`**: Menjalankan model *chain-of-thought reasoning* lokal di WebGPU dengan perenderan otomatis kotak **Proses Berpikir (*Thinking Accordion*)** yang menampilkan alur penalaran `<think>` secara interaktif, beranimasi, dan dapat dilipat (*collapsible*).
+    - **Mode JSON Terstruktur & Editor Kustom dengan Mesin XGrammar**: Fitur pemaksaan skema JSON (*constrained decoding*) yang menjamin format keluaran model 100% valid sesuai skema JSON tanpa *syntax error*, dilengkapi *preset* Profil Entitas, Analisis Sentimen, Klasifikasi Dokumen, dan modal editor skema kustom interaktif.
+  - Katalog 8 model teroptimasi edge: `DeepSeek-R1-Distill-1.5B` (1.1 GB), `Qwen2.5-Coder-1.5B` (1.1 GB), `SmolLM2-360M` (230 MB), `Qwen2.5-0.5B` (380 MB), `Llama-3.2-1B` (880 MB), `SmolLM2-1.7B` (1.0 GB), `Qwen2.5-1.5B` (1.1 GB), dan `Llama-3.2-3B` (1.9 GB).
+  - Indikator unduhan real-time interaktif dengan penyimpanan otomatis di cache browser (IndexedDB / Cache API) agar inferensi berikutnya instan dan 100% luring.
+  - Bar metrik performa langsung: kecepatan inferensi (`tok/s`), latensi token awal (*TTFT*), akumulasi token, serta modal inspektur hardware adapter WebGPU dengan deteksi akselerasi *shader-f16*.
+- **Aplikasi Vision Multimodal In-Browser WebGPU Baru (`analisis-vision-webgpu.html`)**:
+  - Mengintegrasikan fondasi VLM (*Vision-Language Model*) **Florence-2** via `@huggingface/transformers` v3 dengan akselerasi penuh WebGPU.
+  - Fitur visual mandiri tanpa server: Deskripsi Umum Gambar (*Captioning*), Deskripsi Rinci (*Detailed Caption*), Ekstraksi Teks OCR, dan Deteksi Objek dengan penggambaran *bounding box* otomatis di kanvas overlay.
+  - Penambahan kartu modul baru pada portal tri-bahasa (`index.html`, `index_en.html`, `index_jv.html`).
+- **Aplikasi Agen AI Otonom & Runner Python WASM (`agen-ai-otonom.html`)**:
+  - Implementasi alur kerja agen otonom berbasis *ReAct (Thought -> Action -> Observation -> Final Answer)* murni di peramban.
+  - Eksekutor kode Python terisolasi menggunakan **Pyodide v0.26 WebAssembly** untuk kalkulasi matematika, komputasi deret, dan simulasi Monte Carlo tanpa dependensi server.
+  - Pembuat grafik visual dinamis (*Dynamic Chart.js*) dan penaksir matematika presisi tinggi.
+- **Aplikasi Mesin Database Vektor PGlite SQL (`mesin-pglite-rag.html`)**:
+  - Mengintegrasikan mesin database **PostgreSQL penuh** berbasis WebAssembly menggunakan pustaka `@electric-sql/pglite`.
+  - Ekstensi **`pgvector`** aktif dengan dukungan pencarian kemiripan kosinus (`<=>`) dan penyimpanan persisten di IndexedDB (`idb://pglite-ondevice-rag`).
+  - Dilengkapi Konsol Kueri SQL interaktif di browser, modul unggah berkas (TXT/MD) dengan *auto-chunker*, ekspor data ke JSON, dan modul percakapan RAG semantik.
+  - Penambahan kartu modul baru pada portal tri-bahasa (`index.html`, `index_en.html`, `index_jv.html`).
+- **Aplikasi Mesin Audio & Suara AI WebGPU (`mesin-suara-webgpu.html`)**:
+  - Integrasi mesin Speech-to-Text (STT) **Whisper Web** (`onnx-community/whisper-tiny` via Transformers.js v3) dengan akselerasi penuh WebGPU dan visualisasi gelombang mikrofon real-time.
+  - Integrasi mesin Text-to-Speech (TTS) berkualitas studio **Kokoro-82M** dengan pemilih multi-suara (`af_heart`, `am_adam`, `bf_emma`, `bm_george`), kontrol kecepatan audio, pemutar web audio, dan fitur ekspor berkas WAV.
+  - Kartu modul terintegrasi pada portal tri-bahasa (`index.html`, `index_en.html`, `index_jv.html`).
+- **Pustaka AI Advanced Stream Engine & Interactive Artifacts (`nano_asset/assets/js/ai-advanced-stream-engine.js`)**:
+  - **Optimistic Streaming Markdown Healer**: Penanganan tag tak lengkap (` ``` `, `**`, `$$`, `` ` ``) secara otomatis saat token LLM dialirkan, mencegah *layout thrashing* dan kedipan visual (*flicker-free*).
+  - **In-Browser JSON Repair (`repairJson`)**: Memperbaiki chunk JSON yang terpotong di tengah stream secara real-time menjadi objek JavaScript valid untuk merender tool calls dan skema data dinamis tanpa error sintaksis.
+  - **Sistem Claude Artifacts (Live Sandboxed Canvas)**: Mengubah luaran kode HTML/SVG dari model AI menjadi panel interaktif dengan tab Pratinjau Langsung (*Live Sandboxed Preview* di iframe aman), tab Kode Sumber, tombol Salin, Layar Penuh (*Fullscreen*), dan Unduh Berkas.
+  - Terintegrasi langsung dengan `ai-response-renderer.js` di seluruh antarmuka obrolan dan modul WebLLM.
+
+---
+
 ## [2.1.0] - 2026-11-02
 
 ### ✨ Ditambahkan (Added)

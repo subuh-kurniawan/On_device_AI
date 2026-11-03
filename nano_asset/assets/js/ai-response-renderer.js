@@ -194,6 +194,11 @@
             }
         }
 
+        // Ekstrak & Render Live Artifacts (Claude-Style Interactive Preview)
+        if (typeof window.AIStreamEngine?.extractAndRenderArtifacts === 'function') {
+            window.AIStreamEngine.extractAndRenderArtifacts(target);
+        }
+
         // Aktifkan runner Python interaktif jika ada blok kode python
         if (typeof window.PythonRunner?.scan === 'function') {
             window.PythonRunner.scan(target);

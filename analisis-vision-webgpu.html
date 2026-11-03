@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Analisis Vision WebGPU — In-Browser Multimodal AI</title>
+    
+    <!-- Aset Inti UI & Renderer -->
+    <link rel="stylesheet" href="nano_asset/assets/css/ai-renderers.css">
+    <link rel="stylesheet" href="nano_asset/assets/css/katex.min.css">
+    <link rel="stylesheet" href="nano_asset/assets/css/boxicons.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👁️</text></svg>">
+    
+    <script src="nano_asset/assets/js/marked.min.js"></script>
+    <script src="nano_asset/assets/js/ai-advanced-stream-engine.js"></script>
+    <script src="nano_asset/assets/js/katex.min.js"></script>
+    <script src="nano_asset/assets/js/qrcode-generator.js"></script>
+    <script src="nano_asset/assets/js/lan-ai-bridge.js"></script>
+    <script src="nano_asset/assets/js/lan-qrcode.js" defer></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-main: #090d16;
+            --bg-card: rgba(19, 27, 44, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(56, 189, 248, 0.3);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #10b981;
+            --accent-purple: #8b5cf6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(ellipse 70% 40% at 50% -10%, rgba(6, 182, 212, 0.12), transparent),
+                radial-gradient(ellipse 50% 30% at 100% 100%, rgba(139, 92, 246, 0.08), transparent);
+        }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+
+        /* HEADER */
+        header {
+            background: rgba(13, 20, 36, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 30;
+            flex-shrink: 0;
+        }
+
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #06b6d4, #10b981);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            white-space: nowrap;
+        }
+        .badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #94a3b8;
+        }
+        .badge.ready .badge-dot { background: #10b981; box-shadow: 0 0 8px #10b981; }
+        .badge.loading .badge-dot { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; animation: pulse 1.5s infinite; }
+        .badge.error .badge-dot { background: #ef4444; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--border-hover);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #06b6d4, #10b981);
+            border-color: rgba(6, 182, 212, 0.4);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.25);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.45);
+        }
+
+        /* MAIN TWO-COLUMN WORKSPACE */
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 16px 20px 20px;
+            overflow: hidden;
+        }
+
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+        }
+
+        .panel-header {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.02);
+            flex-shrink: 0;
+        }
+
+        .panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* IMAGE DROPZONE */
+        .dropzone {
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            background: rgba(0, 0, 0, 0.2);
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .dropzone:hover, .dropzone.dragover {
+            border-color: #06b6d4;
+            background: rgba(6, 182, 212, 0.05);
+        }
+        .image-preview-container {
+            position: relative;
+            max-width: 100%;
+            display: none;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        .image-preview {
+            max-width: 100%;
+            max-height: 280px;
+            border-radius: 10px;
+            object-fit: contain;
+            display: block;
+        }
+        .overlay-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* TASK TABS */
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .task-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px 14px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .task-btn:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+            background: rgba(56, 189, 248, 0.06);
+        }
+        .task-btn.active {
+            border-color: #06b6d4;
+            background: rgba(6, 182, 212, 0.15);
+            box-shadow: 0 0 14px rgba(6, 182, 212, 0.2);
+        }
+        .task-title { font-size: 12px; font-weight: 700; color: #fff; }
+        .task-desc { font-size: 10px; color: var(--text-secondary); }
+
+        /* RESULT VIEW */
+        .result-view {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 13.5px;
+            line-height: 1.65;
+            color: #e2e8f0;
+            min-height: 180px;
+            flex: 1;
+            overflow-y: auto;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        /* PROGRESS BAR */
+        #visionProgress {
+            display: none;
+            padding: 12px 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; min-height: 100vh; overflow-y: auto; }
+            main { grid-template-columns: 1fr; overflow: visible; height: auto; padding: 12px 14px 24px; }
+            .panel { overflow: visible; }
+            .panel-body { overflow: visible; max-height: none; }
+        }
+
+        @media (max-width: 640px) {
+            header { padding: 10px 14px; }
+            .brand-desc { display: none; }
+            #visionGpuText { max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .task-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <a href="index.html" class="brand-link" title="Kembali ke Beranda">
+            <div class="brand-icon">👁️</div>
+            <div>
+                <div style="font-weight: 800; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 6px;">
+                    Analisis Vision WebGPU <span style="font-size: 10px; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 2px 7px; border-radius: 99px;">Transformers.js v3</span>
+                </div>
+                <div class="brand-desc" style="font-size: 11px; color: var(--text-secondary);">100% In-Browser Vision &amp; OCR Engine (Florence-2 / SmolVLM)</div>
+            </div>
+        </a>
+
+        <div class="header-actions">
+            <div id="visionGpuBadge" class="badge">
+                <span class="badge-dot"></span>
+                <span id="visionGpuText">Mendeteksi WebGPU...</span>
+            </div>
+            <a href="index.html" class="btn-action" title="Beranda">
+                <i class='bx bx-home-alt'></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- WORKSPACE -->
+    <main>
+        <!-- LEFT PANEL: IMAGE INPUT & TASK SELECTION -->
+        <div class="panel">
+            <div class="panel-header">
+                <span><i class='bx bx-image text-sky-400'></i> Unggah Gambar &amp; Tugas Vision</span>
+                <button id="btnSampleImg" class="btn-action" style="padding: 4px 10px; font-size: 11px;">
+                    Contoh Gambar
+                </button>
+            </div>
+
+            <div class="panel-body">
+                <!-- Dropzone -->
+                <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                    <div id="dropPrompt">
+                        <i class='bx bx-cloud-upload' style="font-size: 38px; color: #38bdf8;"></i>
+                        <div style="font-size: 13px; font-weight: 600; color: #fff;">Klik atau Seret Gambar ke Sini</div>
+                        <div style="font-size: 11px; color: var(--text-secondary);">Mendukung PNG, JPG, WebP (Proses 100% di browser)</div>
+                    </div>
+                    <div class="image-preview-container" id="previewContainer">
+                        <img id="imagePreview" class="image-preview" alt="Preview">
+                        <canvas id="overlayCanvas" class="overlay-canvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Vision Task Selector -->
+                <div style="font-size: 12px; font-weight: 700; color: #fff; margin-top: 4px;">Pilih Tugas Vision:</div>
+                <div class="task-grid">
+                    <div class="task-btn active" data-task="<CAPTION>">
+                        <span class="task-title">📝 Deskripsi Umum</span>
+                        <span class="task-desc">Ringkasan cepat isi gambar</span>
+                    </div>
+                    <div class="task-btn" data-task="<DETAILED_CAPTION>">
+                        <span class="task-title">🔍 Deskripsi Rinci</span>
+                        <span class="task-desc">Analisis pemandangan &amp; objek mendalam</span>
+                    </div>
+                    <div class="task-btn" data-task="<OCR>">
+                        <span class="task-title">📄 Ekstraksi Teks (OCR)</span>
+                        <span class="task-desc">Baca seluruh teks dalam gambar</span>
+                    </div>
+                    <div class="task-btn" data-task="<OD>">
+                        <span class="task-title">🎯 Deteksi Objek</span>
+                        <span class="task-desc">Identifikasi koordinat &amp; bounding box</span>
+                    </div>
+                </div>
+
+                <!-- Custom Prompt for VQA -->
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 11px; font-weight: 600; color: #94a3b8;">Pertanyaan Kustom / VQA (Opsional):</label>
+                    <input id="customQuestionInput" type="text" placeholder="Contoh: Berapa banyak cangkir di atas meja?" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 10px; padding: 8px 12px; color: #fff; font-size: 12px; outline: none;">
+                </div>
+
+                <!-- Action Button -->
+                <button id="btnRunVision" class="btn-action btn-primary" style="padding: 12px; justify-content: center; border-radius: 12px; font-size: 13px;">
+                    <i class='bx bx-scan'></i> Jalankan Analisis Vision di GPU
+                </button>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: INFERENCE & RESULTS -->
+        <div class="panel">
+            <div class="panel-header">
+                <span><i class='bx bx-brain text-emerald-400'></i> Hasil Analisis Multimodal WebGPU</span>
+                <span id="visionTimeBadge" style="font-family: 'JetBrains Mono'; font-size: 11px; color: #38bdf8;">Siap</span>
+            </div>
+
+            <div class="panel-body">
+                <!-- Progress Bar -->
+                <div id="visionProgress">
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px; color: #94a3b8;">
+                        <span id="vProgText">Mengunduh model Florence-2 WebGPU...</span>
+                        <span id="vProgPct" style="font-family: 'JetBrains Mono'; font-weight: 700; color: #38bdf8;">0%</span>
+                    </div>
+                    <div style="height: 6px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden;">
+                        <div id="vProgFill" style="height: 100%; width: 0%; background: linear-gradient(90deg, #06b6d4, #10b981); transition: width 0.15s;"></div>
+                    </div>
+                </div>
+
+                <!-- Result Box -->
+                <div id="resultView" class="result-view">
+                    <div style="color: var(--text-secondary); text-align: center; margin-top: 60px;">
+                        <i class='bx bx-image-alt' style="font-size: 48px; color: rgba(255,255,255,0.15); margin-bottom: 10px;"></i>
+                        <p>Pilih atau seret gambar di panel kiri, tentukan tugas, lalu klik <b>Jalankan Analisis Vision</b>.</p>
+                        <p style="font-size: 11px; margin-top: 6px; color: #64748b;">Inferensi sepenuhnya diproses di memori lokal GPU via WebGPU tanpa server.</p>
+                    </div>
+                </div>
+
+                <!-- Quick Copy Action -->
+                <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                    <button id="btnCopyResult" class="btn-action" style="font-size: 11px;">
+                        <i class='bx bx-copy'></i> Salin Hasil
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- RUNTIME WEBGPU VISION SCRIPT -->
+    <script type="module">
+        let transformers = null;
+        let model = null;
+        let processor = null;
+        let tokenizer = null;
+        let activeTask = "<CAPTION>";
+        let currentImageElement = null;
+
+        const visionGpuBadge = document.getElementById('visionGpuBadge');
+        const visionGpuText = document.getElementById('visionGpuText');
+        const fileInput = document.getElementById('fileInput');
+        const dropzone = document.getElementById('dropzone');
+        const dropPrompt = document.getElementById('dropPrompt');
+        const previewContainer = document.getElementById('previewContainer');
+        const imagePreview = document.getElementById('imagePreview');
+        const overlayCanvas = document.getElementById('overlayCanvas');
+        const btnRunVision = document.getElementById('btnRunVision');
+        const resultView = document.getElementById('resultView');
+        const visionProgress = document.getElementById('visionProgress');
+        const vProgText = document.getElementById('vProgText');
+        const vProgPct = document.getElementById('vProgPct');
+        const vProgFill = document.getElementById('vProgFill');
+        const visionTimeBadge = document.getElementById('visionTimeBadge');
+        const taskBtns = document.querySelectorAll('.task-btn');
+        const customQuestionInput = document.getElementById('customQuestionInput');
+
+        // 1. Cek WebGPU
+        async function checkWebGPU() {
+            if (!navigator.gpu) {
+                visionGpuBadge.className = 'badge error';
+                visionGpuText.textContent = 'WebGPU Tidak Aktif';
+                return false;
+            }
+            try {
+                const adapter = await navigator.gpu.requestAdapter();
+                if (adapter) {
+                    visionGpuBadge.className = 'badge ready';
+                    visionGpuText.textContent = 'WebGPU Aktif';
+                    return true;
+                }
+            } catch (e) {}
+            visionGpuBadge.className = 'badge error';
+            visionGpuText.textContent = 'WebGPU Gagal';
+            return false;
+        }
+
+        // 2. Load Transformers.js v3
+        async function loadTransformers() {
+            if (transformers) return transformers;
+            visionProgress.style.display = 'block';
+            vProgText.textContent = 'Memuat Transformers.js v3 WebGPU runtime...';
+            vProgFill.style.width = '20%';
+            vProgPct.textContent = '20%';
+
+            try {
+                transformers = await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.3");
+                return transformers;
+            } catch (e) {
+                console.warn("Gagal dari jsdelivr, mencoba esm.run...", e);
+                transformers = await import("https://esm.run/@huggingface/transformers");
+                return transformers;
+            }
+        }
+
+        // 3. Load Florence-2 Multimodal Model
+        async function loadFlorenceModel() {
+            if (model && processor) return { model, processor, tokenizer };
+            const tf = await loadTransformers();
+
+            const modelId = "onnx-community/Florence-2-base-ft";
+            vProgText.textContent = 'Mengunduh bobot Florence-2 WebGPU (~230 MB)...';
+
+            const progressCallback = (p) => {
+                if (p.status === 'progress' && p.total) {
+                    const pct = Math.round((p.loaded / p.total) * 100);
+                    vProgFill.style.width = `${pct}%`;
+                    vProgPct.textContent = `${pct}%`;
+                    vProgText.textContent = `Mengunduh ${p.file} (${pct}%)...`;
+                }
+            };
+
+            processor = await tf.AutoProcessor.from_pretrained(modelId, { progress_callback: progressCallback });
+            tokenizer = await tf.AutoTokenizer.from_pretrained(modelId, { progress_callback: progressCallback });
+            model = await tf.Florence2ForConditionalGeneration.from_pretrained(modelId, {
+                dtype: {
+                    embed_tokens: "fp16",
+                    vision_encoder: "fp16",
+                    encoder_model: "q4",
+                    decoder_model_merged: "q4",
+                },
+                device: "webgpu",
+                progress_callback: progressCallback
+            });
+
+            vProgText.textContent = 'Model Florence-2 siap di WebGPU!';
+            vProgFill.style.width = '100%';
+            vProgPct.textContent = '100%';
+            setTimeout(() => { visionProgress.style.display = 'none'; }, 2000);
+
+            return { model, processor, tokenizer };
+        }
+
+        // 4. Handle Image Load
+        function handleImageFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                imagePreview.onload = () => {
+                    dropPrompt.style.display = 'none';
+                    previewContainer.style.display = 'block';
+                    currentImageElement = imagePreview;
+                    
+                    // Reset canvas
+                    overlayCanvas.width = imagePreview.naturalWidth;
+                    overlayCanvas.height = imagePreview.naturalHeight;
+                    const ctx = overlayCanvas.getContext('2d');
+                    ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                handleImageFile(e.target.files[0]);
+            }
+        });
+
+        // Drag & Drop
+        dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+        dropzone.addEventListener('dragleave', () => { dropzone.classList.remove('dragover'); });
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handleImageFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Sample Image
+        document.getElementById('btnSampleImg').addEventListener('click', () => {
+            imagePreview.src = 'nano_asset/assets/img1.jpg';
+            imagePreview.onload = () => {
+                dropPrompt.style.display = 'none';
+                previewContainer.style.display = 'block';
+                currentImageElement = imagePreview;
+                overlayCanvas.width = imagePreview.naturalWidth;
+                overlayCanvas.height = imagePreview.naturalHeight;
+                const ctx = overlayCanvas.getContext('2d');
+                ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+            };
+        });
+
+        // Task Selection
+        taskBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                taskBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeTask = btn.getAttribute('data-task');
+            });
+        });
+
+        // 5. Run Vision Inference
+        btnRunVision.addEventListener('click', async () => {
+            if (!currentImageElement) {
+                alert('Pilih atau unggah gambar terlebih dahulu!');
+                return;
+            }
+
+            btnRunVision.disabled = true;
+            btnRunVision.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Memproses di WebGPU...`;
+            resultView.innerHTML = `<div style="text-align:center; padding: 40px; color: #38bdf8;"><i class='bx bx-loader-alt bx-spin' style="font-size:32px;"></i><p style="margin-top:8px;">Menjalankan inferensi model vision lokal...</p></div>`;
+
+            const startTime = performance.now();
+
+            try {
+                const { model, processor, tokenizer } = await loadFlorenceModel();
+                const tf = await loadTransformers();
+
+                // Format prompt tugas
+                let prompt = activeTask;
+                const customQ = customQuestionInput.value.trim();
+                if (customQ) {
+                    prompt = `<DocVQA> ${customQ}`;
+                }
+
+                // Process image
+                const rawImage = await tf.RawImage.fromURL(imagePreview.src);
+                const visionInputs = await processor(rawImage);
+                const prompts = processor.construct_prompts(prompt);
+                const textInputs = tokenizer(prompts);
+
+                // Generate
+                const generatedIds = await model.generate({
+                    ...textInputs,
+                    ...visionInputs,
+                    max_new_tokens: 256,
+                });
+
+                const generatedText = tokenizer.batch_decode(generatedIds, { skip_special_tokens: false })[0];
+                const parsedResult = processor.post_process_generation(generatedText, prompt, rawImage.size);
+
+                const elapsedSec = ((performance.now() - startTime) / 1000).toFixed(2);
+                visionTimeBadge.textContent = `${elapsedSec} detik`;
+
+                // Render result
+                let displayHtml = '';
+                if (typeof parsedResult[prompt] === 'string') {
+                    displayHtml = `<div><b>Hasil Analisis:</b></div><div style="margin-top:8px; line-height: 1.6;">${marked.parse(parsedResult[prompt])}</div>`;
+                } else if (parsedResult[prompt]?.bboxes) {
+                    // Gambar bounding boxes jika ada deteksi objek
+                    drawBoundingBoxes(parsedResult[prompt]);
+                    displayHtml = `<div><b>Objek Terdeteksi (${parsedResult[prompt].labels.length}):</b></div><div style="margin-top:8px;">${renderObjectTable(parsedResult[prompt])}</div>`;
+                } else {
+                    displayHtml = `<pre><code>${JSON.stringify(parsedResult, null, 2)}</code></pre>`;
+                }
+
+                resultView.innerHTML = displayHtml;
+            } catch (err) {
+                console.error("Vision inference error:", err);
+                resultView.innerHTML = `<div style="color: #ef4444;">⚠️ Terjadi kesalahan saat memproses gambar: ${err.message}</div>`;
+            } finally {
+                btnRunVision.disabled = false;
+                btnRunVision.innerHTML = `<i class='bx bx-scan'></i> Jalankan Analisis Vision di GPU`;
+            }
+        });
+
+        // Draw Bounding Boxes on Overlay Canvas
+        function drawBoundingBoxes(data) {
+            const ctx = overlayCanvas.getContext('2d');
+            ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+            ctx.lineWidth = 3;
+            ctx.font = '14px Plus Jakarta Sans, sans-serif';
+
+            data.bboxes.forEach((box, i) => {
+                const [x1, y1, x2, y2] = box;
+                const label = data.labels[i] || 'Objek';
+
+                ctx.strokeStyle = '#06b6d4';
+                ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+
+                ctx.fillStyle = 'rgba(6, 182, 212, 0.85)';
+                ctx.fillRect(x1, y1 - 22, ctx.measureText(label).width + 12, 22);
+                ctx.fillStyle = '#fff';
+                ctx.fillText(label, x1 + 6, y1 - 6);
+            });
+        }
+
+        function renderObjectTable(data) {
+            let html = '<ul style="list-style: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0;">';
+            data.labels.forEach((lbl, i) => {
+                html += `<li style="background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.4); padding: 4px 10px; border-radius: 99px; font-size: 11px; color: #22d3ee;">${lbl}</li>`;
+            });
+            html += '</ul>';
+            return html;
+        }
+
+        // Copy Result
+        document.getElementById('btnCopyResult').addEventListener('click', () => {
+            const text = resultView.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Hasil analisis berhasil disalin ke clipboard!');
+            });
+        });
+
+        // Init
+        checkWebGPU();
+    </script>
+</body>
+</html>

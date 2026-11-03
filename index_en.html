@@ -1171,6 +1171,20 @@
             text-transform: uppercase;
         }
 
+        .tag-new {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(52, 211, 153, 0.2));
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            color: #38bdf8;
+            padding: 1px 6px;
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+        }
+
         .open-arrow {
             color: var(--cyan);
             font-size: 18px;
@@ -3252,6 +3266,7 @@
         <nav class="top-nav" aria-label="Main navigation">
             <a class="top-link" href="#persyaratan">Browser requirements</a>
             <a class="top-link" href="#aplikasi">Explore apps <span aria-hidden="true">↘</span></a>
+            <a class="top-link" href="CHANGELOG.md" target="_blank" title="View release notes v2.2.0">Changelog <span class="tag-new" style="margin-left:4px;">v2.2.0</span></a>
             <button class="qr-pill" id="qr-open-nav" type="button" aria-haspopup="dialog" aria-controls="qr-dialog">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                 <span>Mobile Access</span>
@@ -3291,10 +3306,9 @@
     <main>
         <section class="shell hero" aria-labelledby="hero-title">
             <div class="hero-content">
-                <span class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> IN-BROWSER AI
-                    EXPERIMENTS</span>
+                <span class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> IN-BROWSER AI EXPERIMENTS · v2.2.0</span>
                 <h1 id="hero-title">AI that works<br><span class="gradient-text">closer to you.</span></h1>
-                <p class="hero-copy">A space to experiment with local assistants, visual analysis, coding tools, and LiteRT-LM inference. Choose an application to begin.</p>
+                <p class="hero-copy">Explore private on-device AI in your browser: WebLLM (DeepSeek-R1 reasoning &amp; Qwen2.5), Florence-2 Vision WebGPU, Pyodide Python WASM Autonomous Agent, PGlite SQL Vector DB, and Whisper STT / Kokoro TTS Voice Engine. 100% serverless.</p>
                 <div class="hero-actions">
                     <a class="button button-primary" href="obrolan-claude.html">Start chatting <span
                             aria-hidden="true">→</span></a>
@@ -4015,6 +4029,17 @@ chmod +x *.sh *.command
                         class="app-card-footer"><span class="tag">Chat · Voice</span><span class="open-arrow"
                             aria-hidden="true">↗</span></span>
                 </a>
+                <a class="app-card" href="mesin-suara-webgpu.html" data-category="chat"
+                    data-search="voice audio webgpu whisper kokoro speech to text tts transcribe"
+                    style="--icon:#f43f5e;--glow:rgba(244,63,94,.18)">
+                    <span class="app-preview"><img src="nano_asset/assets/previews/mesin-suara-webgpu.jpg" alt="" loading="lazy"
+                            decoding="async"><span class="app-preview-label">Page Preview</span></span>
+                    <span class="app-icon" aria-hidden="true">🎙️</span>
+                    <h3>WebGPU Voice Engine</h3>
+                    <p>Whisper STT speech transcription and natural Kokoro TTS synthesis running on browser GPU.</p><span
+                        class="app-card-footer"><span class="tag">Audio · WebGPU</span><span class="tag-new">NEW</span><span class="open-arrow"
+                            aria-hidden="true">↗</span></span>
+                </a>
                 <a class="app-card" href="obrolan-claude-ringkas.html" data-category="chat"
                     data-search="claude compact simple minimal chat conversation"
                     style="--icon:#f0a58b;--glow:rgba(217,119,87,.13)">
@@ -4055,6 +4080,17 @@ chmod +x *.sh *.command
                     <h3>Vision Analysis</h3>
                     <p>Multimodal analysis assistant with document, visualization, and chat support.</p><span
                         class="app-card-footer"><span class="tag">Vision</span><span class="open-arrow"
+                            aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="analisis-vision-webgpu.html" data-category="vision"
+                    data-search="vision webgpu florence smolvlm ocr object detection multimodal offline"
+                    style="--icon:#10b981;--glow:rgba(16,185,129,.18)">
+                    <span class="app-preview"><img src="nano_asset/assets/previews/analisis-vision-webgpu.jpg" alt="" loading="lazy"
+                            decoding="async"><span class="app-preview-label">Page Preview</span></span>
+                    <span class="app-icon" aria-hidden="true">👁️</span>
+                    <h3>Vision Analysis WebGPU</h3>
+                    <p>100% offline in-browser VLM via Transformers.js: Captioning, OCR, and object detection.</p><span
+                        class="app-card-footer"><span class="tag">Vision · WebGPU</span><span class="tag-new">NEW</span><span class="open-arrow"
                             aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="analisis-kode.html" data-category="vision"
@@ -4144,6 +4180,42 @@ chmod +x *.sh *.command
                     <h3>LiteRT-LM Engine</h3>
                     <p>Load local or remote .litertlm models for hardware-accelerated WebGPU inference.</p><span
                         class="app-card-footer"><span class="tag">AI Engine · WebGPU</span><span class="open-arrow"
+                            aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="mesin-web-llm.html" data-category="engine"
+                    data-search="webllm mlc webgpu llama qwen smollm deepseek r1 engine inference"
+                    style="--icon:#38bdf8;--glow:rgba(56,189,248,.18)">
+                    <span class="app-preview"><img src="nano_asset/assets/previews/mesin-web-llm.jpg" alt=""
+                            loading="lazy" decoding="async"><span
+                            class="app-preview-label">Page Preview</span></span>
+                    <span class="app-icon" aria-hidden="true">⚡</span>
+                    <h3>WebLLM Engine</h3>
+                    <p>In-browser LLM inference via WebGPU (DeepSeek-R1, Qwen 2.5, Llama 3.2, SmolLM2) with zero servers.</p><span
+                        class="app-card-footer"><span class="tag">AI Engine · WebGPU</span><span class="tag-new">NEW</span><span class="open-arrow"
+                            aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="agen-ai-otonom.html" data-category="engine"
+                    data-search="autonomous ai agent pyodide python wasm chart react function calling tools"
+                    style="--icon:#a855f7;--glow:rgba(168,85,247,.2)">
+                    <span class="app-preview"><img src="nano_asset/assets/previews/agen-ai-otonom.jpg" alt=""
+                            loading="lazy" decoding="async"><span
+                            class="app-preview-label">Page Preview</span></span>
+                    <span class="app-icon" aria-hidden="true">🤖</span>
+                    <h3>Autonomous AI Agent</h3>
+                    <p>ReAct workflow with local Python WASM (Pyodide), charts, and dynamic tool calls.</p><span
+                        class="app-card-footer"><span class="tag">AI Agent · WASM</span><span class="tag-new">NEW</span><span class="open-arrow"
+                            aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="mesin-pglite-rag.html" data-category="engine"
+                    data-search="pglite postgresql pgvector sql vector rag database indexeddb wasm"
+                    style="--icon:#3b82f6;--glow:rgba(59,130,246,.2)">
+                    <span class="app-preview"><img src="nano_asset/assets/previews/mesin-pglite-rag.jpg" alt=""
+                            loading="lazy" decoding="async"><span
+                            class="app-preview-label">Page Preview</span></span>
+                    <span class="app-icon" aria-hidden="true">🐘</span>
+                    <h3>PGlite SQL Vector Engine</h3>
+                    <p>Client-side PostgreSQL WASM database with persistent pgvector support in IndexedDB.</p><span
+                        class="app-card-footer"><span class="tag">SQL Vector · WASM</span><span class="tag-new">NEW</span><span class="open-arrow"
                             aria-hidden="true">↗</span></span>
                 </a>
             </div>

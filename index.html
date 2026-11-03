@@ -1171,6 +1171,20 @@
             text-transform: uppercase;
         }
 
+        .tag-new {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(52, 211, 153, 0.2));
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            color: #38bdf8;
+            padding: 1px 6px;
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+        }
+
         .open-arrow {
             color: var(--cyan);
             font-size: 18px;
@@ -3499,6 +3513,7 @@
             <a class="top-link" href="#arsitektur">Arsitektur</a>
             <a class="top-link" href="#persyaratan">Persyaratan browser</a>
             <a class="top-link" href="#aplikasi">Jelajahi aplikasi <span aria-hidden="true">↘</span></a>
+            <a class="top-link" href="CHANGELOG.md" target="_blank" title="Lihat catatan rilis v2.2.0">Changelog <span class="tag-new" style="margin-left:4px;">v2.2.0</span></a>
             <button class="qr-pill" id="qr-open-nav" type="button" aria-haspopup="dialog" aria-controls="qr-dialog">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                 <span>Akses HP</span>
@@ -3538,11 +3553,9 @@
     <main>
         <section class="shell hero" aria-labelledby="hero-title">
             <div class="hero-content">
-                <span class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> EKSPERIMEN AI DI
-                    BROWSER</span>
+                <span class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> EKSPERIMEN AI DI BROWSER · v2.2.0</span>
                 <h1 id="hero-title">AI yang bekerja<br><span class="gradient-text">lebih dekat dengan Anda.</span></h1>
-                <p class="hero-copy">Ruang untuk mencoba asisten lokal, analisis visual, alat coding, dan inferensi
-                    LiteRT-LM. Pilih aplikasi untuk memulai.</p>
+                <p class="hero-copy">Eksplorasi ekosistem AI luring in-browser: WebLLM (DeepSeek-R1 &amp; Qwen2.5), Vision Florence-2 WebGPU, Agen Otonom Pyodide Python WASM, Database Vektor PGlite SQL, serta Mesin Suara Whisper STT &amp; Kokoro TTS. 100% di peramban tanpa server.</p>
                 <div class="hero-actions">
                     <a class="button button-primary" href="obrolan-claude.html">Mulai percakapan <span
                             aria-hidden="true">→</span></a>
@@ -4229,10 +4242,10 @@ chmod +x *.sh *.command
                         <span class="arch-step-num">2</span>
                         <h3>Mesin Inferensi Lokal</h3>
                     </div>
-                    <p>Komputasi AI langsung di NPU/GPU pengguna: Chrome Built-in AI (Gemini Nano), LiteRT-LM WebGPU (Gemma/SmolLM), Transformers.js ONNX, serta Pyodide Python sandbox.</p>
+                    <p>Komputasi AI langsung di NPU/GPU pengguna: Chrome Built-in AI (Gemini Nano), WebLLM WebGPU (DeepSeek-R1 &amp; Qwen2.5), LiteRT-LM, Transformers.js (Florence-2 &amp; Whisper), serta Pyodide Python sandbox.</p>
                     <div class="arch-tag-list">
                         <span class="arch-tag">Chrome Prompt API</span>
-                        <span class="arch-tag">LiteRT WebGPU</span>
+                        <span class="arch-tag">WebLLM WebGPU</span>
                         <span class="arch-tag">Transformers.js</span>
                         <span class="arch-tag">Pyodide WASM</span>
                     </div>
@@ -4242,11 +4255,12 @@ chmod +x *.sh *.command
                 <div class="arch-card">
                     <div style="display:flex;align-items:center;gap:10px;">
                         <span class="arch-step-num">3</span>
-                        <h3>Memori &amp; Penyimpanan Aman</h3>
+                        <h3>Memori &amp; Database Vektor</h3>
                     </div>
-                    <p>Knowledge Base RAG dengan hybrid search (vektor 384-dimensi + kata kunci BM25) serta memori persona SQLite WASM. Bebas telemetri, data tersimpan privat di peramban.</p>
+                    <p>Knowledge Base RAG dengan hybrid search, memori SQLite WASM, dan database PostgreSQL in-browser via PGlite dengan ekstensi pgvector. Bebas telemetri, data tersimpan privat di peramban.</p>
                     <div class="arch-tag-list">
-                        <span class="arch-tag">IndexedDB Vector Store</span>
+                        <span class="arch-tag">PGlite pgvector</span>
+                        <span class="arch-tag">IndexedDB Storage</span>
                         <span class="arch-tag">SQLite WASM</span>
                         <span class="arch-tag">Zero Telemetry</span>
                     </div>
@@ -4330,6 +4344,17 @@ chmod +x *.sh *.command
                         class="app-card-footer"><span class="tag">Chat · Suara</span><span class="open-arrow"
                             aria-hidden="true">↗</span></span>
                 </a>
+                <a class="app-card" href="mesin-suara-webgpu.html" data-category="chat"
+                    data-search="suara audio webgpu whisper kokoro speech to text tts transkripsi"
+                    style="--icon:#f43f5e;--glow:rgba(244,63,94,.18)">
+                    <span class="app-preview"><img src="nano_asset/assets/previews/mesin-suara-webgpu.jpg" alt="" loading="lazy"
+                            decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
+                    <span class="app-icon" aria-hidden="true">🎙️</span>
+                    <h3>Mesin Suara AI WebGPU</h3>
+                    <p>Transkripsi suara Whisper STT dan sintesis suara alami Kokoro TTS murni di GPU browser.</p><span
+                        class="app-card-footer"><span class="tag">Audio · WebGPU</span><span class="tag-new">BARU</span><span class="open-arrow"
+                            aria-hidden="true">↗</span></span>
+                </a>
                 <a class="app-card" href="obrolan-claude-ringkas.html" data-category="chat"
                     data-search="claude ringkas sederhana minimal chat"
                     style="--icon:#f0a58b;--glow:rgba(217,119,87,.13)">
@@ -4370,6 +4395,17 @@ chmod +x *.sh *.command
                     <h3>Analisis Vision</h3>
                     <p>Asisten analisis dengan dukungan dokumen, visualisasi, dan alat percakapan.</p><span
                         class="app-card-footer"><span class="tag">Vision</span><span class="open-arrow"
+                            aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="analisis-vision-webgpu.html" data-category="vision"
+                    data-search="vision webgpu florence smolvlm ocr deteksi objek multimodal offline"
+                    style="--icon:#10b981;--glow:rgba(16,185,129,.18)">
+                    <span class="app-preview"><img src="nano_asset/assets/previews/analisis-vision-webgpu.jpg" alt="" loading="lazy"
+                            decoding="async"><span class="app-preview-label">Pratinjau halaman</span></span>
+                    <span class="app-icon" aria-hidden="true">👁️</span>
+                    <h3>Analisis Vision WebGPU</h3>
+                    <p>VLM in-browser 100% offline via Transformers.js: Captioning, OCR, dan deteksi objek.</p><span
+                        class="app-card-footer"><span class="tag">Vision · WebGPU</span><span class="tag-new">BARU</span><span class="open-arrow"
                             aria-hidden="true">↗</span></span>
                 </a>
                 <a class="app-card" href="analisis-kode.html" data-category="vision"
@@ -4459,6 +4495,42 @@ chmod +x *.sh *.command
                     <h3>Mesin LiteRT-LM</h3>
                     <p>Muat model `.litertlm` lokal atau melalui URL untuk inferensi WebGPU.</p><span
                         class="app-card-footer"><span class="tag">Mesin AI · WebGPU</span><span class="open-arrow"
+                            aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="mesin-web-llm.html" data-category="engine"
+                    data-search="webllm mlc webgpu llama qwen smollm deepseek r1 engine inferensi"
+                    style="--icon:#38bdf8;--glow:rgba(56,189,248,.18)">
+                    <span class="app-preview"><img src="nano_asset/assets/previews/mesin-web-llm.jpg" alt=""
+                            loading="lazy" decoding="async"><span
+                            class="app-preview-label">Pratinjau halaman</span></span>
+                    <span class="app-icon" aria-hidden="true">⚡</span>
+                    <h3>Mesin WebLLM</h3>
+                    <p>Inferensi LLM in-browser via WebGPU (DeepSeek-R1, Qwen 2.5, Llama 3.2, SmolLM2) tanpa server.</p><span
+                        class="app-card-footer"><span class="tag">Mesin AI · WebGPU</span><span class="tag-new">BARU</span><span class="open-arrow"
+                            aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="agen-ai-otonom.html" data-category="engine"
+                    data-search="agen ai otonom pyodide python wasm chart react function calling tools"
+                    style="--icon:#a855f7;--glow:rgba(168,85,247,.2)">
+                    <span class="app-preview"><img src="nano_asset/assets/previews/agen-ai-otonom.jpg" alt=""
+                            loading="lazy" decoding="async"><span
+                            class="app-preview-label">Pratinjau halaman</span></span>
+                    <span class="app-icon" aria-hidden="true">🤖</span>
+                    <h3>Agen AI Otonom</h3>
+                    <p>Alur kerja ReAct dengan eksekusi Python WASM (Pyodide), chart, dan dynamic tools.</p><span
+                        class="app-card-footer"><span class="tag">Agen AI · WASM</span><span class="tag-new">BARU</span><span class="open-arrow"
+                            aria-hidden="true">↗</span></span>
+                </a>
+                <a class="app-card" href="mesin-pglite-rag.html" data-category="engine"
+                    data-search="pglite postgresql pgvector sql vector rag database indexeddb wasm"
+                    style="--icon:#3b82f6;--glow:rgba(59,130,246,.2)">
+                    <span class="app-preview"><img src="nano_asset/assets/previews/mesin-pglite-rag.jpg" alt=""
+                            loading="lazy" decoding="async"><span
+                            class="app-preview-label">Pratinjau halaman</span></span>
+                    <span class="app-icon" aria-hidden="true">🐘</span>
+                    <h3>Mesin PGlite SQL Vector</h3>
+                    <p>Database PostgreSQL WASM lengkap dengan ekstensi pgvector persisten di IndexedDB.</p><span
+                        class="app-card-footer"><span class="tag">SQL Vektor · WASM</span><span class="tag-new">BARU</span><span class="open-arrow"
                             aria-hidden="true">↗</span></span>
                 </a>
             </div>

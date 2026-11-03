@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mesin WebLLM — WebGPU On-Device AI</title>
+    
+    <!-- Aset Inti UI & Renderer -->
+    <link rel="stylesheet" href="nano_asset/assets/css/ai-renderers.css">
+    <link rel="stylesheet" href="nano_asset/assets/css/katex.min.css">
+    <link rel="stylesheet" href="nano_asset/assets/css/boxicons.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+    
+    <script src="nano_asset/assets/js/marked.min.js"></script>
+    <script src="nano_asset/assets/js/katex.min.js"></script>
+    <script src="nano_asset/assets/js/ai-advanced-stream-engine.js"></script>
+    <script src="nano_asset/assets/js/qrcode-generator.js"></script>
+    <script src="nano_asset/assets/js/lan-ai-bridge.js"></script>
+    <script src="nano_asset/assets/js/lan-qrcode.js" defer></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-main: #090d16;
+            --bg-card: rgba(19, 27, 44, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(56, 189, 248, 0.3);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #10b981;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(6, 182, 212, 0.15), transparent),
+                radial-gradient(ellipse 60% 40% at 100% 100%, rgba(139, 92, 246, 0.1), transparent);
+        }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+
+        /* HEADER */
+        header {
+            background: rgba(13, 20, 36, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 30;
+            flex-shrink: 0;
+        }
+
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            white-space: nowrap;
+        }
+
+        .badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #94a3b8;
+        }
+        .badge.ready .badge-dot { background: #10b981; box-shadow: 0 0 8px #10b981; }
+        .badge.loading .badge-dot { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; animation: pulse 1.5s infinite; }
+        .badge.error .badge-dot { background: #ef4444; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+        }
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--border-hover);
+            transform: translateY(-1px);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #06b6d4, #2563eb);
+            border-color: rgba(56, 189, 248, 0.4);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.25);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.45);
+        }
+
+        /* MAIN LAYOUT */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 16px 20px 20px;
+            overflow: hidden;
+            gap: 12px;
+        }
+
+        /* METRICS BAR */
+        .metrics-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+        .metric-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: #38bdf8;
+        }
+
+        /* WELCOME CARD */
+        .welcome-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px 22px;
+            flex-shrink: 0;
+            position: relative;
+            backdrop-filter: blur(12px);
+        }
+        .model-pills {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 10px 0 4px;
+        }
+        .model-pill {
+            padding: 8px 14px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            text-align: left;
+        }
+        .model-pill:hover {
+            border-color: rgba(56, 189, 248, 0.5);
+            background: rgba(56, 189, 248, 0.05);
+        }
+        .model-pill.active {
+            border-color: #06b6d4;
+            background: rgba(6, 182, 212, 0.12);
+            box-shadow: 0 0 16px rgba(6, 182, 212, 0.2);
+        }
+        .model-pill .pill-name {
+            font-weight: 700;
+            color: #fff;
+        }
+        .model-pill .pill-meta {
+            font-size: 10px;
+            color: #94a3b8;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* PROGRESS CONTAINER */
+        #progressContainer {
+            margin-top: 14px;
+            display: none;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-bottom: 6px;
+            color: #94a3b8;
+        }
+        .progress-bar-bg {
+            width: 100%;
+            height: 7px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #06b6d4, #3b82f6, #8b5cf6);
+            transition: width 0.15s ease-out;
+            box-shadow: 0 0 10px #06b6d4;
+        }
+
+        /* CHATBOX */
+        #chatbox {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 12px 4px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 88%;
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .message.ai {
+            align-self: flex-start;
+        }
+
+        .avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .message.user .avatar {
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: #fff;
+        }
+        .message.ai .avatar {
+            background: linear-gradient(135deg, #06b6d4, #10b981);
+            color: #fff;
+            box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
+        }
+
+        .bubble {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px 18px;
+            font-size: 14px;
+            line-height: 1.65;
+            color: #e2e8f0;
+            position: relative;
+            word-break: break-word;
+        }
+        .message.user .bubble {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.25), rgba(59, 130, 246, 0.15));
+            border-color: rgba(59, 130, 246, 0.35);
+            color: #f8fafc;
+            border-top-right-radius: 4px;
+        }
+        .message.ai .bubble {
+            border-top-left-radius: 4px;
+        }
+
+        .bubble pre {
+            background: #050811 !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px;
+            margin: 10px 0;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+        }
+        .bubble code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 5px;
+        }
+
+        /* REASONING THINKING BOX (DEEPSEEK R1) */
+        .thinking-box {
+            margin-bottom: 12px;
+            border: 1px solid rgba(168, 85, 247, 0.28);
+            background: rgba(168, 85, 247, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.25s ease;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+        .thinking-box[open] {
+            border-color: rgba(168, 85, 247, 0.45);
+            box-shadow: 0 4px 20px -4px rgba(168, 85, 247, 0.2);
+        }
+        .thinking-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 14px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 11px;
+            background: rgba(255, 255, 255, 0.02);
+            transition: all 0.2s;
+            list-style: none;
+        }
+        .thinking-header::-webkit-details-marker { display: none; }
+        .thinking-box[open] .thinking-header {
+            border-bottom: 1px solid rgba(168, 85, 247, 0.18);
+        }
+        .thinking-header:hover {
+            background: rgba(168, 85, 247, 0.1);
+        }
+        .thinking-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+            color: #c084fc;
+            letter-spacing: 0.02em;
+        }
+        .thinking-pulse {
+            color: #38bdf8 !important;
+            animation: pulse 1.5s infinite;
+        }
+        .thinking-meta {
+            font-size: 10px;
+            color: #94a3b8;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .thinking-content {
+            padding: 12px 14px;
+            font-size: 12.5px;
+            line-height: 1.6;
+            color: #cbd5e1;
+            font-style: italic;
+            background: rgba(0, 0, 0, 0.25);
+            border-left: 3px solid #a855f7;
+            margin: 8px 12px 12px;
+            border-radius: 6px;
+        }
+        .thinking-content p { margin-bottom: 6px; }
+        .thinking-content p:last-child { margin-bottom: 0; }
+        .answer-content {
+            color: #f1f5f9;
+        }
+
+        /* INPUT AREA */
+        .input-container {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 10px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+        .input-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+        textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            resize: none;
+            max-height: 140px;
+            min-height: 24px;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #fff;
+            padding: 4px 2px;
+        }
+        textarea::placeholder { color: #64748b; }
+
+        .quick-prompts {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .quick-prompt-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 4px 10px;
+            border-radius: 99px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+        .quick-prompt-btn:hover {
+            color: #38bdf8;
+            border-color: rgba(56, 189, 248, 0.3);
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        /* SCHEMA PILLS (XGRAMMAR) */
+        .schema-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #94a3b8;
+            padding: 3px 9px;
+            border-radius: 99px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .schema-pill:hover {
+            color: #34d399;
+            border-color: rgba(52, 211, 153, 0.4);
+            background: rgba(52, 211, 153, 0.08);
+        }
+        .schema-pill.active {
+            background: rgba(52, 211, 153, 0.2);
+            border-color: #34d399;
+            color: #34d399;
+            font-weight: 600;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-card {
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 580px;
+            padding: 24px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .modal-header h3 { font-size: 16px; font-weight: 700; color: #fff; }
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        /* MOBILE OPTIMIZATIONS */
+        @media (max-width: 640px) {
+            header { padding: 10px 14px; }
+            .brand-desc { display: none; }
+            #gpuText { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            #jsonModeLabel { display: none; }
+            .header-actions { gap: 6px; }
+            .btn-action { padding: 7px 10px; }
+            main { padding: 10px 12px 14px; }
+            .message { max-width: 95%; }
+            .bubble { font-size: 13px; padding: 10px 14px; }
+            .metrics-bar { font-size: 10px; padding: 6px 12px; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <a href="index.html" class="brand-link" title="Kembali ke Beranda AI Lokal">
+            <div class="brand-icon">⚡</div>
+            <div>
+                <div style="font-weight: 800; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 6px;">
+                    Mesin WebLLM <span style="font-size: 10px; background: rgba(6, 182, 212, 0.2); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.4); padding: 2px 7px; border-radius: 99px;">WebGPU</span>
+                </div>
+                <div class="brand-desc" style="font-size: 11px; color: var(--text-secondary);">100% In-Browser In-Memory Execution (mlc-ai/web-llm)</div>
+            </div>
+        </a>
+
+        <div class="header-actions">
+            <div id="gpuBadge" class="badge" title="Status Akselerasi WebGPU">
+                <span class="badge-dot"></span>
+                <span id="gpuText">Mendeteksi WebGPU...</span>
+            </div>
+            <button id="btnJsonMode" class="btn-action" title="Aktifkan Mode Structured Output JSON (XGrammar)">
+                <i class='bx bx-code-curly'></i> <span id="jsonModeLabel">JSON Mode</span>
+            </button>
+            <button id="btnGpuInfo" class="btn-action" title="Lihat Info Hardware GPU">
+                <i class='bx bx-chip'></i> GPU
+            </button>
+            <button id="btnSettings" class="btn-action" title="Pengaturan Model & System Prompt">
+                <i class='bx bx-slider-alt'></i>
+            </button>
+            <a href="index.html" class="btn-action" title="Kembali">
+                <i class='bx bx-home-alt'></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- MAIN BODY -->
+    <main>
+        <!-- METRICS BAR -->
+        <div class="metrics-bar">
+            <div class="metric-item">
+                <i class='bx bx-microchip text-sky-400'></i>
+                <span>Hardware:</span>
+                <span id="metricGpu" class="metric-value">Memeriksa...</span>
+            </div>
+            <span style="color: rgba(255,255,255,0.15)">|</span>
+            <div class="metric-item">
+                <i class='bx bx-tachometer text-emerald-400'></i>
+                <span>Kecepatan:</span>
+                <span id="metricSpeed" class="metric-value">0.0 tok/s</span>
+            </div>
+            <span style="color: rgba(255,255,255,0.15)">|</span>
+            <div class="metric-item">
+                <i class='bx bx-time-five text-amber-400'></i>
+                <span>Latensi TTFT:</span>
+                <span id="metricTtft" class="metric-value">-</span>
+            </div>
+            <span style="color: rgba(255,255,255,0.15)">|</span>
+            <div class="metric-item">
+                <i class='bx bx-coin-stack text-purple-400'></i>
+                <span>Total Token:</span>
+                <span id="metricTokens" class="metric-value">0</span>
+            </div>
+        </div>
+
+        <!-- JSON SCHEMA BANNER (XGRAMMAR) -->
+        <div id="jsonSchemaBanner" style="display: none; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 10px 14px; font-size: 11px; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="font-weight: 700; color: #34d399; display: flex; align-items: center; gap: 4px;">
+                    <i class='bx bx-check-shield'></i> Skema XGrammar:
+                </span>
+                <button class="schema-pill active" onclick="setJsonPreset('profile')">Profil &amp; Entitas</button>
+                <button class="schema-pill" onclick="setJsonPreset('sentiment')">Sentimen &amp; Skor</button>
+                <button class="schema-pill" onclick="setJsonPreset('doc')">Klasifikasi Dokumen</button>
+                <button class="schema-pill" onclick="openSchemaModal()">✏️ Kustom Skema</button>
+            </div>
+            <span style="color: #6ee7b7; font-family: 'JetBrains Mono', monospace; font-size: 10px;">100% Guaranteed Valid JSON Output</span>
+        </div>
+
+        <!-- WELCOME & MODEL SELECTOR -->
+        <div id="welcomeCard" class="welcome-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap;">
+                <div>
+                    <h2 style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;">Pilih Model SLM On-Device</h2>
+                    <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+                        Model dieksekusi langsung pada GPU lokal browser Anda via WebGPU. Bobot model disimpan permanen di cache browser sehingga pemakaian berikutnya instan & 100% offline.
+                    </p>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button id="btnLoadSelected" class="btn-action btn-primary" style="background: linear-gradient(135deg, #a855f7, #2563eb); border-color: rgba(168, 85, 247, 0.4);">
+                        <i class='bx bx-download'></i> Muat DeepSeek-R1
+                    </button>
+                    <button id="btnClearCache" class="btn-action" title="Bersihkan cache model di browser" style="font-size: 11px;">
+                        <i class='bx bx-trash'></i> Cache
+                    </button>
+                </div>
+            </div>
+
+            <!-- Model Pills -->
+            <div class="model-pills" id="modelPills">
+                <div class="model-pill active" data-model="DeepSeek-R1-Distill-Qwen-1.5B-q4f16_1-MLC" style="border-color: #a855f7; background: rgba(168, 85, 247, 0.12);">
+                    <span class="pill-name" style="color: #d8b4fe;">🧠 DeepSeek-R1 1.5B</span>
+                    <span class="pill-meta">~1.1 GB · Reasoning &amp; Deep Thinking</span>
+                </div>
+                <div class="model-pill" data-model="SmolLM2-360M-Instruct-q4f16_1-MLC">
+                    <span class="pill-name">⚡ SmolLM2 360M</span>
+                    <span class="pill-meta">~230 MB · Super Cepat (Sub-detik)</span>
+                </div>
+                <div class="model-pill" data-model="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">
+                    <span class="pill-name">🧠 Qwen 2.5 0.5B</span>
+                    <span class="pill-meta">~380 MB · Pintar &amp; Multibahasa</span>
+                </div>
+                <div class="model-pill" data-model="Llama-3.2-1B-Instruct-q4f16_1-MLC">
+                    <span class="pill-name">🦙 Llama 3.2 1B</span>
+                    <span class="pill-meta">~880 MB · Meta Edge AI</span>
+                </div>
+                <div class="model-pill" data-model="SmolLM2-1.7B-Instruct-q4f16_1-MLC">
+                    <span class="pill-name">🚀 SmolLM2 1.7B</span>
+                    <span class="pill-meta">~1.0 GB · Seimbang &amp; Cerdas</span>
+                </div>
+                <div class="model-pill" data-model="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">
+                    <span class="pill-name">⚡ Qwen 2.5 1.5B</span>
+                    <span class="pill-meta">~1.1 GB · Logika Kuat &amp; Teks</span>
+                </div>
+                <div class="model-pill" data-model="Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC">
+                    <span class="pill-name">💻 Qwen 2.5 Coder 1.5B</span>
+                    <span class="pill-meta">~1.1 GB · Spesialis Kode &amp; Algoritma</span>
+                </div>
+                <div class="model-pill" data-model="Llama-3.2-3B-Instruct-q4f16_1-MLC">
+                    <span class="pill-name">👑 Llama 3.2 3B</span>
+                    <span class="pill-meta">~1.9 GB · Akurasi Maksimal (RAM &gt;=8GB)</span>
+                </div>
+            </div>
+
+            <!-- Download Progress Bar -->
+            <div id="progressContainer">
+                <div class="progress-header">
+                    <span id="progressText">Mengunduh bobot model WebGPU...</span>
+                    <span id="progressPercent" style="font-family: 'JetBrains Mono'; font-weight: 700; color: #38bdf8;">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div id="progressBarFill" class="progress-bar-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHATBOX -->
+        <div id="chatbox">
+            <div class="message ai">
+                <div class="avatar">⚡</div>
+                <div class="bubble">
+                    Halo! Selamat datang di laboratorium <b>WebLLM WebGPU</b>. Silakan pilih salah satu model di atas (disarankan <b>SmolLM2 360M</b> atau <b>Qwen 2.5 0.5B</b> untuk unduhan super cepat) lalu klik <b>Muat Model</b> untuk memulai inferensi native langsung di GPU komputer Anda.
+                </div>
+            </div>
+        </div>
+
+        <!-- INPUT CONTAINER -->
+        <div class="input-container">
+            <div class="quick-prompts">
+                <button class="quick-prompt-btn" style="border-color: rgba(168,85,247,0.4); color: #d8b4fe;" onclick="sendQuickPrompt('Teka-teki Logika: Ada 3 peti dengan label Apel, Jeruk, dan Campuran. Semua label terpasang salah. Anda hanya boleh mengambil 1 buah dari 1 peti tanpa melihat ke dalam. Bagaimana cara menentukan isi semua peti dengan pasti? Jelaskan proses berpikirmu langkah demi langkah.')">🧠 Teka-teki Logika (R1)</button>
+                <button class="quick-prompt-btn" onclick="sendQuickPrompt('Buktikan bahwa perkalian dua bilangan ganjil selalu menghasilkan bilangan ganjil.')">📐 Bukti Matematika</button>
+                <button class="quick-prompt-btn" onclick="sendQuickPrompt('Jelaskan cara kerja WebGPU dalam memproses inferensi AI di browser secara sederhana.')">💡 Cara Kerja WebGPU</button>
+                <button class="quick-prompt-btn" onclick="sendQuickPrompt('Buat fungsi JavaScript untuk menghitung Cosine Similarity antara dua vektor.')">💻 Kode JavaScript</button>
+            </div>
+
+            <div class="input-row">
+                <textarea id="promptInput" rows="1" placeholder="Ketik pesan untuk model WebGPU lokal... (Tekan Enter untuk kirim)"></textarea>
+                <button id="btnSend" class="btn-action btn-primary" style="padding: 10px 18px; border-radius: 12px;" title="Kirim Pesan">
+                    <i class='bx bx-send' style="font-size: 16px;"></i>
+                </button>
+                <button id="btnStop" class="btn-action" style="display: none; padding: 10px 14px; border-radius: 12px; background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #f87171;" title="Hentikan Generasi">
+                    <i class='bx bx-stop' style="font-size: 16px;"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL SPESIFIKASI GPU -->
+    <div id="gpuModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class='bx bx-chip text-sky-400'></i> Spesifikasi Hardware WebGPU</h3>
+                <button class="modal-close" onclick="closeModal('gpuModal')">&times;</button>
+            </div>
+            <div id="gpuModalContent" style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; display: flex; flex-direction: column; gap: 10px;">
+                Memeriksa informasi adapter...
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PENGATURAN -->
+    <div id="settingsModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class='bx bx-slider-alt text-purple-400'></i> Pengaturan Inferensi</h3>
+                <button class="modal-close" onclick="closeModal('settingsModal')">&times;</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 14px; font-size: 13px;">
+                <div>
+                    <label style="display: block; font-weight: 600; color: #fff; margin-bottom: 6px;">System Prompt (Persona AI):</label>
+                    <textarea id="settingSystemPrompt" rows="3" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 10px; padding: 8px 12px; color: #fff; font-size: 12px;">Anda adalah asisten AI yang cerdas, ramah, dan ringkas. Anda berjalan langsung di browser pengguna via WebGPU tanpa server.</textarea>
+                </div>
+                <div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <label style="font-weight: 600; color: #fff;">Temperature: <span id="tempValue" style="color: #38bdf8; font-family: 'JetBrains Mono';">0.7</span></label>
+                    </div>
+                    <input id="settingTemp" type="range" min="0" max="1.5" step="0.1" value="0.7" style="width: 100%;">
+                </div>
+                <div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <label style="font-weight: 600; color: #fff;">Top-P: <span id="topPValue" style="color: #38bdf8; font-family: 'JetBrains Mono';">0.9</span></label>
+                    </div>
+                    <input id="settingTopP" type="range" min="0.1" max="1.0" step="0.05" value="0.9" style="width: 100%;">
+                </div>
+                <div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <label style="font-weight: 600; color: #fff;">Max Tokens: <span id="maxTokensValue" style="color: #38bdf8; font-family: 'JetBrains Mono';">1024</span></label>
+                    </div>
+                    <input id="settingMaxTokens" type="range" min="128" max="4096" step="128" value="1024" style="width: 100%;">
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+                    <button class="btn-action" onclick="closeModal('settingsModal')">Batal</button>
+                    <button class="btn-action btn-primary" onclick="saveSettings()">Simpan Pengaturan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL KUSTOM SKEMA XGRAMMAR -->
+    <div id="schemaModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class='bx bx-code-curly text-emerald-400'></i> Editor Skema JSON (XGrammar)</h3>
+                <button class="modal-close" onclick="closeModal('schemaModal')">&times;</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px;">
+                <p style="color: var(--text-secondary); font-size: 12px; line-height: 1.5;">
+                    Tentukan format skema JSON yang wajib dipatuhi oleh model saat menjawab. XGrammar mengevaluasi DFA grammar langsung di WebGPU:
+                </p>
+                <textarea id="customSchemaEditor" rows="8" style="width: 100%; background: #050811; border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; font-family: 'JetBrains Mono', monospace; color: #38bdf8; font-size: 11px; outline: none;"></textarea>
+                <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                    <button class="btn-action" onclick="closeModal('schemaModal')">Batal</button>
+                    <button class="btn-action btn-primary" onclick="saveCustomSchema()">Terapkan Skema</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT INFERENSI WEBGPU WEBLOGIC -->
+    <script type="module">
+        let webllmModule = null;
+        let engine = null;
+        let selectedModel = "DeepSeek-R1-Distill-Qwen-1.5B-q4f16_1-MLC";
+        let isGenerating = false;
+        let totalTokensGenerated = 0;
+        let chatHistory = [];
+        let gpuAdapterInfo = null;
+
+        // Structured JSON Output State (XGrammar)
+        let isJsonMode = false;
+        let activeSchemaType = 'profile';
+        const jsonSchemas = {
+            profile: JSON.stringify({
+                type: "object",
+                properties: {
+                    nama: { type: "string" },
+                    profesi: { type: "string" },
+                    keterampilan: { type: "array", items: { type: "string" } },
+                    ringkasan: { type: "string" }
+                },
+                required: ["nama", "profesi", "keterampilan", "ringkasan"]
+            }),
+            sentiment: JSON.stringify({
+                type: "object",
+                properties: {
+                    sentimen: { type: "string", enum: ["positif", "negatif", "netral"] },
+                    skor_keyakinan: { type: "number" },
+                    kata_kunci: { type: "array", items: { type: "string" } },
+                    alasan: { type: "string" }
+                },
+                required: ["sentimen", "skor_keyakinan", "kata_kunci", "alasan"]
+            }),
+            doc: JSON.stringify({
+                type: "object",
+                properties: {
+                    kategori: { type: "string" },
+                    tingkat_urgensi: { type: "string", enum: ["tinggi", "sedang", "rendah"] },
+                    ringkasan: { type: "string" },
+                    langkah_tindakan: { type: "array", items: { type: "string" } }
+                },
+                required: ["kategori", "tingkat_urgensi", "ringkasan", "langkah_tindakan"]
+            })
+        };
+
+        // UI Elements
+        const gpuBadge = document.getElementById('gpuBadge');
+        const gpuText = document.getElementById('gpuText');
+        const metricGpu = document.getElementById('metricGpu');
+        const metricSpeed = document.getElementById('metricSpeed');
+        const metricTtft = document.getElementById('metricTtft');
+        const metricTokens = document.getElementById('metricTokens');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressText = document.getElementById('progressText');
+        const progressPercent = document.getElementById('progressPercent');
+        const progressBarFill = document.getElementById('progressBarFill');
+        const chatbox = document.getElementById('chatbox');
+        const promptInput = document.getElementById('promptInput');
+        const btnSend = document.getElementById('btnSend');
+        const btnStop = document.getElementById('btnStop');
+        const btnLoadSelected = document.getElementById('btnLoadSelected');
+        const modelPills = document.querySelectorAll('.model-pill');
+
+        // Settings State
+        let config = {
+            systemPrompt: "Anda adalah asisten AI yang cerdas, ramah, dan ringkas. Anda berjalan langsung di browser pengguna via WebGPU tanpa server.",
+            temperature: 0.7,
+            topP: 0.9,
+            maxTokens: 1024
+        };
+
+        // 1. Deteksi Dukungan WebGPU
+        async function checkWebGPU() {
+            if (!navigator.gpu) {
+                gpuBadge.className = 'badge error';
+                gpuText.textContent = 'WebGPU Tidak Didukung';
+                metricGpu.textContent = 'Tidak Ada WebGPU';
+                alert('Browser Anda belum mendukung WebGPU atau flag WebGPU belum aktif. Jalankan skrip ./launch_chrome_ai.sh untuk mengaktifkannya secara otomatis.');
+                return false;
+            }
+
+            try {
+                const adapter = await navigator.gpu.requestAdapter();
+                if (!adapter) {
+                    gpuBadge.className = 'badge error';
+                    gpuText.textContent = 'GPU Adapter Tidak Ditemukan';
+                    metricGpu.textContent = 'Adapter N/A';
+                    return false;
+                }
+
+                // Ambil info adapter jika didukung
+                let info = {};
+                if (typeof adapter.requestAdapterInfo === 'function') {
+                    info = await adapter.requestAdapterInfo();
+                }
+                gpuAdapterInfo = { adapter, info };
+
+                const vendor = info.vendor || 'WebGPU Device';
+                const arch = info.architecture ? `(${info.architecture})` : '';
+                gpuBadge.className = 'badge ready';
+                gpuText.textContent = 'WebGPU Siap';
+                metricGpu.textContent = `${vendor} ${arch}`.trim() || 'Aktif';
+                return true;
+            } catch (err) {
+                console.error('Error saat memeriksa WebGPU:', err);
+                gpuBadge.className = 'badge error';
+                gpuText.textContent = 'Gagal Mengakses GPU';
+                return false;
+            }
+        }
+
+        // 2. Dinamis Import WebLLM Module
+        async function loadWebLLMLibrary() {
+            if (webllmModule) return webllmModule;
+            
+            progressContainer.style.display = 'block';
+            progressText.textContent = 'Memuat modul runtime @mlc-ai/web-llm...';
+            progressBarFill.style.width = '15%';
+            progressPercent.textContent = '15%';
+
+            try {
+                // Gunakan cdn.jsdelivr.net/+esm atau esm.run
+                webllmModule = await import("https://esm.run/@mlc-ai/web-llm");
+                console.log("WebLLM runtime berhasil dimuat:", webllmModule);
+                return webllmModule;
+            } catch (err) {
+                console.warn("Gagal memuat dari esm.run, mencoba jsdelivr...", err);
+                try {
+                    webllmModule = await import("https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm/+esm");
+                    return webllmModule;
+                } catch (err2) {
+                    console.error("Gagal memuat modul WebLLM:", err2);
+                    progressText.textContent = 'Gagal memuat runtime WebLLM dari CDN. Periksa koneksi internet.';
+                    throw err2;
+                }
+            }
+        }
+
+        // 3. Muat Model ke GPU
+        async function loadModel(modelName) {
+            const hasGpu = await checkWebGPU();
+            if (!hasGpu) return;
+
+            btnLoadSelected.disabled = true;
+            btnLoadSelected.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Memuat...`;
+            progressContainer.style.display = 'block';
+
+            try {
+                const mlc = await loadWebLLMLibrary();
+                
+                const progressCallback = (report) => {
+                    const pct = Math.round(report.progress * 100);
+                    progressBarFill.style.width = `${pct}%`;
+                    progressPercent.textContent = `${pct}%`;
+                    progressText.textContent = report.text || 'Mengunduh bobot model...';
+                };
+
+                engine = await mlc.CreateMLCEngine(modelName, {
+                    initProgressCallback: progressCallback
+                });
+
+                progressText.textContent = `Model ${modelName} siap digunakan! Tersimpan di cache luring.`;
+                progressBarFill.style.width = '100%';
+                progressPercent.textContent = '100%';
+
+                btnLoadSelected.innerHTML = `<i class='bx bx-check'></i> Model Aktif`;
+                btnLoadSelected.className = 'btn-action';
+                btnLoadSelected.style.background = 'rgba(16, 185, 129, 0.2)';
+                btnLoadSelected.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+                btnLoadSelected.style.color = '#34d399';
+
+                appendMessage('ai', `✅ Model **${modelName}** berhasil diinisialisasi pada GPU Anda! Silakan mulai percakapan.`);
+            } catch (err) {
+                console.error("Gagal memuat model:", err);
+                progressText.textContent = `Error: ${err.message || 'Gagal memuat model'}`;
+                btnLoadSelected.disabled = false;
+                btnLoadSelected.innerHTML = `<i class='bx bx-refresh'></i> Coba Lagi`;
+            }
+        }
+
+        // 4. Kirim Prompt & Streaming
+        async function sendMessage(text) {
+            if (!text || isGenerating) return;
+            if (!engine) {
+                appendMessage('ai', '⚠️ Harap klik tombol **Muat Model** terlebih dahulu sebelum mengirim pesan.');
+                return;
+            }
+
+            // Tampilkan pesan pengguna
+            appendMessage('user', text);
+            promptInput.value = '';
+            promptInput.style.height = 'auto';
+
+            // Siapkan elemen gelembung AI untuk streaming
+            const aiBubble = appendMessage('ai', '<span class="loading-dots">Sedang berpikir...</span>');
+            
+            isGenerating = true;
+            btnSend.style.display = 'none';
+            btnStop.style.display = 'inline-flex';
+
+            const startTime = performance.now();
+            let firstTokenTime = null;
+            let thinkingStartTime = null;
+            let thinkingEndTime = null;
+            let tokenCount = 0;
+            let fullReply = '';
+
+            try {
+                chatHistory.push({ role: "user", content: text });
+
+                const messages = [
+                    { role: "system", content: config.systemPrompt },
+                    ...chatHistory
+                ];
+
+                const payload = {
+                    messages,
+                    temperature: config.temperature,
+                    top_p: config.topP,
+                    max_tokens: config.maxTokens,
+                    stream: true
+                };
+
+                // Injeksi XGrammar JSON Schema Enforcement jika JSON Mode aktif
+                if (isJsonMode && jsonSchemas[activeSchemaType]) {
+                    payload.response_format = {
+                        type: "json_object",
+                        schema: jsonSchemas[activeSchemaType]
+                    };
+                }
+
+                const chunks = await engine.chat.completions.create(payload);
+
+                for await (const chunk of chunks) {
+                    if (!isGenerating) break;
+
+                    const delta = chunk.choices[0]?.delta?.content || "";
+                    if (delta) {
+                        if (!firstTokenTime) {
+                            firstTokenTime = performance.now();
+                            thinkingStartTime = firstTokenTime;
+                            metricTtft.textContent = `${Math.round(firstTokenTime - startTime)} ms`;
+                            aiBubble.innerHTML = '';
+                        }
+                        fullReply += delta;
+                        
+                        // Deteksi selesai proses berpikir DeepSeek (<think> ... </think>)
+                        if (fullReply.includes('</think>') && !thinkingEndTime) {
+                            thinkingEndTime = performance.now();
+                        }
+
+                        tokenCount++;
+                        totalTokensGenerated++;
+                        
+                        // Hitung tok/s live
+                        const elapsedSec = (performance.now() - firstTokenTime) / 1000;
+                        if (elapsedSec > 0) {
+                            const speed = (tokenCount / elapsedSec).toFixed(1);
+                            metricSpeed.textContent = `${speed} tok/s`;
+                        }
+                        metricTokens.textContent = totalTokensGenerated;
+
+                        const thinkingSec = thinkingEndTime 
+                            ? ((thinkingEndTime - thinkingStartTime) / 1000).toFixed(1)
+                            : ((performance.now() - thinkingStartTime) / 1000).toFixed(1);
+
+                        // Render dengan reasoning box jika ada <think>
+                        aiBubble.innerHTML = renderResponseWithThinking(fullReply, isGenerating, thinkingSec);
+                        chatbox.scrollTop = chatbox.scrollHeight;
+                    }
+                }
+
+                chatHistory.push({ role: "assistant", content: fullReply });
+            } catch (err) {
+                console.error("Kesalahan saat inferensi:", err);
+                aiBubble.innerHTML = `⚠️ Terjadi kesalahan: ${err.message || 'Gagal menghasilkan jawaban'}`;
+            } finally {
+                isGenerating = false;
+                btnSend.style.display = 'inline-flex';
+                btnStop.style.display = 'none';
+
+                // Final render dengan thinking box tertutup otomatis agar rapi
+                const finalThinkingSec = thinkingEndTime && thinkingStartTime 
+                    ? ((thinkingEndTime - thinkingStartTime) / 1000).toFixed(1)
+                    : null;
+                aiBubble.innerHTML = renderResponseWithThinking(fullReply, false, finalThinkingSec);
+                
+                // Ekstraksi & Render Interactive Live Artifacts (HTML/SVG/Apps)
+                if (window.AIStreamEngine?.extractAndRenderArtifacts) {
+                    window.AIStreamEngine.extractAndRenderArtifacts(aiBubble);
+                }
+
+                // KaTeX Math Rendering jika ada
+                if (window.renderMathInElement) {
+                    renderMathInElement(aiBubble, {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false}
+                        ]
+                    });
+                }
+            }
+        }
+
+        // Helper: Render Output dengan Reasoning / Thinking Box
+        function renderResponseWithThinking(rawText, isStillGenerating, thinkingDurationSec) {
+            if (rawText.includes('<think>')) {
+                const parts = rawText.split('</think>');
+                if (parts.length > 1) {
+                    // Berpikir selesai
+                    const thinkingText = parts[0].replace('<think>', '').trim();
+                    const answerText = parts.slice(1).join('</think>').trim();
+                    const durStr = thinkingDurationSec ? `${thinkingDurationSec}s` : 'Selesai';
+                    
+                    const safeAnswer = isStillGenerating && window.AIStreamEngine?.healIncompleteMarkdown
+                        ? window.AIStreamEngine.healIncompleteMarkdown(answerText)
+                        : answerText;
+                    return `
+                        <details class="thinking-box" ${isStillGenerating ? 'open' : ''}>
+                            <summary class="thinking-header">
+                                <span class="thinking-badge"><i class='bx bx-brain'></i> Proses Berpikir (Reasoning)</span>
+                                <span class="thinking-meta">${durStr} · klik untuk buka/tutup</span>
+                            </summary>
+                            <div class="thinking-content">${marked.parse(thinkingText)}</div>
+                        </details>
+                        <div class="answer-content">${marked.parse(safeAnswer || '_Sedang menyusun jawaban final..._')}</div>
+                    `;
+                } else {
+                    // Sedang dalam fase berpikir
+                    const thinkingText = parts[0].replace('<think>', '').trim();
+                    return `
+                        <details class="thinking-box" open>
+                            <summary class="thinking-header">
+                                <span class="thinking-badge thinking-pulse"><i class='bx bx-loader-alt bx-spin'></i> Sedang Berpikir...</span>
+                                <span class="thinking-meta">DeepSeek Reasoning Chain</span>
+                            </summary>
+                            <div class="thinking-content">${marked.parse(thinkingText || 'Memulai penalaran internal...')}</div>
+                        </details>
+                    `;
+                }
+            }
+            const safeText = isStillGenerating && window.AIStreamEngine?.healIncompleteMarkdown
+                ? window.AIStreamEngine.healIncompleteMarkdown(rawText)
+                : rawText;
+            return marked.parse(safeText);
+        }
+
+        // Hentikan Generasi
+        btnStop.addEventListener('click', async () => {
+            if (engine && isGenerating) {
+                isGenerating = false;
+                try {
+                    await engine.interruptGenerate();
+                } catch (e) {
+                    console.log("Interrupted");
+                }
+            }
+        });
+
+        // Append Message Helper
+        function appendMessage(role, content) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${role}`;
+
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'avatar';
+            avatarDiv.textContent = role === 'user' ? 'U' : '⚡';
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'bubble';
+            bubbleDiv.innerHTML = role === 'user' ? escapeHtml(content) : marked.parse(content);
+
+            msgDiv.appendChild(avatarDiv);
+            msgDiv.appendChild(bubbleDiv);
+            chatbox.appendChild(msgDiv);
+            chatbox.scrollTop = chatbox.scrollHeight;
+
+            return bubbleDiv;
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        // UI Event Listeners
+        modelPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                modelPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                selectedModel = pill.getAttribute('data-model');
+                btnLoadSelected.disabled = false;
+                btnLoadSelected.className = 'btn-action btn-primary';
+                btnLoadSelected.innerHTML = `<i class='bx bx-download'></i> Muat ${selectedModel.split('-')[0]}`;
+            });
+        });
+
+        btnLoadSelected.addEventListener('click', () => {
+            loadModel(selectedModel);
+        });
+
+        btnSend.addEventListener('click', () => {
+            sendMessage(promptInput.value.trim());
+        });
+
+        promptInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage(promptInput.value.trim());
+            }
+        });
+
+        // Auto-expand textarea
+        promptInput.addEventListener('input', () => {
+            promptInput.style.height = 'auto';
+            promptInput.style.height = Math.min(promptInput.scrollHeight, 140) + 'px';
+        });
+
+        // JSON Mode Toggle & Preset Handlers (XGrammar)
+        const btnJsonMode = document.getElementById('btnJsonMode');
+        const jsonSchemaBanner = document.getElementById('jsonSchemaBanner');
+        btnJsonMode.addEventListener('click', () => {
+            isJsonMode = !isJsonMode;
+            if (isJsonMode) {
+                btnJsonMode.style.background = 'rgba(16, 185, 129, 0.2)';
+                btnJsonMode.style.borderColor = 'rgba(16, 185, 129, 0.6)';
+                btnJsonMode.style.color = '#34d399';
+                jsonSchemaBanner.style.display = 'flex';
+                promptInput.placeholder = 'Ketik data teks yang ingin diekstraksi ke format JSON terstruktur via XGrammar...';
+            } else {
+                btnJsonMode.style.background = '';
+                btnJsonMode.style.borderColor = '';
+                btnJsonMode.style.color = '';
+                jsonSchemaBanner.style.display = 'none';
+                promptInput.placeholder = 'Ketik pesan untuk model WebGPU lokal... (Tekan Enter untuk kirim)';
+            }
+        });
+
+        window.setJsonPreset = (preset) => {
+            activeSchemaType = preset;
+            document.querySelectorAll('.schema-pill').forEach(p => p.classList.remove('active'));
+            if (event && event.target) event.target.classList.add('active');
+        };
+
+        window.openSchemaModal = () => {
+            const editor = document.getElementById('customSchemaEditor');
+            editor.value = JSON.stringify(JSON.parse(jsonSchemas[activeSchemaType] || jsonSchemas.profile), null, 2);
+            document.getElementById('schemaModal').classList.add('active');
+        };
+
+        window.saveCustomSchema = () => {
+            try {
+                const parsed = JSON.parse(document.getElementById('customSchemaEditor').value);
+                jsonSchemas['custom'] = JSON.stringify(parsed);
+                activeSchemaType = 'custom';
+                document.querySelectorAll('.schema-pill').forEach(p => p.classList.remove('active'));
+                closeModal('schemaModal');
+                alert("Skema JSON kustom berhasil diterapkan ke XGrammar WebGPU!");
+            } catch (e) {
+                alert("Format JSON tidak valid: " + e.message);
+            }
+        };
+
+        // Quick Prompt Global Handler
+        window.sendQuickPrompt = (txt) => {
+            promptInput.value = txt;
+            sendMessage(txt);
+        };
+
+        // Bersihkan Cache Browser
+        document.getElementById('btnClearCache').addEventListener('click', async () => {
+            if (confirm("Apakah Anda yakin ingin menghapus bobot model WebLLM dari cache browser? Anda harus mengunduh ulang saat memuat model nanti.")) {
+                try {
+                    const dbs = await window.indexedDB.databases();
+                    for (const db of dbs) {
+                        if (db.name && (db.name.includes('webllm') || db.name.includes('mlc'))) {
+                            window.indexedDB.deleteDatabase(db.name);
+                        }
+                    }
+                    if ('caches' in window) {
+                        const keys = await caches.keys();
+                        for (const key of keys) {
+                            if (key.includes('webllm') || key.includes('mlc')) {
+                                await caches.delete(key);
+                            }
+                        }
+                    }
+                    alert("Cache WebLLM berhasil dibersihkan.");
+                    location.reload();
+                } catch (e) {
+                    alert("Gagal menghapus cache: " + e.message);
+                }
+            }
+        });
+
+        // Modal Controls
+        window.closeModal = (id) => {
+            document.getElementById(id).classList.remove('active');
+        };
+
+        document.getElementById('btnGpuInfo').addEventListener('click', async () => {
+            const modal = document.getElementById('gpuModal');
+            const content = document.getElementById('gpuModalContent');
+            modal.classList.add('active');
+
+            if (!navigator.gpu) {
+                content.innerHTML = `<p style="color: #ef4444;">WebGPU API tidak terdeteksi pada peramban ini.</p>`;
+                return;
+            }
+
+            try {
+                const adapter = gpuAdapterInfo?.adapter || await navigator.gpu.requestAdapter();
+                const info = gpuAdapterInfo?.info || (typeof adapter.requestAdapterInfo === 'function' ? await adapter.requestAdapterInfo() : {});
+                
+                content.innerHTML = `
+                    <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);">
+                        <div><b>Vendor:</b> <span style="color:#38bdf8;">${info.vendor || 'N/A'}</span></div>
+                        <div><b>Architecture:</b> <span style="color:#38bdf8;">${info.architecture || 'N/A'}</span></div>
+                        <div><b>Device:</b> <span style="color:#38bdf8;">${info.device || 'N/A'}</span></div>
+                        <div><b>Description:</b> <span style="color:#38bdf8;">${info.description || 'WebGPU Unified Memory'}</span></div>
+                        <div><b>Shader-f16 (Half Precision):</b> <span style="color:#10b981;">${adapter.features.has('shader-f16') ? '✅ Didukung (2x Throughput)' : '⚠️ Standard f32'}</span></div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); font-family: 'JetBrains Mono', monospace; font-size: 11px;">
+                        <div><b>Max Buffer Size:</b> ${(adapter.limits.maxBufferSize / 1024 / 1024).toFixed(1)} MB</div>
+                        <div><b>Max Storage Buffer:</b> ${(adapter.limits.maxStorageBufferBindingSize / 1024 / 1024).toFixed(1)} MB</div>
+                        <div><b>Max Compute Workgroup Size X:</b> ${adapter.limits.maxComputeWorkgroupSizeX}</div>
+                    </div>
+                    <p style="font-size: 11px; color: #94a3b8;">
+                        💡 <b>Info:</b> WebGPU memungkinkan browser berinteraksi langsung dengan Metal (macOS), Vulkan (Linux/Android), dan DirectX 12 (Windows) tanpa overhead WebGL.
+                    </p>
+                `;
+            } catch (err) {
+                content.innerHTML = `<p style="color: #ef4444;">Error mengambil info adapter: ${err.message}</p>`;
+            }
+        });
+
+        document.getElementById('btnSettings').addEventListener('click', () => {
+            document.getElementById('settingsModal').classList.add('active');
+        });
+
+        // Sliders Realtime Updates
+        document.getElementById('settingTemp').addEventListener('input', (e) => {
+            document.getElementById('tempValue').textContent = e.target.value;
+        });
+        document.getElementById('settingTopP').addEventListener('input', (e) => {
+            document.getElementById('topPValue').textContent = e.target.value;
+        });
+        document.getElementById('settingMaxTokens').addEventListener('input', (e) => {
+            document.getElementById('maxTokensValue').textContent = e.target.value;
+        });
+
+        window.saveSettings = () => {
+            config.systemPrompt = document.getElementById('settingSystemPrompt').value;
+            config.temperature = parseFloat(document.getElementById('settingTemp').value);
+            config.topP = parseFloat(document.getElementById('settingTopP').value);
+            config.maxTokens = parseInt(document.getElementById('settingMaxTokens').value);
+            closeModal('settingsModal');
+        };
+
+        // Inisialisasi awal
+        checkWebGPU();
+    </script>
+</body>
+</html>

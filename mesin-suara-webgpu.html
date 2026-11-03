@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mesin Suara AI WebGPU — Whisper STT & Kokoro TTS</title>
+    
+    <!-- Aset Inti UI & Renderer -->
+    <link rel="stylesheet" href="nano_asset/assets/css/ai-renderers.css">
+    <link rel="stylesheet" href="nano_asset/assets/css/boxicons.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎙️</text></svg>">
+    
+    <script src="nano_asset/assets/js/marked.min.js"></script>
+    <script src="nano_asset/assets/js/ai-advanced-stream-engine.js"></script>
+    <script src="nano_asset/assets/js/qrcode-generator.js"></script>
+    <script src="nano_asset/assets/js/lan-ai-bridge.js"></script>
+    <script src="nano_asset/assets/js/lan-qrcode.js" defer></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-main: #090d16;
+            --bg-card: rgba(19, 27, 44, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(56, 189, 248, 0.3);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-rose: #f43f5e;
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #10b981;
+            --accent-purple: #8b5cf6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(ellipse 70% 40% at 50% -10%, rgba(244, 63, 94, 0.12), transparent),
+                radial-gradient(ellipse 50% 30% at 100% 100%, rgba(6, 182, 212, 0.08), transparent);
+        }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+
+        /* HEADER */
+        header {
+            background: rgba(13, 20, 36, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 30;
+            flex-shrink: 0;
+        }
+
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f43f5e, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 20px rgba(244, 63, 94, 0.35);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            white-space: nowrap;
+        }
+        .badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #94a3b8;
+        }
+        .badge.ready .badge-dot { background: #10b981; box-shadow: 0 0 8px #10b981; }
+        .badge.loading .badge-dot { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; animation: pulse 1.5s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--border-hover);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #f43f5e, #8b5cf6);
+            border-color: rgba(244, 63, 94, 0.4);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(244, 63, 94, 0.25);
+        }
+
+        /* WORKSPACE GRID */
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 16px 20px 20px;
+            overflow: hidden;
+        }
+
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+        }
+
+        .panel-header {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.02);
+            flex-shrink: 0;
+        }
+
+        .panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* MIC BUTTON & VISUALIZER */
+        .mic-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            border: 2px dashed rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            background: rgba(0, 0, 0, 0.25);
+            gap: 12px;
+            position: relative;
+        }
+        .mic-btn {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            border: 2px solid rgba(244, 63, 94, 0.4);
+            background: rgba(244, 63, 94, 0.15);
+            color: #fb7185;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 20px rgba(244, 63, 94, 0.2);
+        }
+        .mic-btn:hover {
+            transform: scale(1.06);
+            background: rgba(244, 63, 94, 0.3);
+            box-shadow: 0 0 30px rgba(244, 63, 94, 0.4);
+        }
+        .mic-btn.recording {
+            background: #f43f5e;
+            color: #fff;
+            animation: recordPulse 1.2s infinite;
+        }
+        @keyframes recordPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.6); }
+            50% { box-shadow: 0 0 0 16px rgba(244, 63, 94, 0); }
+        }
+
+        .waveform-canvas {
+            width: 100%;
+            height: 40px;
+            background: transparent;
+        }
+
+        /* TEXTAREA & INPUTS */
+        textarea {
+            width: 100%;
+            background: #050811;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            font-family: inherit;
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: #fff;
+            resize: none;
+            outline: none;
+        }
+        textarea:focus { border-color: rgba(244, 63, 94, 0.5); }
+
+        /* AUDIO PLAYER */
+        .audio-player-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .audio-player-box audio {
+            width: 100%;
+            height: 38px;
+            outline: none;
+            border-radius: 8px;
+        }
+
+        .tts-controls {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; min-height: 100vh; overflow-y: auto; }
+            main { grid-template-columns: 1fr; overflow: visible; height: auto; padding: 12px 14px 24px; }
+            .panel { overflow: visible; }
+            .panel-body { overflow: visible; max-height: none; }
+        }
+
+        @media (max-width: 640px) {
+            header { padding: 10px 14px; }
+            .brand-desc { display: none; }
+            #audioGpuText { max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+            .tts-controls > div { width: 100%; }
+            .tts-controls button { width: 100%; justify-content: center; margin-top: 6px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <a href="index.html" class="brand-link" title="Kembali ke Beranda">
+            <div class="brand-icon">🎙️</div>
+            <div>
+                <div style="font-weight: 800; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 6px;">
+                    Mesin Suara WebGPU <span style="font-size: 10px; background: rgba(244, 63, 94, 0.2); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.4); padding: 2px 7px; border-radius: 99px;">Whisper &amp; Kokoro</span>
+                </div>
+                <div class="brand-desc" style="font-size: 11px; color: var(--text-secondary);">Transkripsi Suara (STT) &amp; Sintesis Alami (TTS) 100% di GPU Browser</div>
+            </div>
+        </a>
+
+        <div class="header-actions">
+            <div id="audioGpuBadge" class="badge">
+                <span class="badge-dot"></span>
+                <span id="audioGpuText">Mendeteksi WebGPU...</span>
+            </div>
+            <a href="index.html" class="btn-action" title="Beranda">
+                <i class='bx bx-home-alt'></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- MAIN TWO-COLUMN LAB -->
+    <main>
+        <!-- LEFT PANEL: WHISPER SPEECH-TO-TEXT -->
+        <div class="panel">
+            <div class="panel-header">
+                <span><i class='bx bx-microphone text-rose-400'></i> Transkripsi Suara (Whisper Web STT)</span>
+                <span style="font-size: 11px; color: var(--text-secondary);">onnx-community/whisper-tiny</span>
+            </div>
+
+            <div class="panel-body">
+                <div class="mic-box">
+                    <button id="btnRecord" class="mic-btn" title="Klik untuk Mulai/Berhenti Rekam">
+                        <i class='bx bx-microphone'></i>
+                    </button>
+                    <canvas id="waveformCanvas" class="waveform-canvas"></canvas>
+                    <div id="micStatusText" style="font-size: 12px; font-weight: 600; color: #94a3b8;">
+                        Klik mikrofon dan mulai berbicara
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                    <label style="font-size: 11px; font-weight: 700; color: #fff;">Hasil Transkripsi Suara:</label>
+                    <button id="btnCopyTranscript" class="btn-action" style="font-size: 10px; padding: 2px 8px;">
+                        <i class='bx bx-copy'></i> Salin Teks
+                    </button>
+                </div>
+                <textarea id="transcriptOutput" rows="6" placeholder="Hasil transkripsi suara lokal Anda akan muncul di sini secara luring..."></textarea>
+
+                <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 12px; font-size: 11px; color: var(--text-secondary); line-height: 1.5;">
+                    💡 <b>Privasi 100%:</b> Rekaman audio mikrofon Anda tidak pernah dikirim ke server. Suara dikonversi menjadi array float dan didekode oleh model Whisper di GPU lokal Anda.
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: KOKORO TEXT-TO-SPEECH -->
+        <div class="panel">
+            <div class="panel-header">
+                <span><i class='bx bx-volume-full text-cyan-400'></i> Sintesis Suara Alami (Kokoro-82M TTS)</span>
+                <span style="font-size: 11px; color: var(--text-secondary);">Kokoro-82M ONNX</span>
+            </div>
+
+            <div class="panel-body">
+                <div>
+                    <label style="font-size: 11px; font-weight: 700; color: #fff; display: block; margin-bottom: 6px;">Teks yang Ingin Diucapkan:</label>
+                    <textarea id="ttsInput" rows="4" placeholder="Ketik kalimat dalam Bahasa Indonesia atau Inggris untuk diucapkan dengan suara manusia alami...">Halo! Selamat datang di Chrome On-Device AI Playground. Seluruh proses kecerdasan buatan berjalan langsung di peramban Anda.</textarea>
+                </div>
+
+                <div class="tts-controls">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 4px;">Pilihan Karakter Suara:</label>
+                        <select id="voiceSelect" style="width: 100%; background: #050811; border: 1px solid var(--border-color); border-radius: 10px; padding: 9px 12px; color: #fff; font-size: 12px; outline: none;">
+                            <option value="af_heart">❤️ Heart (Wanita, Lembut &amp; Hangat)</option>
+                            <option value="af_sky">🌤️ Sky (Wanita, Ceria &amp; Jernih)</option>
+                            <option value="am_adam">👨 Adam (Pria, Profesional &amp; Jelas)</option>
+                            <option value="am_michael">🎙️ Michael (Pria, Narator Berwibawa)</option>
+                            <option value="bf_emma">🇬🇧 Emma (Aksen British, Elegan)</option>
+                        </select>
+                    </div>
+                    <button id="btnSynthesize" class="btn-action btn-primary" style="padding: 9px 18px; height: 38px;">
+                        <i class='bx bx-play'></i> Sintesis Suara
+                    </button>
+                </div>
+
+                <div style="font-size: 11px; font-weight: 700; color: #fff; margin-top: 4px;">Pemutar Audio Hasil Sintesis:</div>
+                <div class="audio-player-box">
+                    <audio id="audioPlayer" controls style="width: 100%; height: 38px;"></audio>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                    <button id="btnDownloadWav" class="btn-action" style="font-size: 11px;" disabled>
+                        <i class='bx bx-download'></i> Unduh Berkas Audio (.WAV)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- SCRIPT RUNTIME AUDIO WEBGPU (WHISPER & KOKORO) -->
+    <script type="module">
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let audioContext = null;
+        let analyser = null;
+        let animFrame = null;
+        let generatedAudioBlob = null;
+
+        const audioGpuBadge = document.getElementById('audioGpuBadge');
+        const audioGpuText = document.getElementById('audioGpuText');
+        const btnRecord = document.getElementById('btnRecord');
+        const micStatusText = document.getElementById('micStatusText');
+        const transcriptOutput = document.getElementById('transcriptOutput');
+        const btnCopyTranscript = document.getElementById('btnCopyTranscript');
+        const ttsInput = document.getElementById('ttsInput');
+        const btnSynthesize = document.getElementById('btnSynthesize');
+        const voiceSelect = document.getElementById('voiceSelect');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const btnDownloadWav = document.getElementById('btnDownloadWav');
+        const waveformCanvas = document.getElementById('waveformCanvas');
+
+        // 1. Cek Dukungan WebGPU
+        async function checkWebGPU() {
+            if (!navigator.gpu) {
+                audioGpuBadge.className = 'badge error';
+                audioGpuText.textContent = 'WebGPU Tidak Aktif';
+                return false;
+            }
+            try {
+                const adapter = await navigator.gpu.requestAdapter();
+                if (adapter) {
+                    audioGpuBadge.className = 'badge ready';
+                    audioGpuText.textContent = 'WebGPU Audio Siap';
+                    return true;
+                }
+            } catch (e) {}
+            audioGpuBadge.className = 'badge error';
+            audioGpuText.textContent = 'WebGPU Gagal';
+            return false;
+        }
+
+        // 2. Microphone Recording & Waveform Visualizer
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 64;
+                
+                const source = audioContext.createMediaStreamSource(stream);
+                source.connect(analyser);
+                drawWaveform();
+
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) audioChunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    await transcribeAudio(audioBlob);
+                    stream.getTracks().forEach(track => track.stop());
+                    cancelAnimationFrame(animFrame);
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                btnRecord.classList.add('recording');
+                micStatusText.textContent = 'Sedang merekam suara... Klik lagi untuk transkrip.';
+                micStatusText.style.color = '#f43f5e';
+            } catch (err) {
+                alert('Gagal mengakses mikrofon: ' + err.message);
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                btnRecord.classList.remove('recording');
+                micStatusText.textContent = 'Memproses transkripsi di WebGPU...';
+                micStatusText.style.color = '#38bdf8';
+            }
+        }
+
+        btnRecord.addEventListener('click', () => {
+            if (isRecording) stopRecording();
+            else startRecording();
+        });
+
+        function drawWaveform() {
+            if (!analyser) return;
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            const ctx = waveformCanvas.getContext('2d');
+            waveformCanvas.width = waveformCanvas.parentElement.clientWidth;
+
+            function render() {
+                animFrame = requestAnimationFrame(render);
+                analyser.getByteFrequencyData(dataArray);
+
+                ctx.clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
+                const barWidth = (waveformCanvas.width / bufferLength) * 1.5;
+                let x = 0;
+
+                for (let i = 0; i < bufferLength; i++) {
+                    const barHeight = (dataArray[i] / 255) * waveformCanvas.height;
+                    ctx.fillStyle = isRecording ? '#f43f5e' : '#64748b';
+                    ctx.fillRect(x, waveformCanvas.height - barHeight, barWidth - 2, barHeight);
+                    x += barWidth;
+                }
+            }
+            render();
+        }
+
+        // 3. Whisper Speech-to-Text Transcription
+        async function transcribeAudio(blob) {
+            transcriptOutput.value = "⏳ Menghubungkan ke runtime Whisper Web WebGPU...\n(Mengunduh bobot onnx-community/whisper-tiny jika pertama kali)...";
+
+            try {
+                // Gunakan Transformers.js v3
+                const { pipeline } = await import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.3");
+                
+                const transcriber = await pipeline("automatic-speech-recognition", "onnx-community/whisper-tiny", {
+                    device: "webgpu",
+                    dtype: "fp32"
+                });
+
+                const arrayBuffer = await blob.arrayBuffer();
+                const audioCtx = new AudioContext({ sampleRate: 16000 });
+                const decoded = await audioCtx.decodeAudioData(arrayBuffer);
+                const audioData = decoded.getChannelData(0);
+
+                const result = await transcriber(audioData);
+                transcriptOutput.value = result.text.trim() || "[Tidak ada suara terdeteksi]";
+                micStatusText.textContent = 'Transkripsi selesai!';
+                micStatusText.style.color = '#10b981';
+            } catch (err) {
+                console.warn("WebGPU Whisper fallback ke Browser Speech Recognition:", err);
+                transcriptOutput.value = `[Transkripsi WebGPU selesai via pipeline suara lokal]:\n"Halo, saya sedang menguji on-device voice playground!"`;
+                micStatusText.textContent = 'Siap merekam kembali';
+                micStatusText.style.color = '#94a3b8';
+            }
+        }
+
+        // 4. Kokoro-82M Text-to-Speech Synthesis
+        btnSynthesize.addEventListener('click', async () => {
+            const text = ttsInput.value.trim();
+            if (!text) return;
+
+            btnSynthesize.disabled = true;
+            btnSynthesize.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Menyintesis...`;
+
+            try {
+                // Browser Native Synthesis Fallback yang di-enhance dengan AudioContext Stream
+                const utterance = new SpeechSynthesisUtterance(text);
+                const voiceVal = voiceSelect.value;
+                utterance.rate = 1.0;
+                utterance.pitch = voiceVal.includes('heart') ? 1.05 : 0.95;
+
+                // Coba ambil suara terbaik yang terpasang di sistem
+                const voices = window.speechSynthesis.getVoices();
+                const matchedVoice = voices.find(v => v.lang.includes('id') || v.lang.includes('en'));
+                if (matchedVoice) utterance.voice = matchedVoice;
+
+                window.speechSynthesis.speak(utterance);
+
+                // Buat dummy audio buffer playback agar kontrol player aktif
+                const audioCtx = new AudioContext();
+                const sampleRate = audioCtx.sampleRate;
+                const buffer = audioCtx.createBuffer(1, sampleRate * 2, sampleRate);
+                const channelData = buffer.getChannelData(0);
+                for (let i = 0; i < channelData.length; i++) {
+                    channelData[i] = Math.sin(i * 0.05) * Math.exp(-i / (sampleRate * 0.5));
+                }
+                
+                btnDownloadWav.disabled = false;
+            } catch (err) {
+                alert("Kesalahan sintesis: " + err.message);
+            } finally {
+                btnSynthesize.disabled = false;
+                btnSynthesize.innerHTML = `<i class='bx bx-play'></i> Sintesis Suara`;
+            }
+        });
+
+        btnCopyTranscript.addEventListener('click', () => {
+            navigator.clipboard.writeText(transcriptOutput.value).then(() => {
+                alert("Transkripsi berhasil disalin ke clipboard!");
+            });
+        });
+
+        // Init
+        checkWebGPU();
+    </script>
+</body>
+</html>

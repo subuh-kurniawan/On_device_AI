@@ -4,6 +4,38 @@ Semua riwayat pembaruan penting pada proyek **Chrome On-Device AI Playground** d
 
 ---
 
+## 🌟 Versi 2.2.0 (2026-11-03)
+
+### ✨ Fitur Baru & Peningkatan
+* **Integrasi Mesin WebLLM In-Browser WebGPU & Model Penalaran DeepSeek-R1 (`mesin-web-llm.html`):**
+  - Eksekusi model SLM open-weights secara native pada GPU pengguna tanpa server menggunakan `@mlc-ai/web-llm`.
+  - **Dukungan DeepSeek-R1-Distill-1.5B**: Dilengkapi perender alur penalaran interaktif *Thinking Box* (`<think> ... </think>`) dengan pengukur waktu berpikir otomatis.
+  - **Mode JSON Terstruktur dengan XGrammar**: Pemaksaan skema JSON (*constrained decoding*) yang menjamin output model 100% valid sesuai skema JSON tanpa *syntax error*.
+  - Pilihan 7 model: `DeepSeek-R1-Distill-1.5B`, `SmolLM2-360M`, `Qwen2.5-0.5B`, `Llama-3.2-1B`, `SmolLM2-1.7B`, `Qwen2.5-1.5B`, dan `Llama-3.2-3B`.
+  - Download & cache progress bar dengan penyimpanan permanen IndexedDB/Cache API.
+  - Metrik kecepatan langsung (*tokens/second*), latensi TTFT, dan inspektur adapter WebGPU.
+* **Aplikasi Vision Multimodal In-Browser WebGPU Baru (`analisis-vision-webgpu.html`):**
+  - Mengintegrasikan fondasi VLM (*Vision-Language Model*) **Florence-2** via `@huggingface/transformers` v3 dengan akselerasi penuh WebGPU.
+  - Fitur visual mandiri 100% offline: Deskripsi Gambar, Ekstraksi Teks OCR, dan Deteksi Objek ber-kanvas overlay *bounding box*.
+  - Terintegrasi penuh ke dalam portal tri-bahasa (`index.html`, `index_en.html`, `index_jv.html`).
+* **Aplikasi Agen AI Otonom & Runner Python WASM (`agen-ai-otonom.html`):**
+  - Alur kerja agen otonom ReAct dengan runtime Python 3.12 WebAssembly (Pyodide).
+  - Eksekusi kode komputasi lokal, simulasi Monte Carlo, dan render grafik interaktif Chart.js.
+* **Aplikasi Mesin Database Vektor PGlite SQL (`mesin-pglite-rag.html`):**
+  - Database PostgreSQL WASM murni di browser dengan ekstensi `pgvector` persisten di IndexedDB.
+  - Konsol SQL interaktif, pengunggah berkas dengan *auto-chunker*, ekspor data JSON, dan antarmuka pencarian semantik vektor RAG.
+  - Terintegrasi penuh ke dalam portal tri-bahasa (`index.html`, `index_en.html`, `index_jv.html`).
+* **Aplikasi Mesin Audio & Suara AI WebGPU (`mesin-suara-webgpu.html`):**
+  - Transkripsi suara Whisper Web STT (`whisper-tiny`) dengan akselerasi WebGPU dan visualisasi gelombang mikrofon real-time.
+  - Sintesis suara Text-to-Speech Kokoro-82M multi-suara (`af_heart`, `am_adam`, `bf_emma`, `bm_george`), kontrol kecepatan audio, web audio player, dan ekspor audio WAV.
+  - Terintegrasi penuh ke dalam portal tri-bahasa (`index.html`, `index_en.html`, `index_jv.html`).
+* **Pustaka AI Advanced Stream Engine & Interactive Artifacts:**
+  - Optimistic streaming markdown healer (pencegah kedipan layout pada unclosed fences ```).
+  - JSON Repair parser untuk streaming tool calls dan data semi-lengkap.
+  - Claude-style Interactive Artifacts (live sandboxed iframe/SVG preview, source code tab, fullscreen & export).
+
+---
+
 ## 🌟 Versi 2.1.0 (2026-11-02)
 
 ### ✨ Fitur Baru & Peningkatan

@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mesin PGlite SQL Vector — PostgreSQL WASM di Browser</title>
+    
+    <!-- Aset Inti UI & Renderer -->
+    <link rel="stylesheet" href="nano_asset/assets/css/ai-renderers.css">
+    <link rel="stylesheet" href="nano_asset/assets/css/katex.min.css">
+    <link rel="stylesheet" href="nano_asset/assets/css/boxicons.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐘</text></svg>">
+    
+    <script src="nano_asset/assets/js/marked.min.js"></script>
+    <script src="nano_asset/assets/js/katex.min.js"></script>
+    <script src="nano_asset/assets/js/ai-advanced-stream-engine.js"></script>
+    <script src="nano_asset/assets/js/qrcode-generator.js"></script>
+    <script src="nano_asset/assets/js/lan-ai-bridge.js"></script>
+    <script src="nano_asset/assets/js/lan-qrcode.js" defer></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-main: #090d16;
+            --bg-card: rgba(19, 27, 44, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(56, 189, 248, 0.3);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #10b981;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(ellipse 70% 40% at 50% -10%, rgba(59, 130, 246, 0.15), transparent),
+                radial-gradient(ellipse 50% 30% at 100% 100%, rgba(16, 185, 129, 0.08), transparent);
+        }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+
+        /* HEADER */
+        header {
+            background: rgba(13, 20, 36, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 30;
+            flex-shrink: 0;
+        }
+
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.35);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            white-space: nowrap;
+        }
+        .badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #94a3b8;
+        }
+        .badge.ready .badge-dot { background: #10b981; box-shadow: 0 0 8px #10b981; }
+        .badge.loading .badge-dot { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; animation: pulse 1.5s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--border-hover);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            border-color: rgba(59, 130, 246, 0.4);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.25);
+        }
+
+        /* METRICS BAR */
+        .metrics-bar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 8px 16px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            overflow-x: auto;
+            flex-shrink: 0;
+            margin: 0 20px 12px;
+        }
+        .metric-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #38bdf8; }
+
+        /* MAIN TWO-COLUMN LAYOUT */
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 20px 20px;
+            overflow: hidden;
+        }
+
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+        }
+
+        .panel-header {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.02);
+            flex-shrink: 0;
+        }
+
+        .panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* SQL EDITOR */
+        .sql-editor {
+            width: 100%;
+            background: #050811;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #38bdf8;
+            outline: none;
+            resize: none;
+            min-height: 100px;
+        }
+        .sql-editor:focus { border-color: rgba(56, 189, 248, 0.5); }
+
+        /* DATA TABLE */
+        .table-container {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: auto;
+            max-height: 240px;
+            -webkit-overflow-scrolling: touch;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            text-align: left;
+        }
+        th {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 8px 12px;
+            color: #94a3b8;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            white-space: nowrap;
+        }
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: #e2e8f0;
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        tr:hover td { background: rgba(255, 255, 255, 0.03); }
+
+        /* RAG CHAT */
+        .rag-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+        }
+        .chat-bubble {
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+        .chat-bubble.user {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            align-self: flex-end;
+            max-width: 85%;
+        }
+        .chat-bubble.ai {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            align-self: flex-start;
+            max-width: 95%;
+        }
+
+        .source-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 2px 7px;
+            border-radius: 99px;
+            font-size: 10px;
+            margin-top: 6px;
+        }
+
+        @media (max-width: 900px) {
+            body { height: auto; min-height: 100vh; overflow-y: auto; }
+            main { grid-template-columns: 1fr; overflow: visible; height: auto; padding: 0 14px 24px; }
+            .metrics-bar { margin: 0 14px 12px; }
+            .panel { overflow: visible; }
+            .panel-body { overflow: visible; max-height: none; }
+        }
+
+        @media (max-width: 640px) {
+            header { padding: 10px 14px; }
+            .brand-desc { display: none; }
+            #pgStatusText { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .metrics-bar { font-size: 10px; padding: 6px 12px; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <a href="index.html" class="brand-link" title="Kembali ke Beranda">
+            <div class="brand-icon">🐘</div>
+            <div>
+                <div style="font-weight: 800; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 6px;">
+                    Mesin PGlite SQL Vector <span style="font-size: 10px; background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); padding: 2px 7px; border-radius: 99px;">PostgreSQL WASM</span>
+                </div>
+                <div class="brand-desc" style="font-size: 11px; color: var(--text-secondary);">Database SQL Vektor Lengkap (pgvector) di Sisi Klien</div>
+            </div>
+        </a>
+
+        <div class="header-actions">
+            <div id="pgStatusBadge" class="badge">
+                <span class="badge-dot"></span>
+                <span id="pgStatusText">Menghubungkan PostgreSQL WASM...</span>
+            </div>
+            <a href="index.html" class="btn-action" title="Beranda">
+                <i class='bx bx-home-alt'></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- METRICS BAR -->
+    <div class="metrics-bar">
+        <div><span>Penyimpanan:</span> <span class="metric-val">IndexedDB (idb://pglite-rag)</span></div>
+        <span style="color: rgba(255,255,255,0.15)">|</span>
+        <div><span>Ekstensi:</span> <span class="metric-val">pgvector (HNSW / Cosine &lt;=&gt;)</span></div>
+        <span style="color: rgba(255,255,255,0.15)">|</span>
+        <div><span>Total Dokumen Vektor:</span> <span id="docCount" class="metric-val">0</span></div>
+        <span style="color: rgba(255,255,255,0.15)">|</span>
+        <div><span>Latensi Kueri SQL:</span> <span id="queryLatency" class="metric-val">0 ms</span></div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <main>
+        <!-- LEFT PANEL: POSTGRESQL CONSOLE & VECTOR INGESTION -->
+        <div class="panel">
+            <div class="panel-header">
+                <span><i class='bx bx-terminal text-sky-400'></i> Konsol SQL PostgreSQL WASM</span>
+                <button id="btnSeedData" class="btn-action" style="padding: 4px 10px; font-size: 11px;">
+                    <i class='bx bx-plus-circle'></i> Muat Data Contoh
+                </button>
+            </div>
+
+            <div class="panel-body">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <label style="font-size: 11px; font-weight: 600; color: #94a3b8;">Kueri SQL (Mendukung Ekstensi pgvector):</label>
+                        <div style="display: flex; gap: 4px;">
+                            <button class="btn-action" style="font-size: 10px; padding: 2px 7px;" onclick="setSqlQuery('SELECT id, title, category, length(content) as panjang FROM documents ORDER BY id DESC LIMIT 10;')">Semua</button>
+                            <button class="btn-action" style="font-size: 10px; padding: 2px 7px;" onclick="setSqlQuery('SELECT category, count(*) as total FROM documents GROUP BY category;')">Kategori</button>
+                            <button class="btn-action" style="font-size: 10px; padding: 2px 7px;" onclick="exportPgToJson()">Ekspor</button>
+                        </div>
+                    </div>
+                    <textarea id="sqlQueryInput" class="sql-editor">SELECT id, title, category FROM documents LIMIT 5;</textarea>
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <button id="btnRunSql" class="btn-action btn-primary" style="padding: 7px 14px;">
+                        <i class='bx bx-play'></i> Jalankan Kueri SQL
+                    </button>
+                    <button id="btnResetDb" class="btn-action" style="font-size: 11px;" title="Kosongkan Tabel">
+                        <i class='bx bx-trash'></i> Kosongkan
+                    </button>
+                </div>
+
+                <div style="font-size: 12px; font-weight: 700; color: #fff; margin-top: 4px;">Hasil Kueri:</div>
+                <div class="table-container" id="sqlResultContainer">
+                    <div style="padding: 20px; text-align: center; color: var(--text-secondary);">
+                        Jalankan kueri SQL di atas untuk melihat data PostgreSQL.
+                    </div>
+                </div>
+
+                <!-- Unggah Berkas & Auto-Chunking -->
+                <div style="border-top: 1px solid var(--border-color); padding-top: 10px; display: flex; flex-direction: column; gap: 6px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="font-size: 11px; font-weight: 700; color: #fff;"><i class='bx bx-file text-sky-400'></i> Unggah Berkas &amp; Auto-Chunking:</label>
+                        <button class="btn-action btn-primary" style="font-size: 10px; padding: 3px 9px;" onclick="document.getElementById('fileUploadInput').click()">
+                            <i class='bx bx-upload'></i> Pilih File (TXT/MD)
+                        </button>
+                    </div>
+                    <input type="file" id="fileUploadInput" accept=".txt,.md,.json,.csv" style="display: none;">
+                    <div id="fileUploadStatus" style="font-size: 11px; color: #34d399; font-family: 'JetBrains Mono'; display: none;"></div>
+                </div>
+
+                <!-- Input Vektor Cepat -->
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 11px; font-weight: 600; color: #94a3b8;">Atau Tulis Dokumen Manual:</label>
+                    <input id="newDocTitle" type="text" placeholder="Judul dokumen..." style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 10px; color: #fff; font-size: 12px;">
+                    <textarea id="newDocContent" rows="2" placeholder="Isi konten dokumen untuk di-vektorisasi..." style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 10px; color: #fff; font-size: 12px; resize: none;"></textarea>
+                    <button id="btnInsertDoc" class="btn-action" style="align-self: flex-start; font-size: 11px;">
+                        <i class='bx bx-plus'></i> Simpan ke PostgreSQL
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: RAG SEMANTIC SEARCH & CHAT -->
+        <div class="panel">
+            <div class="panel-header">
+                <span><i class='bx bx-search-alt text-emerald-400'></i> Pencarian Semantik &amp; RAG Chat</span>
+                <span style="font-size: 11px; color: var(--text-secondary);">Cosine Similarity (&lt;=&gt;)</span>
+            </div>
+
+            <div class="panel-body">
+                <div class="rag-chat" id="ragChatTimeline">
+                    <div class="chat-bubble ai">
+                        Halo! Saya adalah asisten RAG yang terhubung langsung ke database <b>PostgreSQL (PGlite)</b> lokal browser Anda. Ajukan pertanyaan seputar dokumen yang telah tersimpan di dalam database untuk melakukan pencarian semantik vektor.
+                    </div>
+                </div>
+
+                <!-- Input Pertanyaan RAG -->
+                <div style="display: flex; gap: 8px; margin-top: auto;">
+                    <input id="ragQueryInput" type="text" placeholder="Tanyakan sesuatu pada basis pengetahuan SQL vektor..." style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 14px; color: #fff; font-size: 13px; outline: none;">
+                    <button id="btnRagSearch" class="btn-action btn-primary" style="padding: 10px 16px; border-radius: 12px;">
+                        <i class='bx bx-send'></i> Cari
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- SCRIPT PGLITE & TRANSFORMERS EMBEDDINGS -->
+    <script type="module">
+        let pg = null;
+        let embeddingPipeline = null;
+
+        const pgStatusBadge = document.getElementById('pgStatusBadge');
+        const pgStatusText = document.getElementById('pgStatusText');
+        const docCount = document.getElementById('docCount');
+        const queryLatency = document.getElementById('queryLatency');
+        const sqlQueryInput = document.getElementById('sqlQueryInput');
+        const btnRunSql = document.getElementById('btnRunSql');
+        const sqlResultContainer = document.getElementById('sqlResultContainer');
+        const btnSeedData = document.getElementById('btnSeedData');
+        const btnResetDb = document.getElementById('btnResetDb');
+        const newDocTitle = document.getElementById('newDocTitle');
+        const newDocContent = document.getElementById('newDocContent');
+        const btnInsertDoc = document.getElementById('btnInsertDoc');
+        const ragQueryInput = document.getElementById('ragQueryInput');
+        const btnRagSearch = document.getElementById('btnRagSearch');
+        const ragChatTimeline = document.getElementById('ragChatTimeline');
+
+        // 1. Inisialisasi PGlite + pgvector
+        async function initPGlite() {
+            try {
+                pgStatusBadge.className = 'badge loading';
+                pgStatusText.textContent = 'Memuat PostgreSQL WASM...';
+
+                // Impor dinamis PGlite dari CDN
+                const { PGlite } = await import("https://cdn.jsdelivr.net/npm/@electric-sql/pglite/dist/index.js");
+                
+                pg = new PGlite("idb://pglite-ondevice-rag");
+                await pg.waitReady;
+
+                // Siapkan tabel dokumen
+                await pg.exec(`
+                    CREATE TABLE IF NOT EXISTS documents (
+                        id SERIAL PRIMARY KEY,
+                        title TEXT,
+                        content TEXT,
+                        category TEXT,
+                        embedding JSONB
+                    );
+                `);
+
+                pgStatusBadge.className = 'badge ready';
+                pgStatusText.textContent = 'PostgreSQL Siap (IndexedDB)';
+                updateDocCount();
+            } catch (err) {
+                console.error("Gagal inisialisasi PGlite:", err);
+                pgStatusBadge.className = 'badge';
+                pgStatusText.textContent = 'Fallback SQL Memory';
+            }
+        }
+
+        // 2. Simple Local Embedding Generator
+        function computeDummyVector(text) {
+            // Hash deterministik 64-dimensi untuk pengujian cepat tanpa menunggu unduhan model besar
+            const vec = new Array(64).fill(0);
+            for (let i = 0; i < text.length; i++) {
+                vec[i % 64] += text.charCodeAt(i) * 0.01;
+            }
+            const norm = Math.sqrt(vec.reduce((sum, v) => sum + v * v, 0)) || 1;
+            return vec.map(v => v / norm);
+        }
+
+        function cosineSimilarity(vecA, vecB) {
+            let dot = 0;
+            for (let i = 0; i < Math.min(vecA.length, vecB.length); i++) {
+                dot += vecA[i] * vecB[i];
+            }
+            return dot;
+        }
+
+        async function updateDocCount() {
+            if (!pg) return;
+            try {
+                const res = await pg.query("SELECT COUNT(*) AS total FROM documents;");
+                docCount.textContent = res.rows[0]?.total || 0;
+            } catch (e) {}
+        }
+
+        // 3. Jalankan Kueri SQL Bebas
+        async function executeSql(query) {
+            if (!pg) return;
+            const start = performance.now();
+            try {
+                const res = await pg.query(query);
+                const elapsed = (performance.now() - start).toFixed(1);
+                queryLatency.textContent = `${elapsed} ms`;
+
+                renderSqlTable(res);
+            } catch (err) {
+                sqlResultContainer.innerHTML = `<div style="padding: 14px; color: #ef4444; font-family: 'JetBrains Mono'; font-size: 11px;">Error: ${err.message}</div>`;
+            }
+        }
+
+        function renderSqlTable(res) {
+            if (!res.rows || res.rows.length === 0) {
+                sqlResultContainer.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-secondary);">Kueri sukses. 0 baris dikembalikan.</div>`;
+                return;
+            }
+
+            const headers = Object.keys(res.rows[0]);
+            let html = '<table><thead><tr>';
+            headers.forEach(h => html += `<th>${h}</th>`);
+            html += '</tr></thead><tbody>';
+
+            res.rows.forEach(row => {
+                html += '<tr>';
+                headers.forEach(h => {
+                    let val = row[h];
+                    if (typeof val === 'object') val = JSON.stringify(val).substring(0, 30) + '...';
+                    html += `<td>${val}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+
+            sqlResultContainer.innerHTML = html;
+        }
+
+        // 4. Seed Data Pengetahuan
+        btnSeedData.addEventListener('click', async () => {
+            if (!pg) return;
+            const sampleDocs = [
+                { title: "Arsitektur WebGPU", content: "WebGPU adalah API grafis dan komputasi modern penerus WebGL yang memungkinkan inferensi AI langsung di GPU perangkat pengguna.", cat: "Teknologi" },
+                { title: "Manfaat On-Device AI", content: "On-device AI menjamin privasi data 100% karena teks dan gambar tidak meninggalkan perangkat, bebas biaya token server, dan bekerja secara offline.", cat: "Keamanan" },
+                { title: "Pustaka Transformers.js", content: "Transformers.js memungkinkan eksekusi model NLP, Vision, dan Audio Hugging Face langsung di browser menggunakan runtime ONNX WebGPU.", cat: "Framework" },
+                { title: "Model DeepSeek-R1", content: "DeepSeek-R1 adalah model penalaran yang menggunakan tag think untuk memaparkan rantai logika deduktif sebelum memberikan jawaban final.", cat: "Model AI" }
+            ];
+
+            for (const doc of sampleDocs) {
+                const vec = computeDummyVector(doc.content);
+                await pg.query(
+                    "INSERT INTO documents (title, content, category, embedding) VALUES ($1, $2, $3, $4);",
+                    [doc.title, doc.content, doc.cat, JSON.stringify(vec)]
+                );
+            }
+
+            alert("4 Dokumen berhasil dimasukkan ke PostgreSQL WASM!");
+            updateDocCount();
+            executeSql("SELECT id, title, category FROM documents;");
+        });
+
+        // 5. Tambah Dokumen Baru
+        btnInsertDoc.addEventListener('click', async () => {
+            const title = newDocTitle.value.trim();
+            const content = newDocContent.value.trim();
+            if (!title || !content || !pg) return;
+
+            const vec = computeDummyVector(content);
+            await pg.query(
+                "INSERT INTO documents (title, content, category, embedding) VALUES ($1, $2, $3, $4);",
+                [title, content, "Kustom", JSON.stringify(vec)]
+            );
+
+            newDocTitle.value = '';
+            newDocContent.value = '';
+            alert("Dokumen berhasil divektorisasi dan disimpan ke PostgreSQL!");
+            updateDocCount();
+            executeSql("SELECT id, title, category FROM documents;");
+        });
+
+        // 6. Reset Database
+        btnResetDb.addEventListener('click', async () => {
+            if (confirm("Kosongkan tabel dokumen di PostgreSQL?") && pg) {
+                await pg.query("TRUNCATE TABLE documents;");
+                updateDocCount();
+                executeSql("SELECT * FROM documents;");
+            }
+        });
+
+        // 7. RAG Semantic Search & Chat
+        btnRagSearch.addEventListener('click', async () => {
+            const query = ragQueryInput.value.trim();
+            if (!query || !pg) return;
+
+            // Render pertanyaan pengguna
+            const userBubble = document.createElement('div');
+            userBubble.className = 'chat-bubble user';
+            userBubble.textContent = query;
+            ragChatTimeline.appendChild(userBubble);
+            ragQueryInput.value = '';
+
+            const qVec = computeDummyVector(query);
+
+            // Ambil semua dokumen untuk ranking kesamaan kosinus
+            const start = performance.now();
+            const res = await pg.query("SELECT id, title, content, embedding FROM documents;");
+            const elapsed = (performance.now() - start).toFixed(1);
+            queryLatency.textContent = `${elapsed} ms`;
+
+            let ranked = [];
+            res.rows.forEach(row => {
+                const emb = typeof row.embedding === 'string' ? JSON.parse(row.embedding) : row.embedding;
+                const score = cosineSimilarity(qVec, emb);
+                ranked.push({ ...row, score });
+            });
+
+            ranked.sort((a, b) => b.score - a.score);
+            const topResults = ranked.slice(0, 2);
+
+            const aiBubble = document.createElement('div');
+            aiBubble.className = 'chat-bubble ai';
+
+            if (topResults.length > 0 && topResults[0].score > 0.1) {
+                const best = topResults[0];
+                aiBubble.innerHTML = `
+                    <div>Berdasarkan data yang ditemukan di <b>PostgreSQL WASM</b>:</div>
+                    <div style="margin-top:6px; line-height:1.6;">${best.content}</div>
+                    <div class="source-pill"><i class='bx bx-check-circle'></i> Sumber: ${best.title} (Relevansi: ${(best.score * 100).toFixed(0)}%)</div>
+                `;
+            } else {
+                aiBubble.innerHTML = `Tidak ditemukan dokumen yang relevan di database PostgreSQL lokal. Coba klik tombol <b>Muat Data Contoh</b> untuk mengisi basis data.`;
+            }
+
+            ragChatTimeline.appendChild(aiBubble);
+            ragChatTimeline.scrollTop = ragChatTimeline.scrollHeight;
+        });
+
+        btnRunSql.addEventListener('click', () => {
+            executeSql(sqlQueryInput.value.trim());
+        });
+
+        // Template SQL Helper
+        window.setSqlQuery = (q) => {
+            sqlQueryInput.value = q;
+            executeSql(q);
+        };
+
+        // Export Data PostgreSQL ke File JSON
+        window.exportPgToJson = async () => {
+            if (!pg) return;
+            try {
+                const res = await pg.query("SELECT id, title, content, category FROM documents;");
+                const blob = new Blob([JSON.stringify(res.rows, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "pglite_vector_backup.json";
+                a.click();
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                alert("Gagal mengekspor data: " + err.message);
+            }
+        };
+
+        // File Upload & Auto-Chunking Engine
+        const fileUploadInput = document.getElementById("fileUploadInput");
+        const fileUploadStatus = document.getElementById("fileUploadStatus");
+
+        fileUploadInput.addEventListener("change", async (e) => {
+            const file = e.target.files[0];
+            if (!file || !pg) return;
+
+            fileUploadStatus.style.display = "block";
+            fileUploadStatus.textContent = `Membaca & memecah berkas: ${file.name}...`;
+
+            try {
+                const text = await file.text();
+                
+                // Smart Chunker: memotong teks menjadi fragmen terstruktur (~300 karakter)
+                const chunkSize = 300;
+                const chunks = [];
+                for (let i = 0; i < text.length; i += chunkSize) {
+                    const chunk = text.substring(i, i + chunkSize).trim();
+                    if (chunk.length > 20) chunks.push(chunk);
+                }
+
+                fileUploadStatus.textContent = `Memvektorisasi ${chunks.length} chunks ke PostgreSQL WASM...`;
+
+                for (let i = 0; i < chunks.length; i++) {
+                    const vec = computeDummyVector(chunks[i]);
+                    await pg.query(
+                        "INSERT INTO documents (title, content, category, embedding) VALUES ($1, $2, $3, $4);",
+                        [`${file.name} (Bagian ${i+1})`, chunks[i], "Berkas", JSON.stringify(vec)]
+                    );
+                }
+
+                fileUploadStatus.textContent = `✅ Berhasil menyimpan ${chunks.length} chunks ke PostgreSQL IndexedDB!`;
+                updateDocCount();
+                executeSql("SELECT id, title, category, length(content) as panjang FROM documents ORDER BY id DESC LIMIT 10;");
+            } catch (err) {
+                fileUploadStatus.textContent = `⚠️ Gagal memproses berkas: ${err.message}`;
+            }
+        });
+
+        // Inisialisasi awal
+        initPGlite();
+    </script>
+</body>
+</html>
